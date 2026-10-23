@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: crioblood_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_super_secreta
+      MYSQL_DATABASE: crioblood
+      MYSQL_USER: crioblood_usr
+      MYSQL_PASSWORD: crioblood_pwd
+    ports:
+      - "3306:3306"
+    volumes:
+      # Garante que os registros de sangue nunca sejam perdidos se o container reiniciar
+      - crioblood_data:/var/lib/mysql
+      # Mapeia a pasta database/ para rodar os scripts SQL (.sql) automaticamente na criação do banco
+      - ./database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 5
+
+  app:
+    build: .
+    container_name: crioblood_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Variáveis injetadas diretamente no process.env do Node.js
+      - PORT=3000
+      - DB_HOST=db
+      - DB_USER=crioblood_usr
+      - DB_PASSWORD=crioblood_pwd
+      - DB_NAME=crioblood
+      - JWT_SECRET=chave_secreta_jwt_producao
+    depends_on:
+      db:
+        # A aplicação Node só inicia depois que o MySQL confirmar que está pronto
+        condition: service_healthy
+
+volumes:
+  crioblood_data:
