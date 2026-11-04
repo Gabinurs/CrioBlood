@@ -52,7 +52,7 @@ class EstoqueService {
             await conexao.query(querySaida, [hemocomponente_id, paciente_nome, prontuario, medico_solicitante, observacoes]);
 
             // 2. Atualiza o status do hemocomponente para 'Utilizado'
-            const queryStatus = `UPDATE hemocomponentes SET status = 'Utilizado' WHERE id = ?`;
+            const queryStatus = `UPDATE hemocomponentes SET status = 'Utilizado' WHERE id = ?`; 
             await conexao.query(queryStatus, [hemocomponente_id]);
 
             await conexao.commit();
