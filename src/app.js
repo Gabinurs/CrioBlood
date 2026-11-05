@@ -1,5 +1,4 @@
 
-require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
@@ -111,3 +110,18 @@ app.use((req, res) => {
 app.listen(PORT, () => {
     console.log(`CrioBlood disponível em http://localhost:${PORT}`);
 });
+
+
+// Importe o arquivo de rotas
+const hemocomponenteRoutes = require('./routes/hemocomponenteRoutes');
+
+// Registre no Express
+app.use('/hemocomponentes', hemocomponenteRoutes);
+require('dotenv').config();
+
+
+// Adicione isso junto às suas importações no topo do app.js
+const iniciarRotinaValidade = require('./scripts/cronValidade');
+
+// Adicione isso antes de iniciar o servidor (app.listen)
+iniciarRotinaValidade();

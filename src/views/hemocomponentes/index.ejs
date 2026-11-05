@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'matte-black': '#090a0c', 'dark-slate': '#1a1c23',
+                        'cyber-yellow': '#fcee09', 'electric-purple': '#b026ff', 'danger-red': '#ff2a2a'
+                    },
+                    fontFamily: { mono: ['"Share Tech Mono"', 'monospace'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-matte-black text-gray-300 font-mono min-h-screen p-8" style="background-image: linear-gradient(rgba(26, 28, 35, 0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(26, 28, 35, 0.8) 1px, transparent 1px); background-size: 30px 30px;">
+    
+    <div class="max-w-6xl mx-auto">
+        <!-- Navegação -->
+        <nav class="mb-6 text-sm">
+            <a href="/dashboard" class="text-electric-purple hover:text-cyber-yellow">&larr; Voltar ao Dashboard</a>
+        </nav>
+        
+        <!-- Header da Página -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl text-cyber-yellow tracking-widest uppercase drop-shadow-[0_0_8px_rgba(252,238,9,0.5)]">Gestão de Hemocomponentes</h1>
+            <a href="/hemocomponentes/novo" class="border border-cyber-yellow text-cyber-yellow px-4 py-2 uppercase tracking-wide hover:bg-cyber-yellow hover:text-matte-black transition-all shadow-[0_0_10px_rgba(252,238,9,0.2)] hover:shadow-[0_0_15px_rgba(252,238,9,0.8)]">
+                + Novo Registro
+            </a>
+        </div>
+
+        <!-- Tabela -->
+        <div class="bg-dark-slate border border-gray-700 overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-black text-electric-purple uppercase text-sm tracking-wider border-b border-gray-700">
+                        <th class="p-4 border-r border-gray-700">ID</th>
+                        <th class="p-4 border-r border-gray-700">Lote Origem</th>
+                        <th class="p-4 border-r border-gray-700">Tipo</th>
+                        <th class="p-4 border-r border-gray-700">Volume (ml)</th>
+                        <th class="p-4 border-r border-gray-700">Validade</th>
+                        <th class="p-4 border-r border-gray-700">Status</th>
+                        <th class="p-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (hemocomponentes && hemocomponentes.length > 0) { %>
+                        <% hemocomponentes.forEach(function(item) { %>
+                            <tr class="border-b border-gray-800 hover:bg-electric-purple/10 transition-colors">
+                                <td class="p-4 border-r border-gray-800"><%= item.id %></td>
+                                <td class="p-4 border-r border-gray-800 text-gray-500"><%= item.codigo_lote || item.lote_id %></td>
+                                <td class="p-4 border-r border-gray-800 text-cyber-yellow"><%= item.tipo %></td>
+                                <td class="p-4 border-r border-gray-800"><%= item.volume_ml %></td>
+                                <td class="p-4 border-r border-gray-800"><%= new Date(item.data_validade).toLocaleDateString('pt-BR') %></td>
+                                <td class="p-4 border-r border-gray-800 font-bold tracking-wider 
+                                    <%= item.status === 'Disponível' ? 'text-green-400' : '' %>
+                                    <%= item.status === 'Descartado' ? 'text-danger-red' : '' %>
+                                    <%= item.status === 'Em Quarentena' ? 'text-orange-400' : '' %>">
+                                    [<%= item.status %>]
+                                </td>
+                                <td class="p-4 space-x-2">
+                                    <a href="/hemocomponentes/editar/<%= item.id %>" class="border border-electric-purple text-electric-purple px-3 py-1 text-sm uppercase hover:bg-electric-purple hover:text-white transition-all">Editar</a>
+                                    
+                                    <% if (item.status !== 'Descartado') { %>
+                                        <form action="/hemocomponentes/descartar/<%= item.id %>" method="POST" class="inline" onsubmit="return confirm('ATENÇÃO: Descarte irreversível. Confirmar?');">
+                                            <button type="submit" class="border border-danger-red text-danger-red px-3 py-1 text-sm uppercase hover:bg-danger-red hover:text-black transition-all">Descartar</button>
+                                        </form>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="7" class="p-8 text-center text-gray-500 uppercase tracking-widest">Nenhum registro encontrado no banco de dados.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,681 +1,88 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Início | CrioBlood</title>
-
-    <style>
-        :root {
-            --azul: #10243e;
-            --azul-claro: #203b5b;
-            --rosa: #e94b7b;
-            --rosa-claro: #fff0f4;
-            --fundo: #f4f6fa;
-            --texto: #243247;
-            --cinza: #718096;
-            --branco: #ffffff;
-            --borda: #e7eaf0;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: var(--fundo);
-            color: var(--texto);
-        }
-
-        button, a {
-            font: inherit;
-        }
-
-        .layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* MENU LATERAL */
-
-        .sidebar {
-            width: 255px;
-            min-width: 255px;
-            background: var(--azul);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 24px 12px;
-        }
-
-        .logo {
-            padding: 0 12px 30px;
-            border-bottom: 1px solid #34465d;
-            margin-bottom: 22px;
-        }
-
-        .logo h1 {
-            font-size: 27px;
-            letter-spacing: -1px;
-        }
-
-        .logo span {
-            color: var(--rosa);
-        }
-
-        .logo p {
-            font-size: 9px;
-            letter-spacing: 1px;
-            margin-top: 5px;
-            color: #c2cede;
-        }
-
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .menu a {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            min-height: 45px;
-            padding: 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #e0e7f0;
-            font-size: 14px;
-            transition: background .2s;
-        }
-
-        .menu a:hover,
-        .menu a.ativo {
-            background: var(--rosa);
-            color: white;
-        }
-
-        .icone {
-            width: 23px;
-            text-align: center;
-            font-size: 19px;
-            flex-shrink: 0;
-        }
-
-        .menu-inferior {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid #34465d;
-        }
-
-        /* ÁREA PRINCIPAL */
-
-        .principal {
-            min-width: 0;
-            flex: 1;
-        }
-
-        .topo {
-            min-height: 72px;
-            background: white;
-            border-bottom: 1px solid var(--borda);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            padding: 15px 28px;
-        }
-
-        .topo h2 {
-            font-size: 20px;
-        }
-
-        .topo p {
-            color: var(--cinza);
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .perfil-topo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-align: right;
-        }
-
-        .avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: var(--rosa-claro);
-            color: var(--rosa);
-            display: grid;
-            place-items: center;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .perfil-topo strong {
-            display: block;
-            font-size: 13px;
-        }
-
-        .perfil-topo small {
-            display: block;
-            margin-top: 5px;
-            color: var(--cinza);
-        }
-
-        main {
-            padding: 28px;
-            max-width: 1700px;
-            margin: auto;
-        }
-
-        .secao-titulo {
-            font-size: 18px;
-            margin-bottom: 16px;
-        }
-
-        /* CARTÕES */
-
-        .indicadores {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 26px;
-        }
-
-        .indicador {
-            background: white;
-            padding: 20px;
-            border: 1px solid var(--borda);
-            border-radius: 12px;
-            box-shadow: 0 3px 12px #172b4d08;
-        }
-
-        .indicador-topo {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
-
-        .indicador-icone {
-            width: 43px;
-            height: 43px;
-            display: grid;
-            place-items: center;
-            border-radius: 10px;
-            font-size: 21px;
-        }
-
-        .rosa {
-            color: #c72d5a;
-            background: #ffe5ed;
-        }
-
-        .azul {
-            color: #245c9b;
-            background: #e4efff;
-        }
-
-        .amarelo {
-            color: #99620a;
-            background: #fff1ce;
-        }
-
-        .verde {
-            color: #16816a;
-            background: #ddf7ee;
-        }
-
-        .indicador h3 {
-            font-size: 28px;
-            margin-bottom: 7px;
-        }
-
-        .indicador p {
-            color: var(--cinza);
-            font-size: 13px;
-        }
-
-        /* ALERTAS */
-
-        .painel {
-            background: white;
-            border: 1px solid var(--borda);
-            border-radius: 12px;
-            padding: 22px;
-            margin-bottom: 26px;
-            box-shadow: 0 3px 12px #172b4d08;
-        }
-
-        .painel-cabecalho {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 18px;
-        }
-
-        .painel-cabecalho h3 {
-            font-size: 17px;
-        }
-
-        .painel-cabecalho p {
-            color: var(--cinza);
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .aviso {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            padding: 16px;
-            background: #fff8e8;
-            border: 1px solid #f4e4b8;
-            border-radius: 8px;
-        }
-
-        .aviso strong {
-            font-size: 14px;
-            color: #86590b;
-        }
-
-        .aviso p {
-            font-size: 12px;
-            line-height: 1.6;
-            color: #78684a;
-            margin-top: 6px;
-        }
-
-        .estado-vazio {
-            text-align: center;
-            padding: 22px 12px;
-            color: var(--cinza);
-            font-size: 13px;
-            line-height: 1.8;
-        }
-
-        /* GRÁFICOS */
-
-        .graficos {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 20px;
-            margin-bottom: 26px;
-        }
-
-        .grafico {
-            min-height: 190px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .grafico .estado-vazio {
-            flex: 1;
-            display: grid;
-            place-items: center;
-        }
-
-        /* ATALHOS */
-
-        .atalhos {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 15px;
-        }
-
-        .atalho {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-            padding: 19px;
-            min-height: 88px;
-            border: 1px solid var(--borda);
-            border-radius: 11px;
-            background: white;
-            text-decoration: none;
-            color: var(--texto);
-            transition: transform .2s, box-shadow .2s;
-        }
-
-        .atalho:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px #172b4d10;
-        }
-
-        .atalho-icone {
-            font-size: 25px;
-        }
-
-        .atalho strong {
-            display: block;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .atalho small {
-            display: block;
-            color: var(--cinza);
-            margin-top: 4px;
-            font-size: 11px;
-        }
-
-        footer {
-            padding: 20px 28px;
-            border-top: 1px solid var(--borda);
-            background: white;
-            color: var(--cinza);
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        footer strong {
-            color: var(--rosa);
-        }
-
-        .sair {
-            border: none;
-            background: transparent;
-            color: #d94765;
-            cursor: pointer;
-            text-align: left;
-            width: 100%;
-        }
-
-        @media (max-width: 1150px) {
-            .indicadores, .atalhos {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .sidebar {
-                width: 220px;
-                min-width: 220px;
+    <title><%= title %></title>
+    
+    <!-- Fonte Monoespaçada para estética de Terminal -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Tailwind via CDN com Configuração Customizada -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'matte-black': '#090a0c',
+                        'dark-slate': '#1a1c23',
+                        'cyber-yellow': '#fcee09',
+                        'electric-purple': '#b026ff',
+                        'danger-red': '#ff2a2a'
+                    },
+                    fontFamily: {
+                        mono: ['"Share Tech Mono"', 'monospace'],
+                    }
+                }
             }
         }
-
-        @media (max-width: 760px) {
-            .layout {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                min-width: 0;
-                padding: 16px;
-            }
-
-            .logo {
-                padding-bottom: 15px;
-                margin-bottom: 12px;
-            }
-
-            .menu {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .menu-inferior {
-                margin-top: 15px;
-            }
-
-            .topo {
-                padding: 16px;
-            }
-
-            .perfil-topo strong {
-                max-width: 180px;
-                overflow-wrap: anywhere;
-            }
-
-            main {
-                padding: 16px;
-            }
-
-            .graficos {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 440px) {
-            .indicadores, .atalhos {
-                grid-template-columns: 1fr;
-            }
-
-            .perfil-topo {
-                text-align: left;
-            }
-
-            .avatar {
-                display: none;
-            }
-
-            .topo h2 {
-                font-size: 17px;
-            }
-        }
-    </style>
+    </script>
 </head>
-
-<body>
-<div class="layout">
-
-    <aside class="sidebar">
-        <div class="logo">
-            <h1>Crio<span>Blood</span></h1>
-            <p>GESTÃO DE HEMOCENTROS</p>
-        </div>
-
-        <nav class="menu" aria-label="Menu principal">
-            <a href="/dashboard" class="ativo">
-                <span class="icone">⌂</span> Início
-            </a>
-
-            <a href="#" title="Módulo em desenvolvimento">
-                <span class="icone">♙</span> Pacientes
-            </a>
-
-            <a href="#" title="Módulo em desenvolvimento">
-                <span class="icone">▣</span> Lotes de recebimento
-            </a>
-
-            <a href="#" title="Módulo em desenvolvimento">
-                <span class="icone">♥</span> Bolsas (Estoque)
-            </a>
-
-            <a href="#" title="Módulo em desenvolvimento">
-                <span class="icone">▤</span> Solicitação transfusional
-            </a>
-
-            <a href="#" title="Módulo em desenvolvimento">
-                <span class="icone">⚗</span> Compatibilidade
-            </a>
-
-            <a href="#" title="Módulo em desenvolvimento">
-                <span class="icone">♧</span> Transfusão
-            </a>
-
-            <a href="#" title="Módulo em desenvolvimento">
-                <span class="icone">▥</span> Relatórios
-            </a>
-
-            <a href="/usuarios" title="Conferir rota de usuários">
-                <span class="icone">⚙</span> Usuários
-            </a>
-        </nav>
-
-        <div class="menu menu-inferior">
-            <a href="#" title="Módulo em desenvolvimento">
-                <span class="icone">?</span> Ajuda
-            </a>
-
-            <a href="#" onclick="document.getElementById('formSair').requestSubmit(); return false;">
-                <span class="icone">⇥</span> Sair do sistema
-            </a>
-        </div>
-    </aside>
-
-    <div class="principal">
-        <header class="topo">
+<body class="bg-matte-black text-gray-300 font-mono min-h-screen p-8" style="background-image: linear-gradient(rgba(26, 28, 35, 0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(26, 28, 35, 0.8) 1px, transparent 1px); background-size: 30px 30px;">
+    
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-end border-b-2 border-cyber-yellow pb-4 mb-8">
             <div>
-                <h2>Painel inicial</h2>
-                <p>Visão geral do hemocentro</p>
+                <h1 class="text-4xl text-cyber-yellow tracking-widest uppercase uppercase drop-shadow-[0_0_8px_rgba(252,238,9,0.5)]">Sistema CrioBlood</h1>
+                <p class="text-electric-purple mt-2">Operador ativo: <%= usuario ? usuario.nome : 'Desconhecido' %></p>
             </div>
-
-            <div class="perfil-topo">
-                <div>
-                    <strong><%= usuario.nome %></strong>
-                    <small>
-                        <%= usuario.administrador
-                            ? 'Administrador'
-                            : 'Usuário do sistema' %>
-                    </small>
-                </div>
-                <div class="avatar" aria-hidden="true">♙</div>
-            </div>
+            <nav class="space-x-4">
+                <a href="/hemocomponentes" class="text-gray-400 hover:text-cyber-yellow transition-colors">Hemocomponentes</a>
+                <a href="/lotes" class="text-gray-400 hover:text-cyber-yellow transition-colors">Lotes</a>
+                <a href="/usuarios" class="text-gray-400 hover:text-cyber-yellow transition-colors">Usuários</a>
+            </nav>
         </header>
 
-        <main>
-            <section class="indicadores" aria-label="Indicadores do sistema">
-
-                <article class="indicador">
-                    <div class="indicador-topo">
-                        <span class="indicador-icone rosa">♥</span>
-                    </div>
-                    <h3>—</h3>
-                    <p>Bolsas disponíveis</p>
-                </article>
-
-                <article class="indicador">
-                    <div class="indicador-topo">
-                        <span class="indicador-icone azul">▣</span>
-                    </div>
-                    <h3>—</h3>
-                    <p>Transfusões hoje</p>
-                </article>
-
-                <article class="indicador">
-                    <div class="indicador-topo">
-                        <span class="indicador-icone amarelo">⚠</span>
-                    </div>
-                    <h3>—</h3>
-                    <p>Vencem em 7 dias</p>
-                </article>
-
-                <article class="indicador">
-                    <div class="indicador-topo">
-                        <span class="indicador-icone verde">✓</span>
-                    </div>
-                    <h3>—</h3>
-                    <p>Bolsas vencidas</p>
-                </article>
-
-            </section>
-
-            <section class="painel">
-                <div class="painel-cabecalho">
-                    <div>
-                        <h3>⚠ Bolsas próximas do vencimento</h3>
-                        <p>Alertas de validade dos próximos 7 dias</p>
-                    </div>
-                </div>
-
-                <div class="aviso">
-                    <span style="font-size: 22px">ⓘ</span>
-                    <div>
-                        <strong>Monitoramento de validade</strong>
-                        <p>
-                            Quando o módulo de estoque estiver conectado,
-                            as bolsas próximas do vencimento aparecerão
-                            automaticamente nesta área.
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="graficos">
-                <article class="painel grafico">
-                    <div class="painel-cabecalho">
-                        <div>
-                            <h3>Transfusões diárias</h3>
-                            <p>Acompanhamento das movimentações</p>
-                        </div>
-                    </div>
-                    <div class="estado-vazio">
-                        Os gráficos serão preenchidos com os dados reais
-                        do sistema.
-                    </div>
-                </article>
-
-                <article class="painel grafico">
-                    <div class="painel-cabecalho">
-                        <div>
-                            <h3>Transfusões mensais</h3>
-                            <p>Histórico mensal do hemocentro</p>
-                        </div>
-                    </div>
-                    <div class="estado-vazio">
-                        Histórico disponível após a implementação
-                        do módulo de transfusão.
-                    </div>
-                </article>
-            </section>
-
-            <h3 class="secao-titulo">Acessos rápidos</h3>
-
-            <section class="atalhos">
-                <a class="atalho" href="#" title="Módulo em desenvolvimento">
-                    <span class="atalho-icone">▣</span>
-                    <span>
-                        <strong>Novo lote</strong>
-                        <small>Receber bolsas</small>
-                    </span>
-                </a>
-
-                <a class="atalho" href="#" title="Módulo em desenvolvimento">
-                    <span class="atalho-icone">♥</span>
-                    <span>
-                        <strong>Consultar estoque</strong>
-                        <small>Bolsas cadastradas</small>
-                    </span>
-                </a>
-
-                <a class="atalho" href="#" title="Módulo em desenvolvimento">
-                    <span class="atalho-icone">⚗</span>
-                    <span>
-                        <strong>Compatibilidade</strong>
-                        <small>Prova cruzada</small>
-                    </span>
-                </a>
-
-                <a class="atalho" href="#" title="Módulo em desenvolvimento">
-                    <span class="atalho-icone">▤</span>
-                    <span>
-                        <strong>Transfusão</strong>
-                        <small>Vincular ao paciente</small>
-                    </span>
-                </a>
-            </section>
-        </main>
-
-        <footer>
-            <span><strong>CrioBlood</strong> © 2026 — Gestão de Hemocentros</span>
-            <span>Santa Casa de Misericórdia de Cruzeiro</span>
-        </footer>
+        <!-- Container do Gráfico (com estilo de painel de controle) -->
+        <div class="bg-dark-slate/90 border border-electric-purple p-6 shadow-[0_0_15px_rgba(176,38,255,0.15)] relative">
+            <div class="absolute top-0 left-0 w-2 h-full bg-electric-purple"></div>
+            <h2 class="text-xl text-electric-purple mb-6 uppercase tracking-wider">Volume em Estoque (ml)</h2>
+            <canvas id="estoqueChart"></canvas>
+        </div>
     </div>
-</div>
 
-<form id="formSair" action="/logout" method="POST" hidden></form>
+    <!-- Script do Chart.js Mantido -->
+    <script>
+        const labels = <%- typeof chartLabels !== 'undefined' ? chartLabels : '[]' %>;
+        const dataValues = <%- typeof chartData !== 'undefined' ? chartData : '[]' %>;
+
+        if (labels.length > 0) {
+            const ctx = document.getElementById('estoqueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Volume (ml)',
+                        data: dataValues,
+                        backgroundColor: 'rgba(252, 238, 9, 0.8)',
+                        borderColor: '#b026ff',
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#e0e0e0', font: { family: "'Share Tech Mono', monospace" } } } },
+                    scales: {
+                        y: { ticks: { color: '#e0e0e0', font: { family: "'Share Tech Mono', monospace" } }, grid: { color: '#333' } },
+                        x: { ticks: { color: '#e0e0e0', font: { family: "'Share Tech Mono', monospace" } }, grid: { color: '#333' } }
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
