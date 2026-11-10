@@ -1,0 +1,51 @@
+<%- include('../partials/inicio', { titulo: 'Pacientes', subtitulo: 'Cadastro de pacientes e tipagem sanguínea', ativo: 'pacientes' }) %>
+
+<section class="cabecalho-pagina">
+    <div>
+        <h3>Pacientes cadastrados</h3>
+        <p>A tipagem ABO/Rh do paciente é usada para buscar bolsas compatíveis.</p>
+    </div>
+    <a class="botao" href="/pacientes/novo">+ Novo paciente</a>
+</section>
+
+<section class="painel" data-filtravel>
+    <div class="filtros">
+        <input type="search" data-filtro-texto placeholder="Buscar por nome ou prontuário..." aria-label="Buscar paciente">
+        <select data-filtro-campo="situacao" aria-label="Filtrar por situação">
+            <option value="">Todos</option>
+            <option value="ativo">Ativos</option>
+            <option value="inativo">Inativos</option>
+        </select>
+    </div>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Nome</th><th>Prontuário</th><th>Idade</th><th>ABO/Rh</th><th>Situação</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <% if (pacientes.length === 0) { %>
+                    <tr><td colspan="6" class="vazio">Nenhum paciente cadastrado.<br>Clique em "+ Novo paciente" para começar.</td></tr>
+                <% } else { pacientes.forEach(function (p) { %>
+                    <tr data-busca="<%= (p.nome + ' ' + p.prontuario).toLowerCase() %>" data-situacao="<%= p.ativo ? 'ativo' : 'inativo' %>">
+                        <td><strong><%= p.nome %></strong></td>
+                        <td><%= p.prontuario %></td>
+                        <td><%= p.idade %> anos</td>
+                        <td><%= rot.tipagem(p.abo, p.fator_rh) %></td>
+                        <td><span class="status <%= p.ativo ? 's-verde' : 's-cinza' %>"><%= p.ativo ? 'Ativo' : 'Inativo' %></span></td>
+                        <td class="acoes">
+                            <a class="botao botao-claro botao-pequeno" href="/pacientes/<%= p.id %>/editar">Editar</a>
+                            <% if (p.ativo) { %>
+                                <a class="botao botao-pequeno" href="/solicitacoes/nova?paciente_id=<%= p.id %>">Solicitar bolsa</a>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+                    <tr data-sem-resultado hidden><td colspan="6" class="vazio">Nenhum paciente encontrado com esse filtro.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>

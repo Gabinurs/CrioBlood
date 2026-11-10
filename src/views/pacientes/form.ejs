@@ -1,0 +1,75 @@
+<%
+    var edicao = !!locals.paciente;
+    var v = function (campo) {
+        if (locals.valores && locals.valores[campo] !== undefined) return valores[campo];
+        if (edicao) {
+            var mapa = { data_nascimento: 'data_nascimento_iso' };
+            return paciente[mapa[campo] || campo] || '';
+        }
+        return '';
+    };
+    var ativo = edicao ? (locals.valores && Object.keys(valores).length ? valores.ativo === 'on' : paciente.ativo) : true;
+%>
+<%- include('../partials/inicio', {
+    titulo: edicao ? 'Editar paciente' : 'Novo paciente',
+    subtitulo: 'Dados e tipagem sanguínea do paciente',
+    ativo: 'pacientes'
+}) %>
+
+<section class="painel formulario">
+    <form method="POST" action="<%= edicao ? '/pacientes/' + paciente.id + '/editar' : '/pacientes/novo' %>">
+        <div class="grade-form">
+            <div class="campo largo">
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" name="nome" maxlength="255" value="<%= v('nome') %>" required>
+            </div>
+
+            <div class="campo">
+                <label for="prontuario">Prontuário</label>
+                <input type="text" id="prontuario" name="prontuario" maxlength="50" value="<%= v('prontuario') %>" required>
+            </div>
+
+            <div class="campo">
+                <label for="data_nascimento">Data de nascimento</label>
+                <input type="date" id="data_nascimento" name="data_nascimento" value="<%= v('data_nascimento') %>" required>
+            </div>
+
+            <div class="campo">
+                <label for="abo">Grupo ABO</label>
+                <select id="abo" name="abo">
+                    <% ['', 'A', 'B', 'AB', 'O'].forEach(function (o) { %>
+                        <option value="<%= o %>" <%= v('abo') === o ? 'selected' : '' %>><%= o || 'Não informado' %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="fator_rh">Fator Rh</label>
+                <select id="fator_rh" name="fator_rh">
+                    <option value="" <%= v('fator_rh') === '' ? 'selected' : '' %>>Não informado</option>
+                    <option value="+" <%= v('fator_rh') === '+' ? 'selected' : '' %>>Positivo (+)</option>
+                    <option value="-" <%= v('fator_rh') === '-' ? 'selected' : '' %>>Negativo (-)</option>
+                </select>
+                <small>Sem a tipagem do paciente, o sistema não busca bolsas compatíveis.</small>
+            </div>
+
+            <div class="campo largo">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3"><%= v('observacoes') %></textarea>
+            </div>
+
+            <% if (edicao) { %>
+                <div class="campo largo">
+                    <label class="marca"><input type="checkbox" name="ativo" <%= ativo ? 'checked' : '' %>> Paciente ativo</label>
+                </div>
+            <% } %>
+        </div>
+
+        <div class="rodape-form">
+            <button class="botao" type="submit"><%= edicao ? 'Salvar alterações' : 'Cadastrar paciente' %></button>
+            <a class="botao botao-claro" href="/pacientes">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/fim') %>
