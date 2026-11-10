@@ -1,0 +1,65 @@
+<%- include('../partials/inicio', { titulo: 'Solicitação transfusional', subtitulo: 'Pedidos de hemocomponentes para pacientes', ativo: 'solicitacoes' }) %>
+
+<section class="cabecalho-pagina">
+    <div>
+        <h3>Solicitações</h3>
+        <p>Cada solicitação pede uma bolsa. Depois de criada, busque uma bolsa compatível e reserve-a para o paciente.</p>
+    </div>
+    <a class="botao" href="/solicitacoes/nova">+ Nova solicitação</a>
+</section>
+
+<section class="painel" data-filtravel>
+    <div class="filtros">
+        <input type="search" data-filtro-texto placeholder="Buscar por paciente ou prontuário..." aria-label="Buscar solicitação">
+        <select data-filtro-campo="status" aria-label="Filtrar por status">
+            <option value="">Todos os status</option>
+            <option value="PENDENTE">Pendentes</option>
+            <option value="RESERVADA">Bolsa reservada</option>
+            <option value="ATENDIDA">Atendidas</option>
+            <option value="CANCELADA">Canceladas</option>
+        </select>
+    </div>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>#</th><th>Paciente</th><th>ABO/Rh</th><th>Produto</th><th>Urgência</th><th>Médico</th><th>Status</th><th>Bolsa</th><th>Data</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <% if (solicitacoes.length === 0) { %>
+                    <tr><td colspan="10" class="vazio">Nenhuma solicitação registrada.</td></tr>
+                <% } else { solicitacoes.forEach(function (s) { %>
+                    <tr data-busca="<%= (s.paciente_nome + ' ' + s.prontuario).toLowerCase() %>" data-status="<%= s.status %>">
+                        <td><%= s.id %></td>
+                        <td><strong><%= s.paciente_nome %></strong><br><small><%= s.prontuario %></small></td>
+                        <td><%= rot.tipagem(s.paciente_abo, s.paciente_rh) %></td>
+                        <td><%= rot.tipo(s.tipo) %></td>
+                        <td><%- rot.urgencia(s.urgencia) %></td>
+                        <td><%= s.medico_solicitante %></td>
+                        <td><%- rot.statusSolicitacao(s.status) %></td>
+                        <td><%= s.bolsa_codigo || '—' %></td>
+                        <td><%= s.criado_em_br %></td>
+                        <td class="acoes">
+                            <% if (s.status === 'PENDENTE') { %>
+                                <a class="botao botao-pequeno" href="/compatibilidade?solicitacao=<%= s.id %>">Buscar bolsa</a>
+                            <% } %>
+                            <% if (s.status === 'RESERVADA') { %>
+                                <a class="botao botao-ok botao-pequeno" href="/transfusoes">Transfusão</a>
+                            <% } %>
+                            <% if (s.status === 'PENDENTE' || s.status === 'RESERVADA') { %>
+                                <form action="/solicitacoes/<%= s.id %>/cancelar" method="POST"
+                                      data-confirmar="Cancelar esta solicitação?<%= s.status === 'RESERVADA' ? ' A bolsa reservada voltará ao estoque.' : '' %>">
+                                    <button class="botao botao-perigo botao-pequeno" type="submit">Cancelar</button>
+                                </form>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+                    <tr data-sem-resultado hidden><td colspan="10" class="vazio">Nenhuma solicitação encontrada com esse filtro.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>
