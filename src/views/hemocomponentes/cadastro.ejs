@@ -1,0 +1,82 @@
+<%- include('../partials/inicio', { titulo: 'Cadastrar hemocomponente', subtitulo: 'Registro de uma bolsa recebida', ativo: 'hemocomponentes' }) %>
+
+<section class="painel formulario">
+    <form action="/hemocomponentes/novo" method="POST">
+        <div class="grade-form">
+            <div class="campo">
+                <label for="lote_id">ID do lote de origem</label>
+                <input type="number" id="lote_id" name="lote_id" min="1" value="<%= locals.lote_id || '' %>" required>
+                <small>O número do lote aparece na tela de Lotes (o lote precisa estar aberto).</small>
+            </div>
+
+            <div class="campo">
+                <label for="codigo_original">Código original da bolsa</label>
+                <input type="text" id="codigo_original" name="codigo_original" maxlength="50" required>
+            </div>
+
+            <div class="campo largo">
+                <label for="tipo">Tipo de hemocomponente</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="">Selecione...</option>
+                    <% ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'].forEach(function (t) { %>
+                        <option value="<%= t %>"><%= rot.tipo(t) %> (<%= t %>)</option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="abo">Grupo ABO</label>
+                <select id="abo" name="abo">
+                    <% ['', 'A', 'B', 'AB', 'O'].forEach(function (o) { %>
+                        <option value="<%= o %>"><%= o || 'Não informado' %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="fator_rh">Fator Rh</label>
+                <select id="fator_rh" name="fator_rh">
+                    <option value="">Não informado</option>
+                    <option value="+">Positivo (+)</option>
+                    <option value="-">Negativo (-)</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="data_coleta">Data da coleta</label>
+                <input type="date" id="data_coleta" name="data_coleta" required>
+            </div>
+
+            <div class="campo">
+                <label for="data_validade">Data de validade</label>
+                <input type="date" id="data_validade" name="data_validade" required>
+            </div>
+
+            <div class="campo largo marcas">
+                <label class="marca"><input type="checkbox" name="inspecao_visual"> Inspeção visual realizada</label>
+                <label class="marca"><input type="checkbox" name="integridade_confirmada"> Integridade da bolsa confirmada</label>
+                <label class="marca"><input type="checkbox" name="tipagem_confirmada"> Tipagem sanguínea confirmada</label>
+            </div>
+
+            <div class="campo largo">
+                <label for="status">Status inicial</label>
+                <select id="status" name="status">
+                    <option value="EM_CONFERENCIA">Em conferência</option>
+                    <option value="DISPONIVEL">Disponível (exige as 3 confirmações, ABO e Rh)</option>
+                </select>
+            </div>
+
+            <div class="campo largo">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="rodape-form">
+            <button class="botao" type="submit">Salvar registro</button>
+            <a class="botao botao-claro" href="/hemocomponentes">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/fim') %>

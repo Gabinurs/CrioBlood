@@ -1,0 +1,83 @@
+<%
+    var bloqueado = hemocomponente.status === 'RESERVADA' || hemocomponente.status === 'TRANSFUNDIDA';
+    var opcoesStatus = ['EM_CONFERENCIA', 'DISPONIVEL', 'DESCARTADA', 'VENCIDA'];
+    if (bloqueado) opcoesStatus = [hemocomponente.status];
+%>
+<%- include('../partials/inicio', { titulo: 'Editar hemocomponente', subtitulo: 'Código ' + hemocomponente.codigo_original, ativo: 'hemocomponentes' }) %>
+
+<section class="painel formulario">
+    <p class="descricao" style="margin-bottom: 18px;">
+        Coleta em <strong><%= hemocomponente.data_coleta_br %></strong> · Status atual: <%- rot.statusBolsa(hemocomponente.status) %>
+    </p>
+
+    <% if (bloqueado) { %>
+        <div class="alerta alerta-info">
+            O status desta bolsa só muda pelo fluxo de solicitação, compatibilidade e transfusão.
+        </div>
+    <% } %>
+
+    <form action="/hemocomponentes/editar/<%= hemocomponente.id %>" method="POST">
+        <input type="hidden" name="data_coleta" value="<%= hemocomponente.data_coleta_iso %>">
+
+        <div class="grade-form">
+            <div class="campo largo">
+                <label for="tipo">Tipo de hemocomponente</label>
+                <select id="tipo" name="tipo" required>
+                    <% ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'].forEach(function (t) { %>
+                        <option value="<%= t %>" <%= hemocomponente.tipo === t ? 'selected' : '' %>><%= rot.tipo(t) %> (<%= t %>)</option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="abo">Grupo ABO</label>
+                <select id="abo" name="abo">
+                    <% ['', 'A', 'B', 'AB', 'O'].forEach(function (o) { %>
+                        <option value="<%= o %>" <%= (hemocomponente.abo || '') === o ? 'selected' : '' %>><%= o || 'Não informado' %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="fator_rh">Fator Rh</label>
+                <select id="fator_rh" name="fator_rh">
+                    <option value="" <%= !hemocomponente.fator_rh ? 'selected' : '' %>>Não informado</option>
+                    <option value="+" <%= hemocomponente.fator_rh === '+' ? 'selected' : '' %>>Positivo (+)</option>
+                    <option value="-" <%= hemocomponente.fator_rh === '-' ? 'selected' : '' %>>Negativo (-)</option>
+                </select>
+            </div>
+
+            <div class="campo largo">
+                <label for="data_validade">Data de validade</label>
+                <input type="date" id="data_validade" name="data_validade" value="<%= hemocomponente.data_validade_iso %>" required>
+            </div>
+
+            <div class="campo largo marcas">
+                <label class="marca"><input type="checkbox" name="inspecao_visual" <%= hemocomponente.inspecao_visual ? 'checked' : '' %>> Inspeção visual realizada</label>
+                <label class="marca"><input type="checkbox" name="integridade_confirmada" <%= hemocomponente.integridade_confirmada ? 'checked' : '' %>> Integridade da bolsa confirmada</label>
+                <label class="marca"><input type="checkbox" name="tipagem_confirmada" <%= hemocomponente.tipagem_confirmada ? 'checked' : '' %>> Tipagem sanguínea confirmada</label>
+            </div>
+
+            <div class="campo largo">
+                <label for="status">Status operacional</label>
+                <select id="status" name="status" <%= bloqueado ? 'disabled' : '' %>>
+                    <% opcoesStatus.forEach(function (s) { %>
+                        <option value="<%= s %>" <%= hemocomponente.status === s ? 'selected' : '' %>><%= rot.nomeStatusBolsa(s) %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo largo">
+                <label for="observacoes">Observações</label>
+                <textarea id="observacoes" name="observacoes" rows="3"><%= hemocomponente.observacoes || '' %></textarea>
+            </div>
+        </div>
+
+        <div class="rodape-form">
+            <button class="botao" type="submit">Atualizar dados</button>
+            <a class="botao botao-claro" href="/hemocomponentes">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/fim') %>
