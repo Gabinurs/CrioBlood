@@ -17,4 +17,7 @@ router.get('/lotes', loteController.listar);
 // Abre um novo lote de recebimento.
 router.post('/lotes', loteController.abrir);
 
+// Fecha um lote de recebimento.
+router.post('/lotes/:id/fechar', loteController.fechar);
+
 module.exports = router;
