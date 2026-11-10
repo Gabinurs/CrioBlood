@@ -1,15 +1,9 @@
-
 const express = require('express');
 const router = express.Router();
 
-const {
-    exigirAutenticacao
-} = require('../middlewares/autenticacao');
+const DashboardController = require('../controllers/dashboardController');
+const { exigirAutenticacao } = require('../middlewares/autenticacao');
 
-router.get('/dashboard', exigirAutenticacao, (req, res) => {
-    res.render('dashboard/index', {
-        usuario: req.session.usuario
-    });
-});
+router.get('/dashboard', exigirAutenticacao, DashboardController.index);
 
 module.exports = router;
