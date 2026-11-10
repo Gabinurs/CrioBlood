@@ -13,6 +13,9 @@ const usuarioRoutes = require('./routes/usuarioRoutes');
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const loteRoutes = require('./routes/loteRoutes');
+const hemocomponenteRoutes = require('./routes/hemocomponenteRoutes');
+const modulosRoutes = require('./routes/modulosRoutes');
+const iniciarRotinaValidade = require('./scripts/cronValidade');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -60,6 +63,15 @@ app.use(session({
     }
 }));
 
+// Disponibiliza o usuário logado e a mensagem de aviso (flash) para todas as telas
+app.use((req, res, next) => {
+    res.locals.rot = require('./utils/rotulos');
+    res.locals.usuario = req.session.usuario || null;
+    res.locals.flash = req.session.flash || null;
+    delete req.session.flash;
+    next();
+});
+
 // Página de login
 app.get('/login', (req, res) => {
     res.render('auth/login');
@@ -74,6 +86,12 @@ app.use(authRoutes);
 
 // Rotas de gerenciamento de usuários
 app.use(usuarioRoutes);
+
+// Rotas de hemocomponentes
+app.use('/hemocomponentes', hemocomponenteRoutes);
+
+// Pacientes, estoque, solicitações, compatibilidade, transfusão e relatórios
+app.use(modulosRoutes);
 
 // Página inicial redireciona para o login
 app.get('/', (req, res) => {
@@ -106,6 +124,9 @@ app.get('/teste-banco', async (req, res) => {
 app.use((req, res) => {
     res.status(404).send('Página não encontrada.');
 });
+
+// Rotina diária que marca bolsas vencidas
+iniciarRotinaValidade();
 
 // Inicialização do servidor
 app.listen(PORT, () => {
