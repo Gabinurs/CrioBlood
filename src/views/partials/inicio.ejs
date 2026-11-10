@@ -1,0 +1,68 @@
+<%
+    var paginaAtiva = locals.ativo || '';
+    var usuarioLogado = locals.usuario || null;
+    var itensMenu = [
+        ['inicio',        '/dashboard',      '⌂  Início'],
+        ['pacientes',     '/pacientes',      '♙  Pacientes'],
+        ['lotes',         '/lotes',          '▣  Lotes de recebimento'],
+        ['hemocomponentes','/hemocomponentes','✚  Cadastro de bolsas'],
+        ['estoque',       '/estoque',        '♥  Bolsas (Estoque)'],
+        ['solicitacoes',  '/solicitacoes',   '▤  Solicitação transfusional'],
+        ['compatibilidade','/compatibilidade','⚗  Compatibilidade'],
+        ['transfusoes',   '/transfusoes',    '♧  Transfusão'],
+        ['relatorios',    '/relatorios',     '▥  Relatórios']
+    ];
+    if (usuarioLogado && usuarioLogado.administrador) {
+        itensMenu.push(['usuarios', '/usuarios', '⚙  Usuários']);
+    }
+%>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= locals.titulo || 'CrioBlood' %> | CrioBlood</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>Crio<span>Blood</span></h1>
+            <p>GESTÃO DE HEMOCENTROS</p>
+        </div>
+
+        <nav class="menu">
+            <% itensMenu.forEach(function (item) { %>
+                <a href="<%= item[1] %>" class="<%= paginaAtiva === item[0] ? 'ativo' : '' %>"><%= item[2] %></a>
+            <% }) %>
+        </nav>
+
+        <nav class="menu menu-inferior">
+            <form action="/logout" method="POST">
+                <button type="submit">⇥  Sair do sistema</button>
+            </form>
+        </nav>
+    </aside>
+
+    <div class="principal">
+        <header class="topo">
+            <div>
+                <h2><%= locals.titulo || 'CrioBlood' %></h2>
+                <% if (locals.subtitulo) { %><p><%= subtitulo %></p><% } %>
+            </div>
+
+            <div class="usuario">
+                <strong><%= usuarioLogado ? usuarioLogado.nome : '' %></strong>
+                <small><%= usuarioLogado && usuarioLogado.administrador ? 'Administrador' : 'Usuário do sistema' %></small>
+            </div>
+        </header>
+
+        <main>
+            <% if (locals.flash) { %>
+                <div class="alerta alerta-<%= flash.tipo %>"><%= flash.texto %></div>
+            <% } %>
+            <% if (locals.erro) { %>
+                <div class="alerta alerta-erro"><%= erro %></div>
+            <% } %>
