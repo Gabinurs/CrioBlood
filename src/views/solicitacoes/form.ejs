@@ -1,0 +1,63 @@
+<%- include('../partials/inicio', { titulo: 'Nova solicitação', subtitulo: 'Pedido de hemocomponente para um paciente', ativo: 'solicitacoes' }) %>
+<% var val = locals.valores || {}; %>
+
+<section class="painel formulario">
+    <% if (pacientes.length === 0) { %>
+        <div class="alerta alerta-aviso">
+            Não há pacientes ativos. <a href="/pacientes/novo">Cadastre um paciente</a> antes de criar a solicitação.
+        </div>
+    <% } %>
+
+    <form method="POST" action="/solicitacoes/nova">
+        <div class="grade-form">
+            <div class="campo largo">
+                <label for="paciente_id">Paciente</label>
+                <select id="paciente_id" name="paciente_id" required>
+                    <option value="">Selecione...</option>
+                    <% pacientes.forEach(function (p) { %>
+                        <option value="<%= p.id %>" <%= String(val.paciente_id) === String(p.id) ? 'selected' : '' %>>
+                            <%= p.nome %> — prontuário <%= p.prontuario %> — <%= rot.tipagem(p.abo, p.fator_rh) %>
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="tipo">Hemocomponente</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="">Selecione...</option>
+                    <% ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'].forEach(function (t) { %>
+                        <option value="<%= t %>" <%= val.tipo === t ? 'selected' : '' %>><%= rot.tipo(t) %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="urgencia">Urgência</label>
+                <select id="urgencia" name="urgencia" required>
+                    <option value="ROTINA" <%= (val.urgencia || 'ROTINA') === 'ROTINA' ? 'selected' : '' %>>Rotina</option>
+                    <option value="URGENTE" <%= val.urgencia === 'URGENTE' ? 'selected' : '' %>>Urgente</option>
+                    <option value="EMERGENCIA" <%= val.urgencia === 'EMERGENCIA' ? 'selected' : '' %>>Emergência</option>
+                </select>
+            </div>
+
+            <div class="campo largo">
+                <label for="medico_solicitante">Médico solicitante</label>
+                <input type="text" id="medico_solicitante" name="medico_solicitante" maxlength="255"
+                       value="<%= val.medico_solicitante || '' %>" required>
+            </div>
+
+            <div class="campo largo">
+                <label for="indicacao">Indicação clínica</label>
+                <textarea id="indicacao" name="indicacao" rows="3"><%= val.indicacao || '' %></textarea>
+            </div>
+        </div>
+
+        <div class="rodape-form">
+            <button class="botao" type="submit">Registrar solicitação</button>
+            <a class="botao botao-claro" href="/solicitacoes">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/fim') %>
