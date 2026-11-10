@@ -1,473 +1,84 @@
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotes de recebimento | CrioBlood</title>
-
-    <style>
-        :root {
-            --azul: #10243e;
-            --azul-claro: #203b5b;
-            --rosa: #e94b7b;
-            --fundo: #f4f6fa;
-            --texto: #243247;
-            --cinza: #718096;
-            --borda: #e7eaf0;
-            --branco: #fff;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: var(--fundo);
-            color: var(--texto);
-        }
-
-        .layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: 245px;
-            flex-shrink: 0;
-            padding: 24px 12px;
-            background: var(--azul);
-            color: white;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .logo {
-            padding: 0 12px 26px;
-            border-bottom: 1px solid #34465d;
-            margin-bottom: 22px;
-        }
-
-        .logo h1 {
-            font-size: 26px;
-        }
-
-        .logo span {
-            color: var(--rosa);
-        }
-
-        .logo p {
-            margin-top: 5px;
-            font-size: 9px;
-            letter-spacing: 1px;
-            color: #c2cede;
-        }
-
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .menu a {
-            color: #e0e7f0;
-            text-decoration: none;
-            padding: 13px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-
-        .menu a:hover,
-        .menu a.ativo {
-            background: var(--rosa);
-            color: white;
-        }
-
-        .menu-inferior {
-            margin-top: auto;
-            padding-top: 18px;
-            border-top: 1px solid #34465d;
-        }
-
-        .principal {
-            min-width: 0;
-            flex: 1;
-        }
-
-        .topo {
-            min-height: 72px;
-            padding: 16px 28px;
-            background: white;
-            border-bottom: 1px solid var(--borda);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .topo h2 {
-            font-size: 20px;
-        }
-
-        .topo p {
-            margin-top: 5px;
-            color: var(--cinza);
-            font-size: 12px;
-        }
-
-        .usuario {
-            text-align: right;
-            font-size: 13px;
-            overflow-wrap: anywhere;
-        }
-
-        .usuario small {
-            display: block;
-            margin-top: 5px;
-            color: var(--cinza);
-        }
-
-        main {
-            max-width: 1500px;
-            margin: auto;
-            padding: 28px;
-        }
-
-        .cabecalho-pagina {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 18px;
-            margin-bottom: 24px;
-        }
-
-        .cabecalho-pagina h3 {
-            font-size: 23px;
-            margin-bottom: 8px;
-        }
-
-        .cabecalho-pagina p {
-            font-size: 13px;
-            color: var(--cinza);
-            line-height: 1.6;
-        }
-
-        .botao {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 17px;
-            border: 0;
-            border-radius: 8px;
-            background: var(--rosa);
-            color: white;
-            font-size: 13px;
-            font-weight: bold;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .botao:hover {
-            background: #d93b6a;
-        }
-
-        .indicadores {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .indicador {
-            padding: 21px;
-            border: 1px solid var(--borda);
-            border-radius: 12px;
-            background: white;
-        }
-
-        .indicador strong {
-            display: block;
-            font-size: 27px;
-            margin-bottom: 8px;
-        }
-
-        .indicador span {
-            color: var(--cinza);
-            font-size: 13px;
-        }
-
-        .painel {
-            padding: 24px;
-            background: white;
-            border: 1px solid var(--borda);
-            border-radius: 12px;
-            margin-bottom: 24px;
-        }
-
-        .painel h3 {
-            font-size: 17px;
-            margin-bottom: 7px;
-        }
-
-        .descricao {
-            color: var(--cinza);
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        .filtros {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin: 20px 0;
-        }
-
-        .filtros input,
-        .filtros select {
-            min-width: 180px;
-            padding: 11px 12px;
-            border: 1px solid #dce2eb;
-            border-radius: 7px;
-            background: white;
-            color: var(--texto);
-        }
-
-        .tabela-container {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        th, td {
-            padding: 15px 12px;
-            border-bottom: 1px solid var(--borda);
-            font-size: 12px;
-        }
-
-        th {
-            color: var(--cinza);
-            font-weight: bold;
-            background: #f9fafc;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .aberto {
-            background: #fff1ce;
-            color: #895d0b;
-        }
-
-        .fechado {
-            background: #ddf7ee;
-            color: #14745f;
-        }
-
-        .vazio {
-            text-align: center;
-            padding: 35px 15px;
-            color: var(--cinza);
-            line-height: 1.8;
-            white-space: normal;
-        }
-
-        footer {
-            padding: 20px 28px;
-            border-top: 1px solid var(--borda);
-            background: white;
-            color: var(--cinza);
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        footer strong {
-            color: var(--rosa);
-        }
-
-        @media (max-width: 850px) {
-            .layout {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                padding: 16px;
-            }
-
-            .menu {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .menu-inferior {
-                margin-top: 14px;
-            }
-
-            .indicadores {
-                grid-template-columns: 1fr;
-            }
-
-            main {
-                padding: 16px;
-            }
-
-            .topo {
-                padding: 16px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-<div class="layout">
-
-    <aside class="sidebar">
-        <div class="logo">
-            <h1>Crio<span>Blood</span></h1>
-            <p>GESTÃO DE HEMOCENTROS</p>
-        </div>
-
-        <nav class="menu">
-            <a href="/dashboard">⌂ &nbsp; Início</a>
-            <a href="#" title="Módulo ainda não implementado">♙ &nbsp; Pacientes</a>
-            <a href="/lotes" class="ativo">▣ &nbsp; Lotes de recebimento</a>
-            <a href="#" title="Módulo ainda não implementado">♥ &nbsp; Bolsas (Estoque)</a>
-            <a href="#" title="Módulo ainda não implementado">▤ &nbsp; Solicitação transfusional</a>
-            <a href="#" title="Módulo ainda não implementado">⚗ &nbsp; Compatibilidade</a>
-            <a href="#" title="Módulo ainda não implementado">♧ &nbsp; Transfusão</a>
-            <a href="#" title="Módulo ainda não implementado">▥ &nbsp; Relatórios</a>
-        </nav>
-
-        <nav class="menu menu-inferior">
-            <a href="/dashboard">← &nbsp; Voltar ao início</a>
-            <a href="#" onclick="document.getElementById('formSair').requestSubmit(); return false;">
-                ⇥ &nbsp; Sair do sistema
-            </a>
-        </nav>
-    </aside>
-
-    <div class="principal">
-        <header class="topo">
-            <div>
-                <h2>Lotes de recebimento</h2>
-                <p>Controle de entrada de hemocomponentes</p>
-            </div>
-
-            <div class="usuario">
-                <strong><%= usuario.nome %></strong>
-                <small>
-                    <%= usuario.administrador
-                        ? 'Administrador'
-                        : 'Usuário do sistema' %>
-                </small>
-            </div>
-        </header>
-
-        <main>
-            <section class="cabecalho-pagina">
-                <div>
-                    <h3>Recebimento de bolsas</h3>
-                    <p>
-                        Abra um lote para registrar as bolsas recebidas,
-                        conferir seus dados e encaminhá-las ao estoque.
-                    </p>
-                </div>
-
-                <button class="botao" type="button"
-                    onclick="alert('A abertura de lotes será habilitada após a conexão com o banco de dados.')">
-                    + Abrir novo lote
-                </button>
-            </section>
-
-            <section class="indicadores">
-                <article class="indicador">
-                    <strong>—</strong>
-                    <span>Lotes abertos</span>
-                </article>
-
-                <article class="indicador">
-                    <strong>—</strong>
-                    <span>Lotes fechados</span>
-                </article>
-
-                <article class="indicador">
-                    <strong>—</strong>
-                    <span>Bolsas recebidas</span>
-                </article>
-            </section>
-
-            <section class="painel">
-                <h3>Histórico de lotes</h3>
-                <p class="descricao">
-                    Consulte os recebimentos e acompanhe o andamento de cada lote.
-                </p>
-
-                <div class="filtros">
-                    <input
-                        type="search"
-                        id="buscarLote"
-                        placeholder="Buscar pelo código do lote..."
-                        aria-label="Buscar lote">
-
-                    <select id="filtroStatus" aria-label="Filtrar por status">
-                        <option value="">Todos os status</option>
-                        <option value="ABERTO">Abertos</option>
-                        <option value="FECHADO">Fechados</option>
-                    </select>
-                </div>
-
-                <div class="tabela-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Código do lote</th>
-                                <th>Data de recebimento</th>
-                                <th>Origem</th>
-                                <th>Quantidade de bolsas</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            <tr>
-                                <td colspan="6" class="vazio">
-                                    Nenhum lote carregado.<br>
-                                    Os dados aparecerão aqui quando a tela
-                                    estiver conectada ao PostgreSQL.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </main>
-
-        <footer>
-            <span><strong>CrioBlood</strong> © 2026 — Gestão de Hemocentros</span>
-            <span>Santa Casa de Misericórdia de Cruzeiro</span>
-        </footer>
+<%- include('../partials/inicio', { titulo: 'Lotes de recebimento', subtitulo: 'Abertura, conferência e fechamento dos lotes', ativo: 'lotes' }) %>
+
+<section class="cabecalho-pagina">
+    <div>
+        <h3>Controle de lotes</h3>
+        <p>
+            Abra um lote para cadastrar as bolsas recebidas. Para fechar, o lote precisa ter ao menos
+            uma bolsa e nenhuma bolsa em conferência. Lotes fechados não recebem novas bolsas.
+        </p>
     </div>
-</div>
 
-<form id="formSair" action="/logout" method="POST" hidden></form>
-</body>
-</html>
+    <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
+        <button class="botao" type="submit">+ Abrir novo lote</button>
+    </form>
+</section>
+
+<section class="indicadores">
+    <div class="indicador destaque-amarelo">
+        <strong><%= lotes.filter(function (l) { return l.status === 'ABERTO'; }).length %></strong>
+        <span>Lotes abertos</span>
+    </div>
+    <div class="indicador destaque-verde">
+        <strong><%= lotes.filter(function (l) { return l.status === 'FECHADO'; }).length %></strong>
+        <span>Lotes fechados</span>
+    </div>
+    <div class="indicador">
+        <strong><%= lotes.reduce(function (total, l) { return total + l.quantidade_bolsas; }, 0) %></strong>
+        <span>Bolsas recebidas</span>
+    </div>
+</section>
+
+<section class="painel" data-filtravel>
+    <h3>Histórico de lotes</h3>
+    <p class="descricao">Consulte os lotes já registrados no sistema.</p>
+
+    <div class="filtros">
+        <input type="search" data-filtro-texto placeholder="Buscar por código do lote..." aria-label="Buscar lote">
+        <select data-filtro-campo="status" aria-label="Filtrar por status">
+            <option value="">Todos os status</option>
+            <option value="ABERTO">Abertos</option>
+            <option value="FECHADO">Fechados</option>
+        </select>
+    </div>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Lote</th><th>Recebimento</th><th>Origem</th><th>Bolsas</th><th>Em conferência</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <% if (lotes.length === 0) { %>
+                    <tr><td colspan="7" class="vazio">Nenhum lote cadastrado.<br>Clique em "+ Abrir novo lote" para começar.</td></tr>
+                <% } else { lotes.forEach(function (lote) { %>
+                    <tr data-busca="<%= lote.codigo.toLowerCase() %>" data-status="<%= lote.status %>">
+                        <td><strong><%= lote.codigo %></strong></td>
+                        <td><%= new Date(lote.data_recebimento).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></td>
+                        <td><%= lote.origem %></td>
+                        <td><%= lote.quantidade_bolsas %></td>
+                        <td><%= lote.em_conferencia %></td>
+                        <td>
+                            <span class="status <%= lote.status === 'ABERTO' ? 'aberto' : 'fechado' %>">
+                                <%= lote.status === 'ABERTO' ? 'Aberto' : 'Fechado' %>
+                            </span>
+                        </td>
+                        <td class="acoes">
+                            <a class="botao botao-claro botao-pequeno" href="/hemocomponentes?lote_id=<%= lote.id %>">Ver bolsas</a>
+                            <% if (lote.status === 'ABERTO') { %>
+                                <a class="botao botao-claro botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">+ Adicionar bolsa</a>
+                                <form action="/lotes/<%= lote.id %>/fechar" method="POST"
+                                      data-confirmar="Fechar o lote <%= lote.codigo %>? Depois de fechado, ele não recebe novas bolsas.">
+                                    <button class="botao botao-perigo botao-pequeno" type="submit">Fechar lote</button>
+                                </form>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+                    <tr data-sem-resultado hidden><td colspan="7" class="vazio">Nenhum lote encontrado com esse filtro.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>
