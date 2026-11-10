@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16
+    container_name: crioblood_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: crioblood
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - crioblood_data:/var/lib/postgresql/data
+      # Scripts rodam em ordem alfabética na primeira criação do banco
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d crioblood"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: crioblood_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      SESSION_SECRET: ${SESSION_SECRET:?defina SESSION_SECRET no .env}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: crioblood
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  crioblood_data:
