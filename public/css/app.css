@@ -1,0 +1,304 @@
+:root {
+    --azul: #10243e;
+    --azul-claro: #203b5b;
+    --rosa: #e94b7b;
+    --rosa-escuro: #d93b6a;
+    --fundo: #f4f6fa;
+    --texto: #243247;
+    --cinza: #718096;
+    --borda: #e7eaf0;
+    --branco: #fff;
+    --verde: #14745f;
+    --verde-fundo: #ddf7ee;
+    --amarelo: #895d0b;
+    --amarelo-fundo: #fff1ce;
+    --vermelho: #b4233f;
+    --vermelho-fundo: #fde3e8;
+    --azul-fundo: #e1ecfb;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+[hidden] { display: none !important; }
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+}
+
+/* ---------- Estrutura ---------- */
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+    width: 245px;
+    flex-shrink: 0;
+    padding: 24px 12px;
+    background: var(--azul);
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo { padding: 0 12px 26px; border-bottom: 1px solid #34465d; margin-bottom: 22px; }
+.logo h1 { font-size: 26px; }
+.logo span { color: var(--rosa); }
+.logo p { margin-top: 5px; font-size: 9px; letter-spacing: 1px; color: #c2cede; }
+
+.menu { display: flex; flex-direction: column; gap: 6px; }
+.menu a, .menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    color: #e0e7f0;
+    text-decoration: none;
+    padding: 13px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+.menu a:hover, .menu a.ativo, .menu button:hover { background: var(--rosa); color: white; }
+
+.menu-inferior { margin-top: auto; padding-top: 18px; border-top: 1px solid #34465d; }
+
+.principal { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+
+.topo {
+    min-height: 72px;
+    padding: 16px 28px;
+    background: white;
+    border-bottom: 1px solid var(--borda);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+.topo h2 { font-size: 20px; }
+.topo p { margin-top: 5px; color: var(--cinza); font-size: 12px; }
+.usuario { text-align: right; font-size: 13px; overflow-wrap: anywhere; }
+.usuario small { display: block; margin-top: 5px; color: var(--cinza); }
+
+main { width: 100%; max-width: 1500px; margin: 0 auto; padding: 28px; flex: 1; }
+
+footer {
+    padding: 20px 28px;
+    border-top: 1px solid var(--borda);
+    background: white;
+    color: var(--cinza);
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+footer strong { color: var(--rosa); }
+
+/* ---------- Cabeçalho da página e botões ---------- */
+.cabecalho-pagina {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+.cabecalho-pagina h3 { font-size: 18px; margin-bottom: 6px; }
+.cabecalho-pagina p { color: var(--cinza); font-size: 13px; line-height: 1.6; max-width: 760px; }
+
+.botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 17px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--rosa);
+    color: white;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+}
+.botao:hover { background: var(--rosa-escuro); }
+.botao-claro { background: white; color: var(--azul); border: 1px solid #dce2eb; }
+.botao-claro:hover { background: #f1f4f9; }
+.botao-perigo { background: white; color: var(--vermelho); border: 1px solid #f1b9c4; }
+.botao-perigo:hover { background: var(--vermelho-fundo); }
+.botao-ok { background: var(--verde); }
+.botao-ok:hover { background: #0f5d4c; }
+.botao-pequeno { padding: 7px 11px; font-size: 12px; }
+
+.acoes { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.acoes form { display: inline; }
+
+/* ---------- Cartões e indicadores ---------- */
+.indicadores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.indicador {
+    padding: 21px;
+    border: 1px solid var(--borda);
+    border-left: 4px solid var(--rosa);
+    border-radius: 12px;
+    background: white;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+a.indicador:hover { box-shadow: 0 4px 14px rgba(16, 36, 62, 0.08); }
+.indicador strong { display: block; font-size: 27px; margin-bottom: 8px; }
+.indicador span { color: var(--cinza); font-size: 13px; }
+.indicador.destaque-verde { border-left-color: #1c9e82; }
+.indicador.destaque-amarelo { border-left-color: #e0a526; }
+.indicador.destaque-vermelho { border-left-color: #d6334f; }
+.indicador.destaque-azul { border-left-color: #3d7bd8; }
+
+.painel {
+    padding: 24px;
+    background: white;
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+.painel h3 { font-size: 17px; margin-bottom: 7px; }
+.descricao { color: var(--cinza); font-size: 12px; line-height: 1.6; }
+
+.grade-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.grade-2 > .painel { margin-bottom: 0; }
+.grade-2 { margin-bottom: 24px; }
+
+/* ---------- Filtros e tabelas ---------- */
+.filtros { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; }
+.filtros input, .filtros select {
+    min-width: 180px;
+    padding: 11px 12px;
+    border: 1px solid #dce2eb;
+    border-radius: 7px;
+    background: white;
+    color: var(--texto);
+    font-family: inherit;
+}
+
+.tabela-container { width: 100%; overflow-x: auto; margin-top: 16px; }
+table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+th, td { padding: 15px 12px; border-bottom: 1px solid var(--borda); font-size: 12px; }
+th { color: var(--cinza); font-weight: bold; background: #f9fafc; }
+tr:hover td { background: #fafbfe; }
+td.vazio, .vazio {
+    text-align: center;
+    padding: 35px 15px;
+    color: var(--cinza);
+    line-height: 1.8;
+    white-space: normal;
+}
+.centro { text-align: center; }
+
+/* ---------- Etiquetas de status ---------- */
+.status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #eceff4;
+    color: #48566b;
+}
+.aberto, .s-amarelo { background: var(--amarelo-fundo); color: var(--amarelo); }
+.fechado, .s-verde { background: var(--verde-fundo); color: var(--verde); }
+.s-vermelho { background: var(--vermelho-fundo); color: var(--vermelho); }
+.s-azul { background: var(--azul-fundo); color: #1f4f9a; }
+.s-cinza { background: #eceff4; color: #48566b; }
+
+/* ---------- Avisos ---------- */
+.alerta {
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    line-height: 1.5;
+    border: 1px solid transparent;
+}
+.alerta-ok { background: var(--verde-fundo); color: var(--verde); border-color: #b4e6d6; }
+.alerta-erro { background: var(--vermelho-fundo); color: var(--vermelho); border-color: #f1b9c4; }
+.alerta-aviso { background: var(--amarelo-fundo); color: var(--amarelo); border-color: #f0d89c; }
+.alerta-info { background: var(--azul-fundo); color: #1f4f9a; border-color: #bcd2f1; }
+
+/* ---------- Formulários ---------- */
+.formulario { max-width: 820px; }
+.grade-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.campo { display: flex; flex-direction: column; gap: 7px; }
+.campo.largo { grid-column: 1 / -1; }
+.campo label { font-size: 12px; font-weight: bold; color: var(--azul-claro); }
+.campo input[type="text"], .campo input[type="number"], .campo input[type="date"],
+.campo select, .campo textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #dce2eb;
+    border-radius: 7px;
+    background: white;
+    color: var(--texto);
+    font-family: inherit;
+    font-size: 14px;
+}
+.campo input:focus, .campo select:focus, .campo textarea:focus {
+    outline: 2px solid #f6b9cc;
+    border-color: var(--rosa);
+}
+.campo small { color: var(--cinza); font-size: 11px; line-height: 1.5; }
+.marcas { display: flex; flex-direction: column; gap: 10px; }
+.marca { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.marca input { width: 17px; height: 17px; }
+.rodape-form {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--borda);
+}
+
+/* ---------- Gráficos simples em CSS ---------- */
+.barra-linha { display: grid; grid-template-columns: 110px 1fr 40px; gap: 12px; align-items: center; margin-top: 14px; font-size: 13px; }
+.barra-trilho { height: 14px; background: #eef1f6; border-radius: 7px; overflow: hidden; }
+.barra-preenchimento { height: 100%; background: linear-gradient(90deg, var(--rosa), #f283a5); border-radius: 7px; }
+.barra-valor { font-weight: bold; text-align: right; }
+
+.mapa-tipagem { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.tipagem {
+    padding: 14px 8px;
+    text-align: center;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    background: #fbfcfe;
+}
+.tipagem strong { display: block; font-size: 22px; margin-bottom: 4px; }
+.tipagem span { color: var(--cinza); font-size: 11px; }
+.tipagem.baixo { background: var(--vermelho-fundo); border-color: #f1b9c4; }
+.tipagem.baixo strong { color: var(--vermelho); }
+
+.atalhos { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
+.atalhos .botao { width: 100%; }
+
+.detalhes { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-top: 16px; }
+.detalhes div span { display: block; font-size: 11px; color: var(--cinza); margin-bottom: 4px; }
+.detalhes div strong { font-size: 14px; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 850px) {
+    .layout { flex-direction: column; }
+    .sidebar { width: 100%; padding: 16px; }
+    .menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .menu-inferior { margin-top: 14px; }
+    main { padding: 16px; }
+    .topo { padding: 16px; }
+    .grade-2, .grade-form { grid-template-columns: 1fr; }
+    .mapa-tipagem { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .barra-linha { grid-template-columns: 90px 1fr 34px; }
+}
