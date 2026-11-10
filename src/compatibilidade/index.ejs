@@ -1,0 +1,87 @@
+<%- include('../partials/inicio', { titulo: 'Compatibilidade', subtitulo: 'Busca de bolsas compatíveis e reserva para o paciente', ativo: 'compatibilidade' }) %>
+
+<div class="alerta alerta-info">
+    Esta tela é um apoio à decisão e aplica regras gerais de compatibilidade ABO/Rh.
+    A prova de compatibilidade e o protocolo do serviço de hemoterapia continuam sendo obrigatórios.
+</div>
+
+<section class="painel">
+    <h3>Escolha a solicitação</h3>
+    <form method="GET" action="/compatibilidade" class="filtros">
+        <select name="solicitacao" aria-label="Solicitação pendente" required>
+            <option value="">Selecione uma solicitação pendente...</option>
+            <% pendentes.forEach(function (s) { %>
+                <option value="<%= s.id %>" <%= solicitacao && solicitacao.id === s.id ? 'selected' : '' %>>
+                    #<%= s.id %> — <%= s.paciente_nome %> (<%= rot.tipagem(s.paciente_abo, s.paciente_rh) %>) — <%= rot.tipo(s.tipo) %>
+                </option>
+            <% }) %>
+        </select>
+        <button class="botao" type="submit">Buscar bolsas</button>
+        <a class="botao botao-claro" href="/solicitacoes/nova">+ Nova solicitação</a>
+    </form>
+    <% if (pendentes.length === 0) { %>
+        <p class="descricao">Não há solicitações pendentes.</p>
+    <% } %>
+</section>
+
+<% if (solicitacao) { %>
+    <section class="painel">
+        <h3>Solicitação #<%= solicitacao.id %></h3>
+        <div class="detalhes">
+            <div><span>Paciente</span><strong><%= solicitacao.paciente_nome %></strong></div>
+            <div><span>Prontuário</span><strong><%= solicitacao.prontuario %></strong></div>
+            <div><span>Tipagem do paciente</span><strong><%= rot.tipagem(solicitacao.paciente_abo, solicitacao.paciente_rh) %></strong></div>
+            <div><span>Produto solicitado</span><strong><%= rot.tipo(solicitacao.tipo) %></strong></div>
+            <div><span>Urgência</span><strong><%- rot.urgencia(solicitacao.urgencia) %></strong></div>
+            <div><span>Médico</span><strong><%= solicitacao.medico_solicitante %></strong></div>
+        </div>
+        <% if (aceitos) { %><p class="descricao" style="margin-top: 16px;"><%= aceitos %></p><% } %>
+    </section>
+
+    <% if (!solicitacao.paciente_abo || !solicitacao.paciente_rh) { %>
+        <div class="alerta alerta-erro">
+            O paciente não tem tipagem ABO/Rh cadastrada, então não é possível buscar bolsas compatíveis.
+            <a href="/pacientes/<%= solicitacao.paciente_id %>/editar">Atualizar cadastro do paciente</a>.
+        </div>
+    <% } else { %>
+        <section class="painel">
+            <h3>Bolsas compatíveis disponíveis</h3>
+            <p class="descricao">Ordenadas por compatibilidade idêntica primeiro e, depois, pela validade mais próxima.</p>
+
+            <div class="tabela-container">
+                <table>
+                    <thead>
+                        <tr><th>Código</th><th>Lote</th><th>ABO/Rh</th><th>Compatibilidade</th><th>Validade</th><th>Prazo</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <% if (bolsas.length === 0) { %>
+                            <tr><td colspan="7" class="vazio">Nenhuma bolsa compatível disponível no estoque agora.</td></tr>
+                        <% } else { bolsas.forEach(function (b) { %>
+                            <tr>
+                                <td><strong><%= b.codigo_original %></strong></td>
+                                <td><%= b.codigo_lote %></td>
+                                <td><%= rot.tipagem(b.abo, b.fator_rh) %></td>
+                                <td>
+                                    <% if (b.nivel === 'IDENTICA') { %><span class="status s-verde">Idêntica</span>
+                                    <% } else { %><span class="status s-azul">Compatível</span><% } %>
+                                </td>
+                                <td><%= b.data_validade_br %></td>
+                                <td><%- rot.validade(b.dias_restantes) %></td>
+                                <td>
+                                    <form action="/compatibilidade/reservar" method="POST"
+                                          data-confirmar="Reservar a bolsa <%= b.codigo_original %> para <%= solicitacao.paciente_nome %>?">
+                                        <input type="hidden" name="solicitacao_id" value="<%= solicitacao.id %>">
+                                        <input type="hidden" name="hemocomponente_id" value="<%= b.id %>">
+                                        <button class="botao botao-pequeno" type="submit">Reservar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    <% } %>
+<% } %>
+
+<%- include('../partials/fim') %>
