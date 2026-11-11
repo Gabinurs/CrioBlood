@@ -1,0 +1,75 @@
+<%- include('../partials/inicio', { titulo: 'Transfusão', subtitulo: 'Registro da saída das bolsas reservadas', ativo: 'transfusoes' }) %>
+
+<section class="painel">
+    <h3>Aguardando transfusão</h3>
+    <p class="descricao">Bolsas já reservadas para pacientes. Ao registrar, a bolsa é baixada do estoque.</p>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Paciente</th><th>ABO/Rh</th><th>Produto</th><th>Bolsa</th><th>ABO/Rh da bolsa</th><th>Validade</th><th>Urgência</th><th>Observações</th><th></th></tr>
+            </thead>
+            <tbody>
+                <% if (prontas.length === 0) { %>
+                    <tr><td colspan="9" class="vazio">Nenhuma bolsa reservada no momento.<br>Reserve uma bolsa em <a href="/compatibilidade">Compatibilidade</a>.</td></tr>
+                <% } else { prontas.forEach(function (s) { %>
+                    <tr>
+                        <td><strong><%= s.paciente_nome %></strong><br><small><%= s.prontuario %></small></td>
+                        <td><%= rot.tipagem(s.paciente_abo, s.paciente_rh) %></td>
+                        <td><%= s.tipo %></td>
+                        <td><strong><%= s.bolsa_codigo %></strong></td>
+                        <td><%= rot.tipagem(s.bolsa_abo, s.bolsa_rh) %></td>
+                        <td><%= s.validade_br %> <%- rot.validade(s.dias_restantes) %></td>
+                        <td><%- rot.urgencia(s.urgencia) %></td>
+                        <td>
+                            <form id="reg-<%= s.id %>" action="/transfusoes/registrar" method="POST"
+                                  data-confirmar="Confirmar a transfusão da bolsa <%= s.bolsa_codigo %> para <%= s.paciente_nome %>?"></form>
+                            <input type="hidden" name="solicitacao_id" value="<%= s.id %>" form="reg-<%= s.id %>">
+                            <input type="text" name="observacoes" maxlength="500" placeholder="Opcional" form="reg-<%= s.id %>"
+                                   style="padding: 8px; border: 1px solid #dce2eb; border-radius: 6px; width: 170px;">
+                        </td>
+                        <td><button class="botao botao-ok botao-pequeno" type="submit" form="reg-<%= s.id %>">Registrar transfusão</button></td>
+                    </tr>
+                <% }) } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="painel" data-filtravel>
+    <h3>Histórico de transfusões</h3>
+    <p class="descricao">As 50 transfusões mais recentes.</p>
+
+    <div class="filtros">
+        <input type="search" data-filtro-texto placeholder="Buscar por paciente, prontuário ou bolsa..." aria-label="Buscar transfusão">
+    </div>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Data</th><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>ABO/Rh</th><th>Médico</th><th>Registrado por</th><th>Observações</th></tr>
+            </thead>
+            <tbody>
+                <% if (historico.length === 0) { %>
+                    <tr><td colspan="9" class="vazio">Nenhuma transfusão registrada.</td></tr>
+                <% } else { historico.forEach(function (t) { %>
+                    <tr data-busca="<%= (t.paciente_nome + ' ' + t.prontuario + ' ' + t.bolsa_codigo).toLowerCase() %>">
+                        <td><%= t.data_saida_br %></td>
+                        <td><strong><%= t.paciente_nome %></strong></td>
+                        <td><%= t.prontuario %></td>
+                        <td><%= t.bolsa_codigo %></td>
+                        <td><%= t.tipo %></td>
+                        <td><%= rot.tipagem(t.abo, t.fator_rh) %></td>
+                        <td><%= t.medico_solicitante %></td>
+                        <td><%= t.registrado_por_nome || '—' %></td>
+                        <td><%= t.observacoes || '—' %></td>
+                    </tr>
+                <% }) %>
+                    <tr data-sem-resultado hidden><td colspan="9" class="vazio">Nenhuma transfusão encontrada.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>
