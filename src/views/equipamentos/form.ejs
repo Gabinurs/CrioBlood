@@ -1,0 +1,54 @@
+<%
+    var edicao = !!locals.equipamento;
+    var temValores = locals.valores && Object.keys(valores).length > 0;
+    var v = function (campo) {
+        if (temValores && valores[campo] !== undefined) return valores[campo];
+        return edicao && equipamento[campo] != null ? equipamento[campo] : '';
+    };
+    var ativoMarcado = edicao ? (temValores ? valores.ativo === 'on' : equipamento.ativo) : true;
+%>
+<%- include('../partials/inicio', {
+    titulo: edicao ? 'Editar equipamento' : 'Novo equipamento',
+    subtitulo: 'Local de armazenamento das bolsas',
+    ativo: 'equipamentos'
+}) %>
+
+<section class="painel formulario">
+    <form method="POST" action="<%= edicao ? '/equipamentos/' + equipamento.id + '/editar' : '/equipamentos/novo' %>">
+        <div class="grade-form">
+            <div class="campo largo">
+                <label for="nome">Nome do equipamento</label>
+                <input type="text" id="nome" name="nome" maxlength="100" value="<%= v('nome') %>" placeholder="Ex.: Freezer Ultra-Baixa T-01" required>
+            </div>
+
+            <div class="campo">
+                <label for="tipo">Tipo</label>
+                <select id="tipo" name="tipo" required>
+                    <option value="">Selecione...</option>
+                    <% tipos.forEach(function (t) { %>
+                        <option value="<%= t %>" <%= v('tipo') === t ? 'selected' : '' %>><%= t %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="temperatura_operacional">Temperatura operacional</label>
+                <input type="text" id="temperatura_operacional" name="temperatura_operacional" maxlength="20" value="<%= v('temperatura_operacional') %>" placeholder="Ex.: -80 °C">
+            </div>
+
+            <% if (edicao) { %>
+                <div class="campo largo">
+                    <label class="marca"><input type="checkbox" name="ativo" <%= ativoMarcado ? 'checked' : '' %>> Equipamento ativo</label>
+                    <small>Só é possível desativar um equipamento sem bolsas guardadas nele.</small>
+                </div>
+            <% } %>
+        </div>
+
+        <div class="rodape-form">
+            <button class="botao" type="submit"><%= edicao ? 'Salvar alterações' : 'Cadastrar equipamento' %></button>
+            <a class="botao botao-claro" href="/equipamentos">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/fim') %>

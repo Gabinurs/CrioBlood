@@ -1,228 +1,37 @@
+<% var val = locals.valores || {}; %>
+<%- include('../partials/inicio', { titulo: 'Cadastrar usuário', subtitulo: 'Nova conta de acesso ao sistema', ativo: 'usuarios' }) %>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastrar usuário | CrioBlood</title>
+<section class="painel formulario">
+    <div class="alerta alerta-info">
+        O novo usuário será criado sem privilégios administrativos. As permissões podem ser configuradas depois.
+    </div>
 
-    <style>
-        :root {
-            --vermelho: #E51E43;
-            --vermelho-escuro: #B90D2D;
-            --verde-azulado: #008C8C;
-            --rosa-claro: #FCE4E9;
-            --texto: #343B45;
-            --cinza: #727984;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            font-family: Arial, sans-serif;
-            color: var(--texto);
-            background: #FFF9FA;
-        }
-
-        header {
-            background: white;
-            padding: 20px 7%;
-            border-bottom: 1px solid #F2DDE2;
-        }
-
-        .logo {
-            font-size: 27px;
-            color: var(--verde-azulado);
-        }
-
-        .logo span {
-            color: var(--vermelho);
-        }
-
-        main {
-            width: 100%;
-            max-width: 600px;
-            margin: 40px auto;
-            padding: 0 20px;
-            flex: 1;
-        }
-
-        .cartao {
-            background: white;
-            padding: 32px;
-            border: 1px solid #F0E3E6;
-            border-radius: 16px;
-            box-shadow: 0 8px 25px rgba(52, 59, 69, 0.05);
-        }
-
-        h2 {
-            font-size: 26px;
-            margin-bottom: 10px;
-        }
-
-        .descricao {
-            color: var(--cinza);
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 26px;
-        }
-
-        .campo {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        input {
-            width: 100%;
-            padding: 13px;
-            border: 1px solid #DCDDE3;
-            border-radius: 9px;
-            font-size: 15px;
-            color: var(--texto);
-        }
-
-        input:focus {
-            outline: 2px solid var(--verde-azulado);
-            border-color: transparent;
-        }
-
-        .aviso {
-            background: var(--rosa-claro);
-            padding: 13px;
-            border-radius: 8px;
-            color: #8F1831;
-            font-size: 13px;
-            line-height: 1.6;
-            margin-bottom: 22px;
-        }
-
-        .acoes {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 25px;
-        }
-
-        .botao {
-            border: none;
-            padding: 13px 20px;
-            border-radius: 9px;
-            background: var(--vermelho);
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .botao:hover {
-            background: var(--vermelho-escuro);
-        }
-
-        .cancelar {
-            color: var(--verde-azulado);
-            font-weight: bold;
-            font-size: 14px;
-            text-decoration: none;
-        }
-
-        footer {
-            text-align: center;
-            padding: 25px;
-            color: var(--cinza);
-            font-size: 13px;
-        }
-    </style>
-</head>
-
-<body>
-
-<header>
-    <h1 class="logo">Crio<span>Blood</span></h1>
-</header>
-
-<main>
-    <section class="cartao">
-        <h2>Cadastrar usuário</h2>
-
-        <p class="descricao">
-            Crie uma conta de acesso ao sistema CrioBlood.
-            O novo usuário será cadastrado sem privilégios administrativos.
-        </p>
-
-        <div class="aviso">
-            O cadastro está disponível somente para administradores
-            autenticados. As permissões poderão ser configuradas
-            posteriormente.
-        </div>
-
-        <form action="/usuarios" method="POST">
-            <div class="campo">
+    <form action="/usuarios" method="POST">
+        <div class="grade-form">
+            <div class="campo largo">
                 <label for="nome">Nome completo</label>
-                <input
-                    type="text"
-                    id="nome"
-                    name="nome"
-                    maxlength="150"
-                    autocomplete="name"
-                    required
-                >
+                <input type="text" id="nome" name="nome" maxlength="150" autocomplete="name"
+                       value="<%= val.nome || '' %>" required>
             </div>
 
             <div class="campo">
-                <label for="login">Nome de usuário</label>
-                <input
-                    type="text"
-                    id="login"
-                    name="login"
-                    maxlength="80"
-                    autocomplete="username"
-                    required
-                >
+                <label for="login">Nome de usuário (login)</label>
+                <input type="text" id="login" name="login" maxlength="80" autocomplete="username"
+                       value="<%= val.login || '' %>" required>
             </div>
 
             <div class="campo">
                 <label for="senha">Senha inicial</label>
-                <input
-                    type="password"
-                    id="senha"
-                    name="senha"
-                    minlength="8"
-                    autocomplete="new-password"
-                    required
-                >
+                <input type="password" id="senha" name="senha" minlength="8" autocomplete="new-password" required>
+                <small>Mínimo de 8 caracteres.</small>
             </div>
+        </div>
 
-            <div class="acoes">
-                <button type="submit" class="botao">
-                    Cadastrar usuário
-                </button>
+        <div class="rodape-form">
+            <button class="botao" type="submit">Cadastrar usuário</button>
+            <a class="botao botao-claro" href="/usuarios">Cancelar</a>
+        </div>
+    </form>
+</section>
 
-                <a href="/usuarios" class="cancelar">
-                    Cancelar
-                </a>
-            </div>
-        </form>
-    </section>
-</main>
-
-<footer>
-    CrioBlood &copy; 2026 — Gestão Transfusional
-</footer>
-
-</body>
-</html>
+<%- include('../partials/fim') %>

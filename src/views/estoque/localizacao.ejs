@@ -1,0 +1,75 @@
+<%
+    var val = locals.valores || {};
+    var temValores = Object.keys(val).length > 0;
+    var f = function (campo) {
+        if (temValores && val[campo] !== undefined) return val[campo];
+        return atual && atual[campo] != null ? atual[campo] : '';
+    };
+%>
+<%- include('../partials/inicio', { titulo: 'Local da bolsa', subtitulo: 'Código ' + bolsa.codigo_original, ativo: 'estoque' }) %>
+
+<section class="painel">
+    <h3>Bolsa <%= bolsa.codigo_original %></h3>
+    <div class="detalhes">
+        <div><span>Produto</span><strong><%= rot.tipo(bolsa.tipo) %></strong></div>
+        <div><span>ABO/Rh</span><strong><%= rot.tipagem(bolsa.abo, bolsa.fator_rh) %></strong></div>
+        <div><span>Lote</span><strong><%= bolsa.codigo_lote %></strong></div>
+        <div><span>Validade</span><strong><%= bolsa.validade_br %></strong></div>
+        <div><span>Status</span><strong><%- rot.statusBolsa(bolsa.status) %></strong></div>
+        <div><span>Local atual</span><strong><%= atual ? rot.local(atual) : 'Sem local definido' %></strong></div>
+    </div>
+</section>
+
+<section class="painel formulario">
+    <% if (equipamentos.length === 0) { %>
+        <div class="alerta alerta-aviso">
+            Não há equipamentos ativos. <a href="/equipamentos/novo">Cadastre um equipamento</a> primeiro.
+        </div>
+    <% } %>
+
+    <form method="POST" action="/estoque/<%= bolsa.id %>/localizacao">
+        <div class="grade-form">
+            <div class="campo largo">
+                <label for="equipamento_id">Equipamento</label>
+                <select id="equipamento_id" name="equipamento_id" required>
+                    <option value="">Selecione...</option>
+                    <% equipamentos.forEach(function (e) { %>
+                        <option value="<%= e.id %>" <%= String(f('equipamento_id')) === String(e.id) ? 'selected' : '' %>>
+                            <%= e.nome %> (<%= e.tipo %><%= e.temperatura_operacional ? ', ' + e.temperatura_operacional : '' %>)
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="gaveta">Gaveta</label>
+                <input type="text" id="gaveta" name="gaveta" maxlength="50" value="<%= f('gaveta') %>">
+            </div>
+
+            <div class="campo">
+                <label for="caixa">Caixa</label>
+                <input type="text" id="caixa" name="caixa" maxlength="50" value="<%= f('caixa') %>">
+            </div>
+
+            <div class="campo largo">
+                <label for="posicao_exata">Posição exata</label>
+                <input type="text" id="posicao_exata" name="posicao_exata" maxlength="50" value="<%= f('posicao_exata') %>" placeholder="Ex.: A1, B4">
+                <small>O sistema não deixa duas bolsas ocupando a mesma posição na mesma gaveta e caixa.</small>
+            </div>
+        </div>
+
+        <div class="rodape-form">
+            <button class="botao" type="submit">Salvar local</button>
+            <a class="botao botao-claro" href="/estoque">Cancelar</a>
+        </div>
+    </form>
+
+    <% if (atual) { %>
+        <form method="POST" action="/estoque/<%= bolsa.id %>/localizacao/remover"
+              data-confirmar="Remover o local desta bolsa?" style="margin-top: 14px;">
+            <button class="botao botao-perigo botao-pequeno" type="submit">Remover local</button>
+        </form>
+    <% } %>
+</section>
+
+<%- include('../partials/fim') %>

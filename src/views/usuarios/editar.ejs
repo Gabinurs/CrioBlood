@@ -1,210 +1,24 @@
+<%- include('../partials/inicio', { titulo: 'Editar usuário', subtitulo: 'Código do usuário: ' + usuarioAlvo.id, ativo: 'usuarios' }) %>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar usuário | CrioBlood</title>
+<section class="painel formulario">
+    <form action="/usuarios/<%= usuarioAlvo.id %>/editar" method="POST">
+        <div class="grade-form">
+            <div class="campo largo">
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" name="nome" maxlength="150" value="<%= usuarioAlvo.nome %>" required>
+            </div>
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+            <div class="campo largo">
+                <label for="login">Login</label>
+                <input type="text" id="login" name="login" maxlength="80" value="<%= usuarioAlvo.login %>" required>
+            </div>
+        </div>
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f5f9;
-            color: #172342;
-            min-height: 100vh;
-        }
+        <div class="rodape-form">
+            <button class="botao" type="submit">Salvar alterações</button>
+            <a class="botao botao-claro" href="/usuarios">Cancelar</a>
+        </div>
+    </form>
+</section>
 
-        header {
-            background: #172342;
-            color: white;
-            padding: 20px 6%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        header h1 {
-            font-size: 24px;
-        }
-
-        header a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        main {
-            max-width: 650px;
-            margin: 45px auto;
-            padding: 0 20px;
-        }
-
-        .formulario {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 18px rgba(23, 35, 66, 0.08);
-        }
-
-        h2 {
-            margin-bottom: 10px;
-        }
-
-        .descricao {
-            color: #68738a;
-            margin-bottom: 25px;
-            line-height: 1.5;
-        }
-
-        .campo {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccd2df;
-            border-radius: 7px;
-            font-size: 16px;
-        }
-
-        input:focus {
-            outline: 2px solid #e5a2b7;
-            border-color: #172342;
-        }
-
-        .botoes {
-            display: flex;
-            gap: 12px;
-            margin-top: 25px;
-            flex-wrap: wrap;
-        }
-
-        button,
-        .cancelar {
-            border: none;
-            border-radius: 7px;
-            padding: 12px 18px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        button {
-            background: #172342;
-            color: white;
-        }
-
-        button:hover {
-            background: #26385f;
-        }
-
-        .cancelar {
-            background: #e8ebf2;
-            color: #172342;
-        }
-
-        .erro {
-            background: #fde8e8;
-            color: #9b1c1c;
-            padding: 12px;
-            border-radius: 7px;
-            margin-bottom: 20px;
-        }
-
-        .identificacao {
-            font-size: 13px;
-            color: #68738a;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 480px) {
-            .formulario {
-                padding: 22px;
-            }
-
-            .botoes {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <h1>CrioBlood</h1>
-        <a href="/usuarios">← Voltar para usuários</a>
-    </header>
-
-    <main>
-        <section class="formulario">
-            <h2>Editar usuário</h2>
-
-            <p class="descricao">
-                Atualize os dados cadastrais do usuário selecionado.
-            </p>
-
-            <p class="identificacao">
-                Código do usuário: <%= usuarioAlvo.id %>
-            </p>
-
-            <% if (erro) { %>
-                <div class="erro" role="alert">
-                    <%= erro %>
-                </div>
-            <% } %>
-
-            <form
-                action="/usuarios/<%= usuarioAlvo.id %>/editar"
-                method="POST"
-            >
-                <div class="campo">
-                    <label for="nome">Nome completo</label>
-                    <input
-                        type="text"
-                        id="nome"
-                        name="nome"
-                        value="<%= usuarioAlvo.nome %>"
-                        maxlength="150"
-                        required
-                    >
-                </div>
-
-                <div class="campo">
-                    <label for="login">Login</label>
-                    <input
-                        type="text"
-                        id="login"
-                        name="login"
-                        value="<%= usuarioAlvo.login %>"
-                        maxlength="80"
-                        required
-                    >
-                </div>
-
-                <div class="botoes">
-                    <button type="submit">Salvar alterações</button>
-                    <a class="cancelar" href="/usuarios">Cancelar</a>
-                </div>
-            </form>
-        </section>
-    </main>
-</body>
-</html>
-s
+<%- include('../partials/fim') %>

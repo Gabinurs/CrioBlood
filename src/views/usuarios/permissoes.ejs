@@ -1,164 +1,30 @@
+<%- include('../partials/inicio', { titulo: 'Permissões', subtitulo: usuarioAlvo.nome + ' (' + usuarioAlvo.login + ')', ativo: 'usuarios' }) %>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Permissões | CrioBlood</title>
+<section class="painel formulario">
+    <h3>Gerenciar permissões</h3>
+    <p class="descricao">Selecione as permissões que esta conta poderá receber.</p>
 
-    <style>
-        * { box-sizing: border-box; }
+    <form action="/usuarios/<%= usuarioAlvo.id %>/permissoes" method="POST">
+        <div class="marcas" style="margin-top: 18px;">
+            <% if (permissoes.length === 0) { %>
+                <p class="descricao">Nenhuma permissão cadastrada no sistema.</p>
+            <% } else { permissoes.forEach(function (permissao) { %>
+                <label class="marca">
+                    <input type="checkbox" name="permissoes" value="<%= permissao.id %>"
+                           <%= idsSelecionados.includes(permissao.id) ? 'checked' : '' %>>
+                    <span>
+                        <strong><%= permissao.descricao %></strong>
+                        <small style="color: var(--cinza); margin-left: 6px;"><%= permissao.codigo %></small>
+                    </span>
+                </label>
+            <% }) } %>
+        </div>
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #fff8fa;
-            color: #293747;
-        }
+        <div class="rodape-form">
+            <button class="botao" type="submit">Salvar permissões</button>
+            <a class="botao botao-claro" href="/usuarios">Voltar</a>
+        </div>
+    </form>
+</section>
 
-        header {
-            background: white;
-            padding: 22px 7%;
-            border-bottom: 1px solid #f2e6e9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #008c8c;
-        }
-
-        .logo span { color: #e51e43; }
-
-        a {
-            color: #008c8c;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        main {
-            max-width: 760px;
-            margin: 45px auto;
-            padding: 0 20px;
-        }
-
-        .cartao {
-            background: white;
-            border: 1px solid #f2e6e9;
-            border-radius: 12px;
-            padding: 28px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
-        }
-
-        h1 {
-            font-size: 25px;
-            margin-top: 0;
-        }
-
-        .descricao {
-            color: #687789;
-            line-height: 1.6;
-        }
-
-        .permissao {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 16px 0;
-            border-bottom: 1px solid #f2e6e9;
-        }
-
-        .permissao input {
-            margin-top: 4px;
-            accent-color: #008c8c;
-            width: 17px;
-            height: 17px;
-        }
-
-        .permissao strong {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .permissao small { color: #687789; }
-
-        .botoes {
-            display: flex;
-            gap: 18px;
-            align-items: center;
-            margin-top: 25px;
-        }
-
-        button {
-            background: #e51e43;
-            color: white;
-            border: none;
-            border-radius: 7px;
-            padding: 12px 20px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:hover { background: #bf1234; }
-
-        footer {
-            text-align: center;
-            padding: 25px;
-            color: #687789;
-            font-size: 12px;
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <div class="logo">Crio<span>Blood</span></div>
-        <a href="/usuarios">← Voltar aos usuários</a>
-    </header>
-
-    <main>
-        <section class="cartao">
-            <h1>Gerenciar permissões</h1>
-
-            <p class="descricao">
-                Usuário: <strong><%= usuarioAlvo.nome %></strong><br>
-                Login: <%= usuarioAlvo.login %>
-            </p>
-
-            <p class="descricao">
-                Selecione as permissões que esta conta poderá receber.
-            </p>
-
-            <form action="/usuarios/<%= usuarioAlvo.id %>/permissoes" method="POST">
-                <% permissoes.forEach(function(permissao) { %>
-                    <label class="permissao">
-                        <input
-                            type="checkbox"
-                            name="permissoes"
-                            value="<%= permissao.id %>"
-                            <%= idsSelecionados.includes(permissao.id) ? 'checked' : '' %>
-                        >
-
-                        <span>
-                            <strong><%= permissao.descricao %></strong>
-                            <small><%= permissao.codigo %></small>
-                        </span>
-                    </label>
-                <% }) %>
-
-                <div class="botoes">
-                    <button type="submit">Salvar permissões</button>
-                    <a href="/usuarios">Cancelar</a>
-                </div>
-            </form>
-        </section>
-    </main>
-
-    <footer>
-        CrioBlood © 2026 — Sistema de Gestão Transfusional
-    </footer>
-</body>
-</html>
+<%- include('../partials/fim') %>

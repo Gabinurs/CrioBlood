@@ -1,0 +1,46 @@
+<%- include('../partials/inicio', { titulo: 'Equipamentos', subtitulo: 'Freezers, geladeiras e agitadores de armazenamento', ativo: 'equipamentos' }) %>
+
+<section class="cabecalho-pagina">
+    <div>
+        <h3>Equipamentos de armazenamento</h3>
+        <p>Cadastre os equipamentos onde as bolsas ficam guardadas. Depois, indique o local de cada bolsa na tela de Bolsas (Estoque).</p>
+    </div>
+    <a class="botao" href="/equipamentos/novo">+ Novo equipamento</a>
+</section>
+
+<section class="painel" data-filtravel>
+    <div class="filtros">
+        <input type="search" data-filtro-texto placeholder="Buscar por nome..." aria-label="Buscar equipamento">
+        <select data-filtro-campo="situacao" aria-label="Filtrar por situação">
+            <option value="">Todos</option>
+            <option value="ativo">Ativos</option>
+            <option value="inativo">Desativados</option>
+        </select>
+    </div>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Nome</th><th>Tipo</th><th>Temperatura</th><th>Bolsas guardadas</th><th>Situação</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <% if (equipamentos.length === 0) { %>
+                    <tr><td colspan="6" class="vazio">Nenhum equipamento cadastrado.<br>Clique em "+ Novo equipamento" para começar.</td></tr>
+                <% } else { equipamentos.forEach(function (e) { %>
+                    <tr data-busca="<%= e.nome.toLowerCase() %>" data-situacao="<%= e.ativo ? 'ativo' : 'inativo' %>">
+                        <td><strong><%= e.nome %></strong></td>
+                        <td><%= e.tipo %></td>
+                        <td><%= e.temperatura_operacional || '—' %></td>
+                        <td><%= e.bolsas %></td>
+                        <td><span class="status <%= e.ativo ? 's-verde' : 's-cinza' %>"><%= e.ativo ? 'Ativo' : 'Desativado' %></span></td>
+                        <td><a class="botao botao-claro botao-pequeno" href="/equipamentos/<%= e.id %>/editar">Editar</a></td>
+                    </tr>
+                <% }) %>
+                    <tr data-sem-resultado hidden><td colspan="6" class="vazio">Nenhum equipamento encontrado com esse filtro.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>

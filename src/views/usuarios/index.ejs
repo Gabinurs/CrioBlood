@@ -1,352 +1,60 @@
+<%- include('../partials/inicio', { titulo: 'Usuários', subtitulo: 'Contas de acesso ao sistema', ativo: 'usuarios' }) %>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de usuários | CrioBlood</title>
+<section class="cabecalho-pagina">
+    <div>
+        <h3>Gerenciamento de usuários</h3>
+        <p>Consulte os usuários e gerencie seus dados, permissões e status. Disponível somente para administradores.</p>
+    </div>
+    <a class="botao" href="/usuarios/novo">+ Cadastrar usuário</a>
+</section>
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<section class="painel" data-filtravel>
+    <div class="filtros">
+        <input type="search" data-filtro-texto placeholder="Buscar por nome ou login..." aria-label="Buscar usuário">
+        <select data-filtro-campo="situacao" aria-label="Filtrar por situação">
+            <option value="">Todos</option>
+            <option value="ativo">Ativos</option>
+            <option value="inativo">Inativos</option>
+        </select>
+    </div>
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f3f5f9;
-            color: #172342;
-            min-height: 100vh;
-        }
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Nome</th><th>Login</th><th>Perfil</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <% if (usuarios.length === 0) { %>
+                    <tr><td colspan="6" class="vazio">Nenhum usuário cadastrado.</td></tr>
+                <% } else { usuarios.forEach(function (item) { %>
+                    <tr data-busca="<%= (item.nome + ' ' + item.login).toLowerCase() %>" data-situacao="<%= item.ativo ? 'ativo' : 'inativo' %>">
+                        <td><%= item.id %></td>
+                        <td><strong><%= item.nome %></strong></td>
+                        <td><%= item.login %></td>
+                        <td><span class="status <%= item.administrador ? 's-azul' : 's-cinza' %>"><%= item.administrador ? 'Administrador' : 'Usuário' %></span></td>
+                        <td><span class="status <%= item.ativo ? 's-verde' : 's-cinza' %>"><%= item.ativo ? 'Ativo' : 'Inativo' %></span></td>
+                        <td class="acoes">
+                            <a class="botao botao-claro botao-pequeno" href="/usuarios/<%= item.id %>/editar">Editar</a>
+                            <a class="botao botao-claro botao-pequeno" href="/usuarios/<%= item.id %>/permissoes">Permissões</a>
 
-        header {
-            background: #172342;
-            color: white;
-            padding: 20px 6%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        header h1 {
-            font-size: 24px;
-        }
-
-        nav {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            flex-wrap: wrap;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        main {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .cabecalho-pagina {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 25px;
-        }
-
-        .cabecalho-pagina h2 {
-            margin-bottom: 8px;
-        }
-
-        .descricao {
-            color: #68738a;
-            line-height: 1.5;
-        }
-
-        .botao {
-            display: inline-block;
-            padding: 11px 15px;
-            border: none;
-            border-radius: 7px;
-            background: #172342;
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .botao:hover {
-            opacity: 0.88;
-        }
-
-        .botao-editar {
-            background: #e5a2b7;
-            color: #172342;
-        }
-
-        .botao-permissoes {
-            background: #e8ebf2;
-            color: #172342;
-        }
-
-        .botao-desativar {
-            background: #fde8e8;
-            color: #9b1c1c;
-        }
-
-        .botao-ativar {
-            background: #d9f5e5;
-            color: #17643a;
-        }
-
-        .tabela-container {
-            width: 100%;
-            overflow-x: auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 18px rgba(23, 35, 66, 0.08);
-        }
-
-        table {
-            width: 100%;
-            min-width: 850px;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #e8ebf2;
-        }
-
-        th {
-            background: #edf0f7;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-
-        td {
-            font-size: 14px;
-        }
-
-        tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .status-ativo {
-            background: #d9f5e5;
-            color: #17643a;
-        }
-
-        .status-inativo {
-            background: #fde8e8;
-            color: #9b1c1c;
-        }
-
-        .acoes {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .acoes form {
-            margin: 0;
-        }
-
-        .acoes .botao {
-            padding: 9px 11px;
-        }
-
-        .vazio {
-            text-align: center;
-            color: #68738a;
-            padding: 35px;
-        }
-
-        .aviso {
-            background: #fff4d6;
-            color: #785700;
-            padding: 14px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        footer {
-            text-align: center;
-            color: #68738a;
-            font-size: 13px;
-            padding: 25px 15px;
-        }
-
-        @media (max-width: 600px) {
-            main {
-                margin-top: 25px;
-            }
-
-            .cabecalho-pagina {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <h1>CrioBlood</h1>
-
-        <nav>
-            <a href="/dashboard">Dashboard</a>
-            <a href="/usuarios">Usuários</a>
-        </nav>
-    </header>
-
-    <main>
-        <section class="cabecalho-pagina">
-            <div>
-                <h2>Gerenciamento de usuários</h2>
-
-                <p class="descricao">
-                    Consulte os usuários e gerencie seus dados e status.
-                </p>
-            </div>
-
-            <a class="botao" href="/usuarios/novo">
-                + Cadastrar usuário
-            </a>
-        </section>
-
-        <div class="aviso">
-            As ações de gerenciamento estão disponíveis somente para
-            administradores autenticados.
-        </div>
-
-        <section class="tabela-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Login</th>
-                        <th>Perfil</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <% if (usuarios.length === 0) { %>
-                        <tr>
-                            <td colspan="6" class="vazio">
-                                Nenhum usuário cadastrado.
-                            </td>
-                        </tr>
-                    <% } else { %>
-
-                        <% usuarios.forEach(function(item) { %>
-                            <tr>
-                                <td><%= item.id %></td>
-
-                                <td><%= item.nome %></td>
-
-                                <td><%= item.login %></td>
-
-                                <td>
-                                    <%= item.administrador
-                                        ? 'Administrador'
-                                        : 'Usuário' %>
-                                </td>
-
-                                <td>
+                            <% if (Number(usuario.id) !== Number(item.id)) { %>
+                                <form action="/usuarios/<%= item.id %>/status" method="POST"
+                                      data-confirmar="Deseja realmente <%= item.ativo ? 'desativar' : 'ativar' %> este usuário?">
                                     <% if (item.ativo) { %>
-                                        <span class="status status-ativo">
-                                            Ativo
-                                        </span>
+                                        <button type="submit" class="botao botao-perigo botao-pequeno">Desativar</button>
                                     <% } else { %>
-                                        <span class="status status-inativo">
-                                            Inativo
-                                        </span>
+                                        <button type="submit" class="botao botao-ok botao-pequeno">Ativar</button>
                                     <% } %>
-                                </td>
+                                </form>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+                    <tr data-sem-resultado hidden><td colspan="6" class="vazio">Nenhum usuário encontrado com esse filtro.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</section>
 
-                                <td>
-                                    <div class="acoes">
-                                        <a
-                                            class="botao botao-editar"
-                                            href="/usuarios/<%= item.id %>/editar"
-                                        >
-                                            Editar
-                                        </a>
-
-                                        <a
-                                            class="botao botao-permissoes"
-                                            href="/usuarios/<%= item.id %>/permissoes"
-                                        >
-                                            Permissões
-                                        </a>
-
-                                        <% if (
-                                            Number(usuario.id) !==
-                                            Number(item.id)
-                                        ) { %>
-
-                                            <form
-                                                action="/usuarios/<%= item.id %>/status"
-                                                method="POST"
-                                                onsubmit="return confirm('Deseja realmente alterar o status deste usuário?');"
-                                            >
-                                                <% if (item.ativo) { %>
-                                                    <button
-                                                        type="submit"
-                                                        class="botao botao-desativar"
-                                                    >
-                                                        Desativar
-                                                    </button>
-                                                <% } else { %>
-                                                    <button
-                                                        type="submit"
-                                                        class="botao botao-ativar"
-                                                    >
-                                                        Ativar
-                                                    </button>
-                                                <% } %>
-                                            </form>
-
-                                        <% } %>
-                                    </div>
-                                </td>
-                            </tr>
-                        <% }); %>
-
-                    <% } %>
-                </tbody>
-            </table>
-        </section>
-    </main>
-
-    <footer>
-        CrioBlood — Sistema de gerenciamento
-    </footer>
-</body>
-</html>
+<%- include('../partials/fim') %>
