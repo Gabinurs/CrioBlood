@@ -83,6 +83,11 @@ class EstoqueService {
             WHERE data_validade < CURRENT_DATE
             AND status IN ('DISPONIVEL', 'EM_CONFERENCIA', 'RESERVADA')
         `);
+        // Bolsas vencidas saem do equipamento: libera a posição
+        await db.query(`
+            DELETE FROM armazenamento
+            WHERE hemocomponente_id IN (SELECT id FROM hemocomponentes WHERE status = 'VENCIDA')
+        `);
         return resultado.rowCount; // Quantas bolsas foram vencidas nesta varredura
     }
 }

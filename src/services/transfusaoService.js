@@ -10,10 +10,13 @@ class TransfusaoService {
                    p.abo AS paciente_abo, p.fator_rh AS paciente_rh,
                    h.codigo_original AS bolsa_codigo, h.abo AS bolsa_abo, h.fator_rh AS bolsa_rh,
                    to_char(h.data_validade, 'DD/MM/YYYY') AS validade_br,
-                   (h.data_validade - CURRENT_DATE) AS dias_restantes
+                   (h.data_validade - CURRENT_DATE) AS dias_restantes,
+                   e.nome AS equipamento, ar.gaveta, ar.caixa, ar.posicao_exata
             FROM solicitacoes_transfusionais s
             JOIN pacientes p ON p.id = s.paciente_id
             JOIN hemocomponentes h ON h.id = s.hemocomponente_id
+            LEFT JOIN armazenamento ar ON ar.hemocomponente_id = h.id
+            LEFT JOIN equipamentos e ON e.id = ar.equipamento_id
             WHERE s.status = 'RESERVADA'
             ORDER BY CASE s.urgencia WHEN 'EMERGENCIA' THEN 0 WHEN 'URGENTE' THEN 1 ELSE 2 END,
                      s.criado_em ASC
@@ -74,6 +77,7 @@ class TransfusaoService {
             await cliente.query(
                 `UPDATE hemocomponentes SET status = 'TRANSFUNDIDA', atualizado_em = CURRENT_TIMESTAMP WHERE id = $1`,
                 [b.id]);
+            await cliente.query('DELETE FROM armazenamento WHERE hemocomponente_id = $1', [b.id]);
             await cliente.query(
                 `UPDATE solicitacoes_transfusionais SET status = 'ATENDIDA', atualizado_em = CURRENT_TIMESTAMP WHERE id = $1`,
                 [s.id]);

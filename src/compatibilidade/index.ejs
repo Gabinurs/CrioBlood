@@ -51,11 +51,11 @@
             <div class="tabela-container">
                 <table>
                     <thead>
-                        <tr><th>Código</th><th>Lote</th><th>ABO/Rh</th><th>Compatibilidade</th><th>Validade</th><th>Prazo</th><th></th></tr>
+                        <tr><th>Código</th><th>Lote</th><th>ABO/Rh</th><th>Compatibilidade</th><th>Validade</th><th>Prazo</th><th>Localização</th><th></th></tr>
                     </thead>
                     <tbody>
                         <% if (bolsas.length === 0) { %>
-                            <tr><td colspan="7" class="vazio">Nenhuma bolsa compatível disponível no estoque agora.</td></tr>
+                            <tr><td colspan="8" class="vazio">Nenhuma bolsa compatível disponível no estoque agora.</td></tr>
                         <% } else { bolsas.forEach(function (b) { %>
                             <tr>
                                 <td><strong><%= b.codigo_original %></strong></td>
@@ -67,6 +67,7 @@
                                 </td>
                                 <td><%= b.data_validade_br %></td>
                                 <td><%- rot.validade(b.dias_restantes) %></td>
+                                <td><%= rot.local(b) %></td>
                                 <td>
                                     <form action="/compatibilidade/reservar" method="POST"
                                           data-confirmar="Reservar a bolsa <%= b.codigo_original %> para <%= solicitacao.paciente_nome %>?">

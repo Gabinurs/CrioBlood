@@ -7,11 +7,11 @@
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>Paciente</th><th>ABO/Rh</th><th>Produto</th><th>Bolsa</th><th>ABO/Rh da bolsa</th><th>Validade</th><th>Urgência</th><th>Observações</th><th></th></tr>
+                <tr><th>Paciente</th><th>ABO/Rh</th><th>Produto</th><th>Bolsa</th><th>ABO/Rh da bolsa</th><th>Validade</th><th>Localização</th><th>Urgência</th><th>Observações</th><th></th></tr>
             </thead>
             <tbody>
                 <% if (prontas.length === 0) { %>
-                    <tr><td colspan="9" class="vazio">Nenhuma bolsa reservada no momento.<br>Reserve uma bolsa em <a href="/compatibilidade">Compatibilidade</a>.</td></tr>
+                    <tr><td colspan="10" class="vazio">Nenhuma bolsa reservada no momento.<br>Reserve uma bolsa em <a href="/compatibilidade">Compatibilidade</a>.</td></tr>
                 <% } else { prontas.forEach(function (s) { %>
                     <tr>
                         <td><strong><%= s.paciente_nome %></strong><br><small><%= s.prontuario %></small></td>
@@ -20,6 +20,7 @@
                         <td><strong><%= s.bolsa_codigo %></strong></td>
                         <td><%= rot.tipagem(s.bolsa_abo, s.bolsa_rh) %></td>
                         <td><%= s.validade_br %> <%- rot.validade(s.dias_restantes) %></td>
+                        <td><%= rot.local(s) %></td>
                         <td><%- rot.urgencia(s.urgencia) %></td>
                         <td>
                             <form id="reg-<%= s.id %>" action="/transfusoes/registrar" method="POST"

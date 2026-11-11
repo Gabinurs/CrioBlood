@@ -53,9 +53,12 @@ class CompatibilidadeService {
             `SELECT h.id, h.codigo_original, h.tipo, h.abo, h.fator_rh,
                     to_char(h.data_validade, 'DD/MM/YYYY') AS data_validade_br,
                     (h.data_validade - CURRENT_DATE) AS dias_restantes,
-                    l.codigo AS codigo_lote
+                    l.codigo AS codigo_lote,
+                    e.nome AS equipamento, a.gaveta, a.caixa, a.posicao_exata
              FROM hemocomponentes h
              JOIN lotes_recebimento l ON l.id = h.lote_id
+             LEFT JOIN armazenamento a ON a.hemocomponente_id = h.id
+             LEFT JOIN equipamentos e ON e.id = a.equipamento_id
              WHERE h.tipo = $1
                AND h.status = 'DISPONIVEL'
                AND h.data_validade >= CURRENT_DATE

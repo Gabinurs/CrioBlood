@@ -1,5 +1,12 @@
 
 const usuarioService = require('../services/usuarioService');
+const { avisar } = require('../utils/erros');
+
+// Valida o ID recebido pela URL
+function lerId(req) {
+    const id = Number(req.params.id);
+    return Number.isInteger(id) && id > 0 ? id : null;
+}
 
 // Exibir lista de usuários
 async function listar(req, res) {
@@ -8,9 +15,7 @@ async function listar(req, res) {
 
         return res.render('usuarios/index', {
             usuario: req.session.usuario,
-            usuarios,
-            erro: null,
-            sucesso: null
+            usuarios
         });
     } catch (erro) {
         console.error('Erro ao listar usuários:', erro.message);
@@ -19,41 +24,36 @@ async function listar(req, res) {
 }
 
 // Exibir formulário de cadastro
-async function mostrarCadastro(req, res) {
-    try {
-        return res.render('usuarios/cadastro', {
-            usuario: req.session.usuario,
-            erro: null
-        });
-    } catch (erro) {
-        console.error('Erro ao abrir cadastro:', erro.message);
-        return res.status(500).send('Erro ao abrir formulário.');
-    }
+function mostrarCadastro(req, res) {
+    return res.render('usuarios/cadastro', {
+        usuario: req.session.usuario,
+        valores: {}
+    });
 }
 
 // Cadastrar usuário
 async function cadastrar(req, res) {
-    try {
-        const nome = req.body.nome?.trim();
-        const login = req.body.login?.trim();
-        const senha = req.body.senha;
+    const nome = req.body.nome?.trim();
+    const login = req.body.login?.trim();
+    const senha = req.body.senha;
 
+    const mostrarErro = (mensagem, status = 400) => res.status(status).render('usuarios/cadastro', {
+        usuario: req.session.usuario,
+        valores: { nome, login },
+        erro: mensagem
+    });
+
+    try {
         if (!nome || !login || !senha) {
-            return res.status(400).send(
-                'Preencha todos os campos obrigatórios.'
-            );
+            return mostrarErro('Preencha todos os campos obrigatórios.');
         }
 
         if (nome.length > 150 || login.length > 80) {
-            return res.status(400).send(
-                'Nome ou login ultrapassa o limite permitido.'
-            );
+            return mostrarErro('Nome ou login ultrapassa o limite permitido.');
         }
 
         if (senha.length < 8) {
-            return res.status(400).send(
-                'A senha deve ter pelo menos 8 caracteres.'
-            );
+            return mostrarErro('A senha deve ter pelo menos 8 caracteres.');
         }
 
         await usuarioService.criarUsuario({
@@ -63,12 +63,11 @@ async function cadastrar(req, res) {
             administrador: false
         });
 
+        avisar(req, 'ok', 'Usuário cadastrado com sucesso.');
         return res.redirect('/usuarios');
     } catch (erro) {
         if (erro.code === '23505') {
-            return res.status(409).send(
-                'Este login já está cadastrado.'
-            );
+            return mostrarErro('Este login já está cadastrado.', 409);
         }
 
         console.error('Erro ao cadastrar usuário:', erro.message);
@@ -79,9 +78,9 @@ async function cadastrar(req, res) {
 // Exibir formulário de edição
 async function mostrarEdicao(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = lerId(req);
 
-        if (!Number.isInteger(id) || id <= 0) {
+        if (!id) {
             return res.status(400).send('ID de usuário inválido.');
         }
 
@@ -93,56 +92,50 @@ async function mostrarEdicao(req, res) {
 
         return res.render('usuarios/editar', {
             usuario: req.session.usuario,
-            usuarioAlvo,
-            erro: null
+            usuarioAlvo
         });
     } catch (erro) {
         console.error('Erro ao abrir edição:', erro.message);
-        return res.status(500).send(
-            'Erro ao abrir formulário de edição.'
-        );
+        return res.status(500).send('Erro ao abrir formulário de edição.');
     }
 }
 
 // Atualizar nome e login
 async function atualizar(req, res) {
-    try {
-        const id = Number(req.params.id);
-        const nome = req.body.nome?.trim();
-        const login = req.body.login?.trim();
+    const id = lerId(req);
+    const nome = req.body.nome?.trim();
+    const login = req.body.login?.trim();
 
-        if (!Number.isInteger(id) || id <= 0) {
+    const mostrarErro = (mensagem, status = 400) => res.status(status).render('usuarios/editar', {
+        usuario: req.session.usuario,
+        usuarioAlvo: { id, nome, login },
+        erro: mensagem
+    });
+
+    try {
+        if (!id) {
             return res.status(400).send('ID de usuário inválido.');
         }
 
         if (!nome || !login) {
-            return res.status(400).send(
-                'Preencha o nome e o login.'
-            );
+            return mostrarErro('Preencha o nome e o login.');
         }
 
         if (nome.length > 150 || login.length > 80) {
-            return res.status(400).send(
-                'Nome ou login ultrapassa o limite permitido.'
-            );
+            return mostrarErro('Nome ou login ultrapassa o limite permitido.');
         }
 
-        const usuarioAtualizado =
-            await usuarioService.atualizarUsuario(id, {
-                nome,
-                login
-            });
+        const usuarioAtualizado = await usuarioService.atualizarUsuario(id, { nome, login });
 
         if (!usuarioAtualizado) {
             return res.status(404).send('Usuário não encontrado.');
         }
 
+        avisar(req, 'ok', 'Dados do usuário atualizados.');
         return res.redirect('/usuarios');
     } catch (erro) {
         if (erro.code === '23505') {
-            return res.status(409).send(
-                'Este login já está cadastrado.'
-            );
+            return mostrarErro('Este login já está cadastrado.', 409);
         }
 
         console.error('Erro ao atualizar usuário:', erro.message);
@@ -153,17 +146,16 @@ async function atualizar(req, res) {
 // Ativar ou desativar uma conta
 async function alternarStatus(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = lerId(req);
 
-        if (!Number.isInteger(id) || id <= 0) {
+        if (!id) {
             return res.status(400).send('ID de usuário inválido.');
         }
 
         // Impede que o administrador desative a própria conta.
         if (Number(req.session.usuario.id) === id) {
-            return res.status(400).send(
-                'Você não pode alterar o status da sua própria conta.'
-            );
+            avisar(req, 'erro', 'Você não pode alterar o status da sua própria conta.');
+            return res.redirect('/usuarios');
         }
 
         const usuarioAlvo = await usuarioService.buscarPorId(id);
@@ -172,26 +164,22 @@ async function alternarStatus(req, res) {
             return res.status(404).send('Usuário não encontrado.');
         }
 
-        await usuarioService.definirAtivo(
-            id,
-            !usuarioAlvo.ativo
-        );
+        await usuarioService.definirAtivo(id, !usuarioAlvo.ativo);
 
+        avisar(req, 'ok', `Usuário ${usuarioAlvo.ativo ? 'desativado' : 'ativado'}.`);
         return res.redirect('/usuarios');
     } catch (erro) {
         console.error('Erro ao alterar status:', erro.message);
-        return res.status(500).send(
-            'Erro ao alterar status do usuário.'
-        );
+        return res.status(500).send('Erro ao alterar status do usuário.');
     }
 }
 
 // Exibir permissões de um usuário
 async function mostrarPermissoes(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = lerId(req);
 
-        if (!Number.isInteger(id) || id <= 0) {
+        if (!id) {
             return res.status(400).send('ID de usuário inválido.');
         }
 
@@ -202,21 +190,14 @@ async function mostrarPermissoes(req, res) {
         }
 
         const permissoes = await usuarioService.listarPermissoes();
-
-        const permissoesUsuario =
-            await usuarioService.listarPermissoesUsuario(id);
-
-        const idsSelecionados = permissoesUsuario.map(
-            permissao => permissao.id
-        );
+        const permissoesUsuario = await usuarioService.listarPermissoesUsuario(id);
+        const idsSelecionados = permissoesUsuario.map(permissao => permissao.id);
 
         return res.render('usuarios/permissoes', {
             usuario: req.session.usuario,
             usuarioAlvo,
             permissoes,
-            idsSelecionados,
-            erro: null,
-            sucesso: null
+            idsSelecionados
         });
     } catch (erro) {
         console.error('Erro ao carregar permissões:', erro.message);
@@ -227,20 +208,18 @@ async function mostrarPermissoes(req, res) {
 // Salvar permissões de um usuário
 async function salvarPermissoes(req, res) {
     try {
-        const id = Number(req.params.id);
+        const id = lerId(req);
 
-        if (!Number.isInteger(id) || id <= 0) {
+        if (!id) {
             return res.status(400).send('ID de usuário inválido.');
         }
 
         const permissoesIds = req.body.permissoes || [];
-
-        const lista = Array.isArray(permissoesIds)
-            ? permissoesIds
-            : [permissoesIds];
+        const lista = Array.isArray(permissoesIds) ? permissoesIds : [permissoesIds];
 
         await usuarioService.salvarPermissoes(id, lista);
 
+        avisar(req, 'ok', 'Permissões salvas.');
         return res.redirect(`/usuarios/${id}/permissoes`);
     } catch (erro) {
         console.error('Erro ao salvar permissões:', erro.message);

@@ -112,6 +112,10 @@ class HemocomponenteService {
                 atualizado_em = CURRENT_TIMESTAMP
             WHERE id = $10
         `;
+        if (['DESCARTADA', 'VENCIDA'].includes(dados.status)) {
+            await db.query('DELETE FROM armazenamento WHERE hemocomponente_id = $1', [id]);
+        }
+
         const resultado = await db.query(query, [
             dados.tipo,
             dados.abo || null,
@@ -141,6 +145,7 @@ class HemocomponenteService {
              WHERE id = $1`,
             [id]
         );
+        await db.query('DELETE FROM armazenamento WHERE hemocomponente_id = $1', [id]);
         return resultado.rowCount > 0;
     }
 }
