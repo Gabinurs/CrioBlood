@@ -24,7 +24,7 @@ services:
     container_name: crioblood_app
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       PORT: 3000
       NODE_ENV: development
