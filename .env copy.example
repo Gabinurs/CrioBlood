@@ -1,0 +1,14 @@
+
+# Aplicação
+PORT=3000
+NODE_ENV=development
+
+# Sessões
+SESSION_SECRET=SUBSTITUA_POR_UM_SEGREDO_FORTE
+
+# Banco de dados PostgreSQL
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=crioblood
+DB_USER=postgres
+DB_PASSWORD=SUBSTITUA_PELA_SENHA_DO_BANCO

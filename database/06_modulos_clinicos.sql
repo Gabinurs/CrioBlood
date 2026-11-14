@@ -36,6 +36,15 @@ CREATE TABLE IF NOT EXISTS solicitacoes_transfusionais (
     CHECK (status NOT IN ('RESERVADA', 'ATENDIDA') OR hemocomponente_id IS NOT NULL)
 );
 
+ALTER TABLE solicitacoes_transfusionais
+    ADD COLUMN IF NOT EXISTS tipo VARCHAR(10)
+        CHECK (tipo IN ('CH', 'PLASMA', 'PLAQUETAS', 'CRIO'));
+ALTER TABLE solicitacoes_transfusionais
+    ADD COLUMN IF NOT EXISTS urgencia VARCHAR(10) NOT NULL DEFAULT 'ROTINA'
+        CHECK (urgencia IN ('ROTINA', 'URGENTE', 'EMERGENCIA'));
+ALTER TABLE solicitacoes_transfusionais
+    ADD COLUMN IF NOT EXISTS indicacao TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_solicitacoes_status ON solicitacoes_transfusionais(status);
 CREATE INDEX IF NOT EXISTS idx_solicitacoes_paciente ON solicitacoes_transfusionais(paciente_id);
 
