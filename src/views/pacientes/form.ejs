@@ -61,22 +61,6 @@
                 <input type="tel" id="telefone" name="telefone" maxlength="30" value="<%= v('telefone') %>">
             </div>
             <div class="campo">
-                <label for="abo">Grupo ABO</label>
-                <select id="abo" name="abo">
-                    <% ['', 'A', 'B', 'AB', 'O'].forEach(function (o) { %>
-                        <option value="<%= o %>" <%= v('abo') === o ? 'selected' : '' %>><%= o || 'Não informado' %></option>
-                    <% }) %>
-                </select>
-            </div>
-            <div class="campo">
-                <label for="fator_rh">Fator Rh</label>
-                <select id="fator_rh" name="fator_rh">
-                    <option value="" <%= v('fator_rh') === '' ? 'selected' : '' %>>Não informado</option>
-                    <option value="+" <%= v('fator_rh') === '+' ? 'selected' : '' %>>Positivo (+)</option>
-                    <option value="-" <%= v('fator_rh') === '-' ? 'selected' : '' %>>Negativo (-)</option>
-                </select>
-            </div>
-            <div class="campo">
                 <label for="convenio">Convênio</label>
                 <input type="text" id="convenio" name="convenio" maxlength="120" value="<%= v('convenio') %>">
             </div>
