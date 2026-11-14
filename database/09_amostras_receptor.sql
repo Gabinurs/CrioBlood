@@ -22,4 +22,3 @@ CREATE TABLE IF NOT EXISTS amostras_receptor (
 );
 CREATE INDEX IF NOT EXISTS idx_amostras_receptor_paciente_data ON amostras_receptor(paciente_id, coletado_em DESC);
 CREATE INDEX IF NOT EXISTS idx_amostras_receptor_validade ON amostras_receptor(coletado_em);
--- O resultado válido mais recente passa a alimentar o tipo sanguíneo cadastrado.
