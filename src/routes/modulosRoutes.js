@@ -6,6 +6,8 @@ const { exigirAutenticacao } = require('../middlewares/autenticacao');
 const Paciente = require('../controllers/pacienteController');
 const AmostraReceptor = require('../controllers/amostraReceptorController');
 const Solicitacao = require('../controllers/solicitacaoController');
+const SetorSolicitacao = require('../controllers/setorSolicitacaoController');
+const { exigirAdministrador } = require('../middlewares/autenticacao');
 const Compatibilidade = require('../controllers/compatibilidadeController');
 const Transfusao = require('../controllers/transfusaoController');
 const EstoquePagina = require('../controllers/estoquePaginaController');
@@ -41,8 +43,13 @@ router.post('/equipamentos/:id/editar', Equipamento.atualizar);
 
 // Solicitações transfusionais
 router.get('/solicitacoes', Solicitacao.listar);
+router.get('/solicitacoes/setores', exigirAdministrador, SetorSolicitacao.listar);
+router.post('/solicitacoes/setores', exigirAdministrador, SetorSolicitacao.criar);
+router.post('/solicitacoes/setores/:id/status', exigirAdministrador, SetorSolicitacao.alternar);
 router.get('/solicitacoes/nova', Solicitacao.formNova);
 router.post('/solicitacoes/nova', Solicitacao.criar);
+router.get('/solicitacoes/:id/editar', Solicitacao.formEditar);
+router.post('/solicitacoes/:id/editar', Solicitacao.atualizar);
 router.post('/solicitacoes/:id/cancelar', Solicitacao.cancelar);
 
 // Compatibilidade e reserva de bolsa
