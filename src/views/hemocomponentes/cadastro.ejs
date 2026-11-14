@@ -30,7 +30,7 @@
             <div class="bolsa-secao-titulo"><span>03</span><div><h3>Coleta e validade</h3><p>A validade será calculada automaticamente pelo tipo de hemocomponente.</p></div></div>
             <div class="bolsa-campos bolsa-campos-curtos">
                 <div class="campo"><label for="data_coleta">Data da coleta *</label><input type="date" id="data_coleta" name="data_coleta" required></div>
-                <div class="campo"><label for="data_validade">Data de validade *</label><input type="date" id="data_validade" name="data_validade" required><small id="ajuda-validade">Selecione o hemocomponente e a data da coleta.</small></div>
+                <div class="campo"><label for="data_validade">Data de validade *</label><input type="date" id="data_validade" name="data_validade" readonly required aria-readonly="true"><small id="ajuda-validade">Selecione o hemocomponente e a data da coleta.</small></div>
             </div>
             <div class="bolsa-regra-validade" id="regra-validade">Prazo aplicado: aguardando seleção do hemocomponente.</div>
         </section>
@@ -55,7 +55,50 @@
             <div class="campo bolsa-observacoes"><label for="observacoes">Observações</label><textarea id="observacoes" name="observacoes" rows="3" placeholder="Informações adicionais sobre o recebimento..."></textarea></div>
         </section>
 
-        <div class="rodape-form bolsa-rodape"><a class="botao botao-claro" href="/lotes">Cancelar</a><button class="botao" type="submit">Salvar bolsa e gerar etiqueta</button></div>
+        <div class="rodape-form bolsa-rodape"><a class="botao botao-claro" href="/lotes">Cancelar</a><button class="botao" type="submit">Salvar bolsa</button></div>
     </form>
 </section>
+<script>
+(() => {
+ const tipo = document.getElementById('tipo');
+ const coleta = document.getElementById('data_coleta');
+ const validade = document.getElementById('data_validade');
+ const regra = document.getElementById('regra-validade');
+ const ajuda = document.getElementById('ajuda-validade');
+ const prazos = { CH: ['35 dias', 35, 'dias'], PLAQUETAS: ['5 dias', 5, 'dias'], PLASMA: ['1 ano', 1, 'anos'], CRIO: ['1 ano', 1, 'anos'] };
+ function atualizarValidade() {
+   const p = prazos[tipo.value];
+   validade.value = '';
+   if (!p || !coleta.value) {
+     regra.textContent = 'Prazo aplicado: aguardando seleção do hemocomponente e data da coleta.';
+     ajuda.textContent = 'A validade será preenchida automaticamente.';
+     return;
+   }
+   const [ano, mes, dia] = coleta.value.split('-').map(Number);
+   const data = new Date(Date.UTC(ano, mes - 1, dia));
+   if (p[2] === 'dias') data.setUTCDate(data.getUTCDate() + p[1]);
+   else data.setUTCFullYear(data.getUTCFullYear() + p[1]);
+   validade.value = data.toISOString().slice(0,10);
+   regra.textContent = 'Prazo aplicado: ' + p[0] + '. Validade calculada automaticamente.';
+   ajuda.textContent = 'Campo automático, não precisa preencher.';
+ }
+ tipo.addEventListener('change', atualizarValidade);
+ coleta.addEventListener('change', atualizarValidade);
+ const checks = [...document.querySelectorAll('[data-exame-bolsa]')];
+ const contador = document.getElementById('contador-exames');
+ const marcar = document.querySelector('[data-marcar-exames]');
+ function contar() {
+   const n = checks.filter(x => x.checked).length;
+   contador.textContent = n + ' de ' + checks.length + ' selecionados';
+   marcar.textContent = n === checks.length ? 'Desmarcar todos' : 'Marcar todos';
+ }
+ checks.forEach(x => x.addEventListener('change', contar));
+ marcar.addEventListener('click', () => {
+   const marcarTodos = checks.some(x => !x.checked);
+   checks.forEach(x => x.checked = marcarTodos);
+   contar();
+ });
+ contar();
+})();
+</script>
 <%- include('../partials/fim') %>
