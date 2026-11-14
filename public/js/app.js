@@ -162,4 +162,67 @@
     document.querySelectorAll('.alerta-ok').forEach(function (aviso) {
         setTimeout(function () { aviso.hidden = true; }, 6000);
     });
+
+    // Navegação segura entre as etapas do formulário de solicitação transfusional.
+    var formularioSolicitacao = document.querySelector('[data-form-solicitacao]');
+    if (formularioSolicitacao) {
+        var etapasSolicitacao = Array.prototype.slice.call(formularioSolicitacao.querySelectorAll('[data-etapa]'));
+        var paineisSolicitacao = Array.prototype.slice.call(formularioSolicitacao.querySelectorAll('[data-painel-etapa]'));
+        var voltarSolicitacao = formularioSolicitacao.querySelector('[data-voltar-etapa]');
+        var proximaSolicitacao = formularioSolicitacao.querySelector('[data-proxima-etapa]');
+        var salvarSolicitacao = formularioSolicitacao.querySelector('[data-salvar-solicitacao]');
+
+        function mostrarEtapaSolicitacao(numero) {
+            paineisSolicitacao.forEach(function (painel, indice) {
+                painel.hidden = indice !== numero - 1;
+            });
+            etapasSolicitacao.forEach(function (botao, indice) {
+                botao.classList.toggle('ativa', indice === numero - 1);
+                botao.setAttribute('aria-selected', indice === numero - 1 ? 'true' : 'false');
+            });
+            if (voltarSolicitacao) voltarSolicitacao.hidden = numero === 1;
+            if (proximaSolicitacao) proximaSolicitacao.hidden = numero === 2;
+            if (salvarSolicitacao) salvarSolicitacao.hidden = numero !== 2;
+        }
+
+        function validarEtapaSolicitacao(numero) {
+            var painel = paineisSolicitacao[numero - 1];
+            if (!painel) return false;
+            var camposInvalidos = Array.prototype.slice.call(
+                painel.querySelectorAll('input, select, textarea')
+            ).filter(function (campo) {
+                return !campo.disabled && !campo.checkValidity();
+            });
+            if (camposInvalidos.length) {
+                camposInvalidos[0].reportValidity();
+                camposInvalidos[0].focus();
+                return false;
+            }
+            return true;
+        }
+
+        if (proximaSolicitacao) proximaSolicitacao.addEventListener('click', function () {
+            if (validarEtapaSolicitacao(1)) mostrarEtapaSolicitacao(2);
+        });
+        if (voltarSolicitacao) voltarSolicitacao.addEventListener('click', function () {
+            mostrarEtapaSolicitacao(1);
+        });
+        etapasSolicitacao.forEach(function (botao, indice) {
+            botao.addEventListener('click', function () {
+                var destino = indice + 1;
+                if (destino === 1 || validarEtapaSolicitacao(1)) mostrarEtapaSolicitacao(destino);
+            });
+        });
+        formularioSolicitacao.addEventListener('submit', function (evento) {
+            if (!validarEtapaSolicitacao(1)) {
+                evento.preventDefault();
+                mostrarEtapaSolicitacao(1);
+            } else if (!validarEtapaSolicitacao(2)) {
+                evento.preventDefault();
+                mostrarEtapaSolicitacao(2);
+            }
+        });
+        mostrarEtapaSolicitacao(1);
+    }
+
 })();
