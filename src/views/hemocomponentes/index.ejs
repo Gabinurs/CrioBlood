@@ -1,11 +1,15 @@
-<%- include('../partials/inicio', { titulo: 'Cadastro de bolsas', subtitulo: 'Hemocomponentes cadastrados no sistema', ativo: 'hemocomponentes' }) %>
+<%- include('../partials/inicio', { titulo: 'Bolsas do lote', subtitulo: 'Cadastro e conferência das bolsas recebidas em um lote', ativo: 'lotes' }) %>
 
 <section class="cabecalho-pagina">
     <div>
-        <h3>Hemocomponentes</h3>
-        <p>Cadastre as bolsas recebidas em cada lote e acompanhe a conferência. A bolsa só fica disponível depois das três confirmações.</p>
+        <h3>Bolsas recebidas</h3>
+        <p>As bolsas são cadastradas dentro de um lote aberto. Selecione um lote para consultar ou adicionar bolsas.</p>
     </div>
-    <a class="botao" href="/hemocomponentes/novo">+ Novo registro</a>
+    <% if (typeof lote_id !== 'undefined' && lote_id) { %>
+        <a class="botao" href="/hemocomponentes/novo?lote_id=<%= lote_id %>">+ Adicionar bolsa a este lote</a>
+    <% } else { %>
+        <a class="botao botao-claro" href="/lotes">Voltar aos lotes</a>
+    <% } %>
 </section>
 
 <section class="painel" data-filtravel>
