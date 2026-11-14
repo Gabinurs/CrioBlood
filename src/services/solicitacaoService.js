@@ -1,5 +1,6 @@
 const db = require('../database');
 const { ErroNegocio } = require('../utils/erros');
+const AmostraReceptorService = require('./amostraReceptorService');
 
 const TIPOS = ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'];
 const URGENCIAS = ['ROTINA', 'URGENTE', 'EMERGENCIA'];
@@ -52,6 +53,9 @@ class SolicitacaoService {
             'SELECT id, ativo FROM pacientes WHERE id = $1', [pacienteId])).rows[0];
         if (!paciente) throw new ErroNegocio('Paciente não encontrado.');
         if (!paciente.ativo) throw new ErroNegocio('Esse paciente está inativo.');
+
+        const liberacao = await AmostraReceptorService.podeSolicitar(pacienteId);
+        if (!liberacao.permitido) throw new ErroNegocio(liberacao.motivo);
 
         const { rows } = await db.query(
             `INSERT INTO solicitacoes_transfusionais
