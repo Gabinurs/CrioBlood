@@ -4,6 +4,7 @@ const router = express.Router();
 
 const { exigirAutenticacao } = require('../middlewares/autenticacao');
 const Paciente = require('../controllers/pacienteController');
+const AmostraReceptor = require('../controllers/amostraReceptorController');
 const Solicitacao = require('../controllers/solicitacaoController');
 const Compatibilidade = require('../controllers/compatibilidadeController');
 const Transfusao = require('../controllers/transfusaoController');
@@ -19,6 +20,9 @@ router.use(['/pacientes', '/estoque', '/equipamentos', '/solicitacoes', '/compat
 router.get('/pacientes', Paciente.listar);
 router.get('/pacientes/novo', Paciente.formNovo);
 router.post('/pacientes/novo', Paciente.criar);
+router.get('/pacientes/:id/dossie', AmostraReceptor.dossie);
+router.get('/pacientes/:id/amostras/nova', AmostraReceptor.nova);
+router.post('/pacientes/:id/amostras', AmostraReceptor.criar);
 router.get('/pacientes/:id/editar', Paciente.formEditar);
 router.post('/pacientes/:id/editar', Paciente.atualizar);
 
