@@ -85,9 +85,9 @@ class PacienteService {
                 `INSERT INTO pacientes
                     (nome, nome_mae, prontuario, data_nascimento, abo, fator_rh,
                      cns, cpf, rg, sexo, telefone, convenio, plano, observacoes, cadastrado_por)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                 VALUES ($1, $2, $3, $4, NULL, NULL, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                  RETURNING id`,
-                [d.nome, d.nome_mae, d.prontuario, d.data_nascimento, d.abo, d.fator_rh,
+                [d.nome, d.nome_mae, d.prontuario, d.data_nascimento,
                  d.cns, d.cpf, d.rg, d.sexo, d.telefone, d.convenio, d.plano, d.observacoes, usuarioId]
             );
             return rows[0].id;
