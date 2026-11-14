@@ -4,7 +4,7 @@ const COLUNAS_DATAS=`to_char(h.data_coleta,'DD/MM/YYYY') AS data_coleta_br,to_ch
 function calcularDataValidade(tipo, dataColeta) {
     const prazos = { CH: { dias: 35 }, PLAQUETAS: { dias: 5 }, PLASMA: { anos: 1 }, CRIO: { anos: 1 } };
     const prazo = prazos[tipo];
-    if (!prazo || !/^\\d{4}-\\d{2}-\\d{2}$/.test(String(dataColeta || ''))) {
+    if (!prazo || !/^\d{4}-\d{2}-\d{2}$/.test(String(dataColeta || ''))) {
         throw new Error('Informe o tipo de hemocomponente e uma data de coleta válida.');
     }
     const [ano, mes, dia] = dataColeta.split('-').map(Number);
