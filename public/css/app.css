@@ -556,3 +556,16 @@ td.vazio, .vazio {
     .amostra-form .rodape-form { flex-direction: column; }
     .amostra-form .rodape-form .botao { width: 100%; justify-content: center; }
 }
+
+/* Solicitação transfusional em duas etapas */
+.solicitacao-form { max-width: 1000px; padding: 30px; border-radius: 15px; box-shadow: 0 12px 32px rgba(16,36,62,.05); }
+.solicitacao-form .grade-form { gap: 20px; }
+.solicitacao-form .campo input[type="datetime-local"] { width:100%; padding:11px 12px; border:1px solid #dce2eb; border-radius:7px; background:white; color:var(--texto); font:inherit; font-size:14px; }
+.solicitacao-form .marca { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--azul); font-weight:600; }
+.solicitacao-form .marca input { width:17px; height:17px; accent-color:#d7193f; }
+.solicitacao-etapas { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding-bottom:20px; margin-bottom:24px; border-bottom:1px solid var(--borda); }
+.solicitacao-etapas .etapa { padding:14px 18px; border:1px solid #dce2eb; border-radius:9px; background:#f8fafc; color:var(--azul); font-size:14px; font-weight:700; cursor:pointer; text-align:left; }
+.solicitacao-etapas .etapa.ativa { border-color:#e51e43; background:#fff0f3; color:#b51233; box-shadow:inset 0 -3px 0 #e51e43; }
+.solicitacao-form h3 { color:var(--azul); margin-bottom:7px; }
+.solicitacao-form .rodape-form { justify-content:flex-end; }
+@media(max-width:650px){.solicitacao-form{padding:17px}.solicitacao-etapas .etapa{padding:11px 9px;font-size:12px}}
