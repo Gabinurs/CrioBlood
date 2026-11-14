@@ -48,10 +48,15 @@
                             <td><%= p.data_nascimento_br %></td>
                             <td><%= p.prontuario || '—' %></td>
                             <td class="acoes acoes-receptor">
-                                <a class="botao botao-pequeno botao-claro" href="/pacientes/<%= p.id %>/dossie">Dossiê</a>
-                                <a class="botao botao-pequeno" href="/pacientes/<%= p.id %>/amostras/nova">Nova amostra</a>
-                                <a class="botao botao-pequeno botao-claro" href="/pacientes/<%= p.id %>/editar">Edição</a>
-                                <a class="botao botao-pequeno botao-perigo" href="/solicitacoes/nova?paciente_id=<%= p.id %>&urgencia=EMERGENCIA">Extrema urgência</a>
+                                <details class="menu-acoes-receptor">
+                                    <summary>Ações ▾</summary>
+                                    <div class="menu-acoes-conteudo">
+                                        <a href="/pacientes/<%= p.id %>/dossie">Dossiê</a>
+                                        <a href="/pacientes/<%= p.id %>/amostras/nova">Nova amostra</a>
+                                        <a href="/pacientes/<%= p.id %>/editar">Edição</a>
+                                        <a href="/solicitacoes/nova?paciente_id=<%= p.id %>&urgencia=EMERGENCIA">Extrema urgência</a>
+                                    </div>
+                                </details>
                             </td>
                              
                         </tr>
