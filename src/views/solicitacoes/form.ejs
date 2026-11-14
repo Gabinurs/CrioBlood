@@ -1,63 +1,68 @@
-<%- include('../partials/inicio', { titulo: 'Nova solicitação', subtitulo: 'Pedido de hemocomponente para um paciente', ativo: 'solicitacoes' }) %>
-<% var val = locals.valores || {}; %>
-
-<section class="painel formulario">
-    <% if (pacientes.length === 0) { %>
-        <div class="alerta alerta-aviso">
-            Não há pacientes ativos. <a href="/pacientes/novo">Cadastre um paciente</a> antes de criar a solicitação.
-        </div>
-    <% } %>
-
-    <form method="POST" action="/solicitacoes/nova">
-        <div class="grade-form">
-            <div class="campo largo">
-                <label for="paciente_id">Paciente</label>
-                <select id="paciente_id" name="paciente_id" required>
-                    <option value="">Selecione...</option>
-                    <% pacientes.forEach(function (p) { %>
-                        <option value="<%= p.id %>" <%= String(val.paciente_id) === String(p.id) ? 'selected' : '' %>>
-                            <%= p.nome %> — prontuário <%= p.prontuario %> — <%= rot.tipagem(p.abo, p.fator_rh) %>
-                        </option>
-                    <% }) %>
-                </select>
-            </div>
-
-            <div class="campo">
-                <label for="tipo">Hemocomponente</label>
-                <select id="tipo" name="tipo" required>
-                    <option value="">Selecione...</option>
-                    <% ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'].forEach(function (t) { %>
-                        <option value="<%= t %>" <%= val.tipo === t ? 'selected' : '' %>><%= rot.tipo(t) %></option>
-                    <% }) %>
-                </select>
-            </div>
-
-            <div class="campo">
-                <label for="urgencia">Urgência</label>
-                <select id="urgencia" name="urgencia" required>
-                    <option value="ROTINA" <%= (val.urgencia || 'ROTINA') === 'ROTINA' ? 'selected' : '' %>>Rotina</option>
-                    <option value="URGENTE" <%= val.urgencia === 'URGENTE' ? 'selected' : '' %>>Urgente</option>
-                    <option value="EMERGENCIA" <%= val.urgencia === 'EMERGENCIA' ? 'selected' : '' %>>Emergência</option>
-                </select>
-            </div>
-
-            <div class="campo largo">
-                <label for="medico_solicitante">Médico solicitante</label>
-                <input type="text" id="medico_solicitante" name="medico_solicitante" maxlength="255"
-                       value="<%= val.medico_solicitante || '' %>" required>
-            </div>
-
-            <div class="campo largo">
-                <label for="indicacao">Indicação clínica</label>
-                <textarea id="indicacao" name="indicacao" rows="3"><%= val.indicacao || '' %></textarea>
-            </div>
-        </div>
-
-        <div class="rodape-form">
-            <button class="botao" type="submit">Registrar solicitação</button>
-            <a class="botao botao-claro" href="/solicitacoes">Cancelar</a>
-        </div>
-    </form>
+<%- include('../partials/inicio', { titulo:'Nova solicitação transfusional', subtitulo:'Pedido médico e informações complementares', ativo:'solicitacoes' }) %>
+<% const val=locals.valores||{}; const edicao=Boolean(locals.edicao); %>
+<section class="painel formulario solicitacao-form">
+ <div class="solicitacao-etapas" role="tablist" aria-label="Etapas da solicitação">
+  <button type="button" class="etapa ativa" data-etapa="1" aria-selected="true">1. Solicitação</button>
+  <button type="button" class="etapa" data-etapa="2" aria-selected="false">2. Complementar</button>
+ </div>
+ <form method="POST" action="<%= edicao?('/solicitacoes/'+val.id+'/editar'):'/solicitacoes/nova' %>" data-form-solicitacao>
+ <div data-painel-etapa="1">
+  <h3>Dados da solicitação</h3><p class="descricao">Identifique o receptor e o pedido médico.</p>
+  <div class="grade-form" style="margin-top:20px">
+   <div class="campo largo"><label for="paciente_id">Paciente *</label>
+    <select name="paciente_id" id="paciente_id" required <%= edicao?'disabled':'' %>>
+     <option value="">Selecione o receptor...</option>
+     <% pacientes.forEach(function(p){ %><option value="<%= p.id %>" <%= String(val.paciente_id||'')===String(p.id)?'selected':'' %>><%= p.nome %> — <%= p.prontuario||'Sem prontuário' %> — <%= rot.tipagem(p.abo,p.fator_rh) %></option><% }) %>
+    </select>
+    <% if(edicao){ %><input type="hidden" name="paciente_id" value="<%= val.paciente_id %>"><% } %>
+    <small>Para registrar a solicitação, o receptor precisa ter amostra válida e exames registrados.</small>
+   </div>
+   <div class="campo"><label for="tipo">Hemocomponente *</label><select id="tipo" name="tipo" required>
+    <option value="">Selecione...</option><% ['CH','PLASMA','PLAQUETAS','CRIO'].forEach(function(t){ %><option value="<%= t %>" <%= val.tipo===t?'selected':'' %>><%= rot.tipo(t) %></option><% }) %>
+   </select></div>
+   <div class="campo"><label for="quantidade">Quantidade de bolsas *</label><input type="number" id="quantidade" name="quantidade" min="1" max="10" value="<%= edicao?1:(val.quantidade||1) %>" required <%= edicao?'readonly':'' %>><small>Uma solicitação será criada por bolsa. Máximo: 10.</small></div>
+   <div class="campo"><label for="urgencia">Urgência *</label><select name="urgencia" id="urgencia" required>
+    <% [['ROTINA','Rotina'],['URGENTE','Urgente'],['EMERGENCIA','Emergência']].forEach(function(t){ %><option value="<%= t[0] %>" <%= (val.urgencia||'ROTINA')===t[0]?'selected':'' %>><%= t[1] %></option><% }) %>
+   </select></div>
+   <div class="campo"><label for="horario_pedido">Horário do pedido médico *</label><input type="datetime-local" id="horario_pedido" name="horario_pedido" value="<%= val.horario_pedido||'' %>" required></div>
+   <div class="campo largo"><label for="medico_solicitante">Médico solicitante *</label><input type="text" id="medico_solicitante" name="medico_solicitante" maxlength="255" value="<%= val.medico_solicitante||'' %>" required></div>
+   <div class="campo largo"><label for="indicacao">Indicação clínica</label><textarea id="indicacao" name="indicacao" rows="3"><%= val.indicacao||'' %></textarea></div>
+  </div>
+ </div>
+ <div data-painel-etapa="2" hidden>
+  <h3>Informações complementares</h3><p class="descricao">Dados clínicos e documentos apresentados na solicitação.</p>
+  <div class="grade-form" style="margin-top:20px">
+   <div class="campo"><label for="setor_id">Setor solicitante *</label><select id="setor_id" name="setor_id" required><option value="">Selecione o setor...</option>
+    <% setores.forEach(function(s){ %><option value="<%= s.id %>" <%= String(val.setor_id||'')===String(s.id)?'selected':'' %>><%= s.nome %></option><% }) %>
+   </select></div>
+   <div class="campo"><label for="hemoglobina">Hemoglobina (g/dL)</label><input type="number" id="hemoglobina" name="hemoglobina" step="0.01" min="0" max="30" value="<%= val.hemoglobina??'' %>"></div>
+   <div class="campo"><label for="plaquetas">Plaquetas (/µL)</label><input type="number" id="plaquetas" name="plaquetas" min="0" max="3000000" step="1" value="<%= val.plaquetas??'' %>"></div>
+   <div class="campo largo"><label for="diagnostico">Diagnóstico</label><textarea id="diagnostico" name="diagnostico" rows="3"><%= val.diagnostico||'' %></textarea></div>
+   <div class="campo largo"><label class="marca"><input type="checkbox" name="consentimento" value="1" <%= val.consentimento===true||val.consentimento==='1'?'checked':'' %>> Termo de consentimento apresentado</label></div>
+   <div class="campo largo"><label class="marca"><input type="checkbox" name="requisicao_recebida" value="1" <%= val.requisicao_recebida===true||val.requisicao_recebida==='1'?'checked':'' %>> Requisição médica recebida</label></div>
+  </div>
+  <div class="alerta alerta-info" style="margin-top:20px">O cadastro da solicitação não libera uma bolsa para transfusão. A prova de compatibilidade e as conferências seguem o protocolo do serviço.</div>
+ </div>
+ <div class="rodape-form">
+  <button type="button" class="botao botao-claro" data-voltar-etapa hidden>Voltar</button>
+  <button type="button" class="botao" data-proxima-etapa>Continuar</button>
+  <button type="submit" class="botao" data-salvar-solicitacao hidden><%= edicao?'Salvar alterações':'Registrar solicitação' %></button>
+  <a class="botao botao-claro" href="/solicitacoes">Cancelar</a>
+ </div>
+ </form>
 </section>
-
+<script>
+(function(){
+ const form=document.querySelector('[data-form-solicitacao]');if(!form)return;
+ const etapas=[...document.querySelectorAll('[data-etapa]')],paineis=[...document.querySelectorAll('[data-painel-etapa]')];
+ const voltar=document.querySelector('[data-voltar-etapa]'),proxima=document.querySelector('[data-proxima-etapa]'),salvar=document.querySelector('[data-salvar-solicitacao]');
+ function mostrar(n){paineis.forEach((p,i)=>p.hidden=i!==n-1);etapas.forEach((b,i)=>{b.classList.toggle('ativa',i===n-1);b.setAttribute('aria-selected',i===n-1?'true':'false')});voltar.hidden=n===1;proxima.hidden=n===2;salvar.hidden=n!==2;}
+ function validar(n){const campos=[...paineis[n-1].querySelectorAll('input,select,textarea')].filter(c=>!c.disabled&&!c.checkValidity());if(campos.length){campos[0].reportValidity();return false;}return true;}
+ proxima.addEventListener('click',()=>{if(validar(1))mostrar(2)});
+ voltar.addEventListener('click',()=>mostrar(1));
+ etapas.forEach((b,i)=>b.addEventListener('click',()=>{if(i===0||validar(1))mostrar(i+1)}));
+ form.addEventListener('submit',e=>{if(!validar(1)){e.preventDefault();mostrar(1)}else if(!validar(2)){e.preventDefault();mostrar(2)}});
+ mostrar(1);
+})();
+</script>
 <%- include('../partials/fim') %>
