@@ -141,22 +141,6 @@
                             <input type="tel" id="telefone" name="telefone" maxlength="30" value="<%= valores.telefone || '' %>">
                         </div>
                         <div class="campo-receptor">
-                            <label for="abo">Tipo sanguíneo</label>
-                            <div class="linha-tipagem">
-                                <select id="abo" name="abo">
-                                    <option value="">ABO</option>
-                                    <% ['A', 'B', 'AB', 'O'].forEach(function (tipo) { %>
-                                        <option value="<%= tipo %>" <%= valores.abo === tipo ? 'selected' : '' %>><%= tipo %></option>
-                                    <% }) %>
-                                </select>
-                                <select id="fator_rh" name="fator_rh">
-                                    <option value="">Rh</option>
-                                    <option value="+" <%= valores.fator_rh === '+' ? 'selected' : '' %>>Positivo (+)</option>
-                                    <option value="-" <%= valores.fator_rh === '-' ? 'selected' : '' %>>Negativo (-)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="campo-receptor">
                             <label for="convenio">Convênio</label>
                             <input type="text" id="convenio" name="convenio" maxlength="120" value="<%= valores.convenio || '' %>">
                         </div>
