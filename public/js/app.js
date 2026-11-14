@@ -225,4 +225,14 @@
         mostrarEtapaSolicitacao(1);
     }
 
+
+    var marcarExamesBolsa = document.querySelector('[data-marcar-exames]');
+    if (marcarExamesBolsa) {
+        var checksExamesBolsa = Array.prototype.slice.call(document.querySelectorAll('[data-exame-bolsa]'));
+        marcarExamesBolsa.addEventListener('click', function () {
+            var marcar = !checksExamesBolsa.every(function (c) { return c.checked; });
+            checksExamesBolsa.forEach(function (c) { c.checked = marcar; });
+            marcarExamesBolsa.textContent = marcar ? 'Desmarcar todos' : 'Marcar todos';
+        });
+    }
 })();
