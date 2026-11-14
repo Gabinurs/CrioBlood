@@ -14,9 +14,9 @@
 <div class="grade-form">
 <div class="campo"><label>Tipo sanguíneo ABO *</label><select name="abo" required><option value="">Selecione</option><% ['A','B','AB','O'].forEach(x=>{ %><option value="<%= x %>" <%= valores.abo===x?'selected':'' %>><%= x %></option><% }) %></select></div>
 <div class="campo"><label>Fator Rh *</label><select name="fator_rh" required><option value="">Selecione</option><option value="+" <%= valores.fator_rh==='+'?'selected':'' %>>Positivo (+)</option><option value="-" <%= valores.fator_rh==='-'?'selected':'' %>>Negativo (-)</option></select></div>
-<div class="campo"><label>Controle Rh *</label><select name="controle_rh" data-resultado-alerta="controle" required><option value="">Selecione</option><option value="NEGATIVO">Negativo</option><option value="POSITIVO">Positivo</option></select></div>
+<div class="campo"><label>Controle Rh *</label><select name="controle_rh" data-resultado-alerta="controle" required><option value="">Selecione</option><option value="NEGATIVO" <%= valores.controle_rh==='NEGATIVO'?'selected':'' %>>Negativo</option><option value="POSITIVO" <%= valores.controle_rh==='POSITIVO'?'selected':'' %>>Positivo</option></select></div>
 <div class="campo" data-justificativa="controle" hidden><label>Justificativa do Controle Rh positivo *</label><textarea name="controle_rh_justificativa" rows="3"></textarea></div>
-<div class="campo"><label>PAI *</label><select name="pai" data-resultado-alerta="pai" required><option value="">Selecione</option><option value="NEGATIVO">Negativo</option><option value="POSITIVO">Positivo</option></select></div>
+<div class="campo"><label>PAI *</label><select name="pai" data-resultado-alerta="pai" required><option value="">Selecione</option><option value="NEGATIVO" <%= valores.pai==='NEGATIVO'?'selected':'' %>>Negativo</option><option value="POSITIVO" <%= valores.pai==='POSITIVO'?'selected':'' %>>Positivo</option></select></div>
 <div class="campo" data-justificativa="pai" hidden><label>Justificativa do PAI positivo *</label><textarea name="pai_justificativa" rows="3"></textarea></div>
 </div>
 <div class="alerta alerta-aviso">PAI positivo impede a liberação automática para solicitação transfusional. O registro não substitui avaliação técnica e protocolo institucional.</div>
