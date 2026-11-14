@@ -367,3 +367,10 @@ td.vazio, .vazio {
     .modal-rodape { padding: 12px 15px; }
     .modal-rodape .botao { flex: 1; }
 }
+
+/* Fluxo de amostras do receptor */
+.acoes-receptor { min-width: 350px; }
+.acoes-receptor .botao { white-space: nowrap; }
+.separador-amostra { border: 0; border-top: 1px solid var(--borda); margin: 22px 0; }
+.amostra-form h3 { margin-bottom: 8px; color: var(--azul); }
+.amostra-form .alerta { margin-top: 18px; }
