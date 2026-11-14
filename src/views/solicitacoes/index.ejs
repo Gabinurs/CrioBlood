@@ -5,7 +5,10 @@
         <h3>Solicitações</h3>
         <p>Cada solicitação pede uma bolsa. Depois de criada, busque uma bolsa compatível e reserve-a para o paciente.</p>
     </div>
-    <a class="botao" href="/solicitacoes/nova">+ Nova solicitação</a>
+    <div class="acoes">
+        <% if(usuario && usuario.administrador){ %><a class="botao botao-claro" href="/solicitacoes/setores">Configurar setores</a><% } %>
+        <a class="botao" href="/solicitacoes/nova">+ Nova solicitação</a>
+    </div>
 </section>
 
 <section class="painel" data-filtravel>
@@ -23,11 +26,11 @@
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>#</th><th>Paciente</th><th>ABO/Rh</th><th>Produto</th><th>Urgência</th><th>Médico</th><th>Status</th><th>Bolsa</th><th>Data</th><th>Ações</th></tr>
+                <tr><th>#</th><th>Paciente</th><th>ABO/Rh</th><th>Produto</th><th>Urgência</th><th>Médico</th><th>Setor</th><th>Status</th><th>Bolsa</th><th>Data</th><th>Ações</th></tr>
             </thead>
             <tbody>
                 <% if (solicitacoes.length === 0) { %>
-                    <tr><td colspan="10" class="vazio">Nenhuma solicitação registrada.</td></tr>
+                    <tr><td colspan="11" class="vazio">Nenhuma solicitação registrada.</td></tr>
                 <% } else { solicitacoes.forEach(function (s) { %>
                     <tr data-busca="<%= (s.paciente_nome + ' ' + s.prontuario).toLowerCase() %>" data-status="<%= s.status %>">
                         <td><%= s.id %></td>
@@ -35,12 +38,13 @@
                         <td><%= rot.tipagem(s.paciente_abo, s.paciente_rh) %></td>
                         <td><%= rot.tipo(s.tipo) %></td>
                         <td><%- rot.urgencia(s.urgencia) %></td>
-                        <td><%= s.medico_solicitante %></td>
+                        <td><%= s.medico_solicitante %></td><td><%= s.setor_nome || "—" %></td>
                         <td><%- rot.statusSolicitacao(s.status) %></td>
                         <td><%= s.bolsa_codigo || '—' %></td>
                         <td><%= s.criado_em_br %></td>
                         <td class="acoes">
                             <% if (s.status === 'PENDENTE') { %>
+                                <a class="botao botao-claro botao-pequeno" href="/solicitacoes/<%= s.id %>/editar">Editar</a>
                                 <a class="botao botao-pequeno" href="/compatibilidade?solicitacao=<%= s.id %>">Buscar bolsa</a>
                             <% } %>
                             <% if (s.status === 'RESERVADA') { %>

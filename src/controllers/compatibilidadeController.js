@@ -39,7 +39,7 @@ class CompatibilidadeController {
         const solicitacaoId = parseInt(req.body.solicitacao_id, 10);
         const bolsaId = parseInt(req.body.hemocomponente_id, 10);
         try {
-            const resultado = await CompatibilidadeService.reservar(solicitacaoId, bolsaId, req.session.usuario.id);
+            const resultado = await CompatibilidadeService.reservar(solicitacaoId, bolsaId, req.session.usuario.id, req.body.confirmacao_codigo);
             await AuditoriaService.registrarLog(
                 req.session.usuario.id, 'RESERVA_BOLSA', 'solicitacoes_transfusionais', solicitacaoId,
                 `Bolsa ${resultado.codigo} (${resultado.nivel})`);

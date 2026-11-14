@@ -1,5 +1,6 @@
 const db = require('../database');
 const { ErroNegocio } = require('../utils/erros');
+const AmostraReceptorService = require('./amostraReceptorService');
 
 // Para cada grupo ABO do RECEPTOR, quais grupos ABO do DOADOR são aceitos.
 // Hemácias: o receptor não pode ter anticorpos contra os antígenos da bolsa.
@@ -50,7 +51,7 @@ class CompatibilidadeService {
         if (!paciente.abo || !paciente.fator_rh) return [];
 
         const { rows } = await db.query(
-            `SELECT h.id, h.codigo_original, h.tipo, h.abo, h.fator_rh,
+            `SELECT h.id, h.codigo_interno, h.codigo_original, h.tipo, h.abo, h.fator_rh,
                     to_char(h.data_validade, 'DD/MM/YYYY') AS data_validade_br,
                     (h.data_validade - CURRENT_DATE) AS dias_restantes,
                     l.codigo AS codigo_lote,
@@ -77,27 +78,32 @@ class CompatibilidadeService {
     }
 
     // Reserva a bolsa para a solicitação (tudo ou nada)
-    static async reservar(solicitacaoId, bolsaId, usuarioId) {
+    static async reservar(solicitacaoId, bolsaId, usuarioId, codigoConfirmado) {
         const cliente = await db.connect();
         try {
             await cliente.query('BEGIN');
 
             const s = (await cliente.query(
-                `SELECT s.id, s.tipo, s.status, p.abo AS paciente_abo, p.fator_rh AS paciente_rh
+                `SELECT s.id, s.tipo, s.status, s.paciente_id, p.abo AS paciente_abo, p.fator_rh AS paciente_rh
                  FROM solicitacoes_transfusionais s
                  JOIN pacientes p ON p.id = s.paciente_id
                  WHERE s.id = $1 FOR UPDATE OF s`, [solicitacaoId])).rows[0];
             if (!s) throw new ErroNegocio('Solicitação não encontrada.');
             if (s.status !== 'PENDENTE') throw new ErroNegocio('Só é possível reservar bolsa para solicitações pendentes.');
+            const liberacao = await AmostraReceptorService.podeSolicitar(s.paciente_id);
+            if (!liberacao.permitido) throw new ErroNegocio(liberacao.motivo);
             if (!s.paciente_abo || !s.paciente_rh) {
                 throw new ErroNegocio('O paciente não tem tipagem (ABO/Rh) cadastrada.');
             }
 
             const b = (await cliente.query(
-                `SELECT id, codigo_original, tipo, abo, fator_rh, status, tipagem_confirmada,
+                `SELECT id, codigo_interno, codigo_original, tipo, abo, fator_rh, status, tipagem_confirmada,
                         (data_validade >= CURRENT_DATE) AS na_validade
                  FROM hemocomponentes WHERE id = $1 FOR UPDATE`, [bolsaId])).rows[0];
             if (!b) throw new ErroNegocio('Bolsa não encontrada.');
+            if (!codigoConfirmado || String(codigoConfirmado).trim().toUpperCase() !== String(b.codigo_interno).toUpperCase()) {
+                throw new ErroNegocio('O código interno digitado não confere. Confira a etiqueta da bolsa.');
+            }
             if (b.status !== 'DISPONIVEL') throw new ErroNegocio('Essa bolsa não está mais disponível.');
             if (!b.na_validade) throw new ErroNegocio('Essa bolsa está vencida.');
             if (!b.tipagem_confirmada) throw new ErroNegocio('A tipagem dessa bolsa não foi confirmada.');
@@ -116,7 +122,7 @@ class CompatibilidadeService {
                  WHERE id = $2`, [bolsaId, solicitacaoId]);
 
             await cliente.query('COMMIT');
-            return { codigo: b.codigo_original, nivel };
+            return { codigo: b.codigo_interno, nivel };
         } catch (erro) {
             await cliente.query('ROLLBACK');
             throw erro;

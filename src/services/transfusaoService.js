@@ -1,5 +1,6 @@
 const db = require('../database');
 const { ErroNegocio } = require('../utils/erros');
+const AmostraReceptorService = require('./amostraReceptorService');
 
 class TransfusaoService {
     // Solicitações com bolsa reservada, prontas para a transfusão
@@ -46,7 +47,7 @@ class TransfusaoService {
             await cliente.query('BEGIN');
 
             const s = (await cliente.query(
-                `SELECT s.id, s.status, s.hemocomponente_id, s.medico_solicitante,
+                `SELECT s.id, s.paciente_id, s.status, s.hemocomponente_id, s.medico_solicitante,
                         p.nome AS paciente_nome, p.prontuario
                  FROM solicitacoes_transfusionais s
                  JOIN pacientes p ON p.id = s.paciente_id
@@ -55,6 +56,8 @@ class TransfusaoService {
             if (s.status !== 'RESERVADA') {
                 throw new ErroNegocio('Só é possível registrar a transfusão de solicitações com bolsa reservada.');
             }
+            const liberacao = await AmostraReceptorService.podeSolicitar(s.paciente_id);
+            if (!liberacao.permitido) throw new ErroNegocio(liberacao.motivo);
 
             const b = (await cliente.query(
                 `SELECT id, codigo_original, status, (data_validade >= CURRENT_DATE) AS na_validade

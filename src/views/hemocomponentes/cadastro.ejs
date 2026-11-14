@@ -1,82 +1,104 @@
-<%- include('../partials/inicio', { titulo: 'Cadastrar hemocomponente', subtitulo: 'Registro de uma bolsa recebida', ativo: 'hemocomponentes' }) %>
+<%- include('../partials/inicio', { titulo: 'Cadastrar hemocomponente', subtitulo: 'Identificação, conferência e entrada da bolsa no estoque', ativo: 'hemocomponentes' }) %>
 
-<section class="painel formulario">
-    <form action="/hemocomponentes/novo" method="POST">
-        <div class="grade-form">
-            <div class="campo">
-                <label for="lote_id">ID do lote de origem</label>
-                <input type="number" id="lote_id" name="lote_id" min="1" value="<%= locals.lote_id || '' %>" required>
-                <small>O número do lote aparece na tela de Lotes (o lote precisa estar aberto).</small>
+<section class="painel formulario cadastro-bolsa">
+    <div class="bolsa-aviso">
+        <span class="bolsa-aviso-icone">✓</span>
+        <div><strong>Identificação CrioBlood</strong><p>O código original do hemocentro fornecedor será mantido. Um código interno exclusivo será gerado automaticamente após salvar.</p></div>
+    </div>
+
+    <form action="/hemocomponentes/novo" method="POST" id="form-cadastro-bolsa">
+        <section class="bolsa-secao">
+            <div class="bolsa-secao-titulo"><span>01</span><div><h3>Identificação da bolsa</h3><p>Informe a origem e os dados do hemocomponente.</p></div></div>
+            <div class="bolsa-campos">
+                <div class="campo"><label for="lote_id">Lote de recebimento *</label><input type="number" id="lote_id" name="lote_id" min="1" value="<%= locals.lote_id||'' %>" required><small>O lote precisa estar aberto.</small></div>
+                <div class="campo"><label for="codigo_original">Código original da bolsa *</label><input type="text" id="codigo_original" name="codigo_original" maxlength="50" placeholder="Ex.: B345326011725601" required></div>
+                <div class="campo"><label for="tipo">Hemocomponente *</label><select id="tipo" name="tipo" required><option value="">Selecione...</option><% ['CH','PLASMA','PLAQUETAS','CRIO'].forEach(function(t){ %><option value="<%= t %>"><%= rot.tipo(t) %></option><% }) %></select></div>
+                <div class="campo"><label for="volume_ml">Volume (mL) *</label><input type="number" id="volume_ml" name="volume_ml" min="1" max="5000" step="1" placeholder="Ex.: 288" required></div>
             </div>
+        </section>
 
-            <div class="campo">
-                <label for="codigo_original">Código original da bolsa</label>
-                <input type="text" id="codigo_original" name="codigo_original" maxlength="50" required>
+        <section class="bolsa-secao">
+            <div class="bolsa-secao-titulo"><span>02</span><div><h3>Tipagem sanguínea</h3><p>Confirme os dados ABO e Rh conforme a etiqueta original.</p></div></div>
+            <div class="bolsa-campos bolsa-campos-curtos">
+                <div class="campo"><label for="abo">Grupo ABO *</label><select id="abo" name="abo" required><option value="">Selecione...</option><% ['A','B','AB','O'].forEach(function(o){ %><option value="<%= o %>"><%= o %></option><% }) %></select></div>
+                <div class="campo"><label for="fator_rh">Fator Rh *</label><select id="fator_rh" name="fator_rh" required><option value="">Selecione...</option><option value="+">Positivo (+)</option><option value="-">Negativo (-)</option></select></div>
             </div>
+            <label class="bolsa-confirmacao"><input type="checkbox" name="tipagem_confirmada" required><span><strong>Tipagem ABO/Rh conferida</strong><small>Confirmo que o grupo ABO e o fator Rh foram verificados na identificação da bolsa.</small></span></label>
+        </section>
 
-            <div class="campo largo">
-                <label for="tipo">Tipo de hemocomponente</label>
-                <select id="tipo" name="tipo" required>
-                    <option value="">Selecione...</option>
-                    <% ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'].forEach(function (t) { %>
-                        <option value="<%= t %>"><%= rot.tipo(t) %> (<%= t %>)</option>
-                    <% }) %>
-                </select>
+        <section class="bolsa-secao">
+            <div class="bolsa-secao-titulo"><span>03</span><div><h3>Coleta e validade</h3><p>A validade será calculada automaticamente pelo tipo de hemocomponente.</p></div></div>
+            <div class="bolsa-campos bolsa-campos-curtos">
+                <div class="campo"><label for="data_coleta">Data da coleta *</label><input type="date" id="data_coleta" name="data_coleta" required></div>
+                <div class="campo"><label for="data_validade">Data de validade *</label><input type="date" id="data_validade" name="data_validade" readonly required aria-readonly="true"><small id="ajuda-validade">Selecione o hemocomponente e a data da coleta.</small></div>
             </div>
+            <div class="bolsa-regra-validade" id="regra-validade">Prazo aplicado: aguardando seleção do hemocomponente.</div>
+        </section>
 
-            <div class="campo">
-                <label for="abo">Grupo ABO</label>
-                <select id="abo" name="abo">
-                    <% ['', 'A', 'B', 'AB', 'O'].forEach(function (o) { %>
-                        <option value="<%= o %>"><%= o || 'Não informado' %></option>
-                    <% }) %>
-                </select>
+        <section class="bolsa-secao">
+            <div class="bolsa-secao-titulo"><span>04</span><div><h3>Exames realizados</h3><p>Marque somente os exames que constam como realizados na documentação da bolsa.</p></div></div>
+            <div class="bolsa-exames-cabecalho"><span class="bolsa-exames-contador" id="contador-exames">0 de 13 selecionados</span><button type="button" class="botao botao-claro bolsa-marcar-todos" data-marcar-exames>Marcar todos</button></div>
+            <div class="bolsa-exames-grade">
+                <% [['anti_hbc','Anti-HBc'],['anti_hcv','Anti-HCV'],['anti_hiv_1_2','Anti-HIV 1/2'],['anti_htlv_i_ii','Anti-HTLV I/II'],['chagas','Chagas'],['hbsag','HBsAg'],['nat_hbv','NAT HBV'],['nat_hcv','NAT HCV'],['nat_hiv','NAT HIV'],['nat_malaria','NAT Malária'],['sifilis','Sífilis'],['pesquisa_hbs','Pesquisa HbS — ausente'],['pai_negativo','PAI — negativo']].forEach(function(e){ %>
+                <label class="bolsa-exame"><input type="checkbox" name="<%= e[0] %>" data-exame-bolsa><span><%= e[1] %></span></label>
+                <% }) %>
             </div>
+        </section>
 
-            <div class="campo">
-                <label for="fator_rh">Fator Rh</label>
-                <select id="fator_rh" name="fator_rh">
-                    <option value="">Não informado</option>
-                    <option value="+">Positivo (+)</option>
-                    <option value="-">Negativo (-)</option>
-                </select>
+        <section class="bolsa-secao">
+            <div class="bolsa-secao-titulo"><span>05</span><div><h3>Conferência de recebimento</h3><p>Confirme as condições físicas da bolsa antes de liberar a entrada.</p></div></div>
+            <div class="bolsa-conferencias">
+                <label class="bolsa-confirmacao"><input type="checkbox" name="inspecao_visual" required><span><strong>Inspeção visual realizada</strong><small>Aspecto e condições gerais verificados.</small></span></label>
+                <label class="bolsa-confirmacao"><input type="checkbox" name="integridade_confirmada" required><span><strong>Integridade confirmada</strong><small>Bolsa e equipo sem sinais de violação ou vazamento.</small></span></label>
             </div>
+            <div class="campo bolsa-status"><label for="status">Status inicial</label><select id="status" name="status"><option value="EM_CONFERENCIA">Em conferência</option><option value="DISPONIVEL">Disponível (exige todas as confirmações)</option></select></div>
+            <div class="campo bolsa-observacoes"><label for="observacoes">Observações</label><textarea id="observacoes" name="observacoes" rows="3" placeholder="Informações adicionais sobre o recebimento..."></textarea></div>
+        </section>
 
-            <div class="campo">
-                <label for="data_coleta">Data da coleta</label>
-                <input type="date" id="data_coleta" name="data_coleta" required>
-            </div>
-
-            <div class="campo">
-                <label for="data_validade">Data de validade</label>
-                <input type="date" id="data_validade" name="data_validade" required>
-            </div>
-
-            <div class="campo largo marcas">
-                <label class="marca"><input type="checkbox" name="inspecao_visual"> Inspeção visual realizada</label>
-                <label class="marca"><input type="checkbox" name="integridade_confirmada"> Integridade da bolsa confirmada</label>
-                <label class="marca"><input type="checkbox" name="tipagem_confirmada"> Tipagem sanguínea confirmada</label>
-            </div>
-
-            <div class="campo largo">
-                <label for="status">Status inicial</label>
-                <select id="status" name="status">
-                    <option value="EM_CONFERENCIA">Em conferência</option>
-                    <option value="DISPONIVEL">Disponível (exige as 3 confirmações, ABO e Rh)</option>
-                </select>
-            </div>
-
-            <div class="campo largo">
-                <label for="observacoes">Observações</label>
-                <textarea id="observacoes" name="observacoes" rows="3"></textarea>
-            </div>
-        </div>
-
-        <div class="rodape-form">
-            <button class="botao" type="submit">Salvar registro</button>
-            <a class="botao botao-claro" href="/hemocomponentes">Cancelar</a>
-        </div>
+        <div class="rodape-form bolsa-rodape"><a class="botao botao-claro" href="/lotes">Cancelar</a><button class="botao" type="submit">Salvar bolsa</button></div>
     </form>
 </section>
-
+<script>
+(() => {
+ const tipo = document.getElementById('tipo');
+ const coleta = document.getElementById('data_coleta');
+ const validade = document.getElementById('data_validade');
+ const regra = document.getElementById('regra-validade');
+ const ajuda = document.getElementById('ajuda-validade');
+ const prazos = { CH: ['35 dias', 35, 'dias'], PLAQUETAS: ['5 dias', 5, 'dias'], PLASMA: ['1 ano', 1, 'anos'], CRIO: ['1 ano', 1, 'anos'] };
+ function atualizarValidade() {
+   const p = prazos[tipo.value];
+   validade.value = '';
+   if (!p || !coleta.value) {
+     regra.textContent = 'Prazo aplicado: aguardando seleção do hemocomponente e data da coleta.';
+     ajuda.textContent = 'A validade será preenchida automaticamente.';
+     return;
+   }
+   const [ano, mes, dia] = coleta.value.split('-').map(Number);
+   const data = new Date(Date.UTC(ano, mes - 1, dia));
+   if (p[2] === 'dias') data.setUTCDate(data.getUTCDate() + p[1]);
+   else data.setUTCFullYear(data.getUTCFullYear() + p[1]);
+   validade.value = data.toISOString().slice(0,10);
+   regra.textContent = 'Prazo aplicado: ' + p[0] + '. Validade calculada automaticamente.';
+   ajuda.textContent = 'Campo automático, não precisa preencher.';
+ }
+ tipo.addEventListener('change', atualizarValidade);
+ coleta.addEventListener('change', atualizarValidade);
+ const checks = [...document.querySelectorAll('[data-exame-bolsa]')];
+ const contador = document.getElementById('contador-exames');
+ const marcar = document.querySelector('[data-marcar-exames]');
+ function contar() {
+   const n = checks.filter(x => x.checked).length;
+   contador.textContent = n + ' de ' + checks.length + ' selecionados';
+   marcar.textContent = n === checks.length ? 'Desmarcar todos' : 'Marcar todos';
+ }
+ checks.forEach(x => x.addEventListener('change', contar));
+ marcar.addEventListener('click', () => {
+   const marcarTodos = checks.some(x => !x.checked);
+   checks.forEach(x => x.checked = marcarTodos);
+   contar();
+ });
+ contar();
+})();
+</script>
 <%- include('../partials/fim') %>

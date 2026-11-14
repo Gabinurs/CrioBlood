@@ -1,153 +1,55 @@
-const db = require('../database');
+const db=require('../database');
+const COLUNAS_DATAS=`to_char(h.data_coleta,'DD/MM/YYYY') AS data_coleta_br,to_char(h.data_validade,'DD/MM/YYYY') AS data_validade_br,to_char(h.data_coleta,'YYYY-MM-DD') AS data_coleta_iso,to_char(h.data_validade,'YYYY-MM-DD') AS data_validade_iso`;
 
-// Colunas de data já formatadas (evita problemas de fuso horário nas telas)
-const COLUNAS_DATAS = `
-    to_char(h.data_coleta, 'DD/MM/YYYY')   AS data_coleta_br,
-    to_char(h.data_validade, 'DD/MM/YYYY') AS data_validade_br,
-    to_char(h.data_coleta, 'YYYY-MM-DD')   AS data_coleta_iso,
-    to_char(h.data_validade, 'YYYY-MM-DD') AS data_validade_iso
-`;
-
-class HemocomponenteService {
-    // Lista os hemocomponentes, com filtro opcional por lote ou status
-    static async listarTodos(filtros = {}) {
-        let query = `
-            SELECT h.*, l.codigo AS codigo_lote, ${COLUNAS_DATAS}
-            FROM hemocomponentes h
-            LEFT JOIN lotes_recebimento l ON h.lote_id = l.id
-            WHERE 1=1
-        `;
-        const params = [];
-
-        if (filtros.lote_id) {
-            params.push(filtros.lote_id);
-            query += ` AND h.lote_id = $${params.length}`;
-        }
-
-        if (filtros.status) {
-            params.push(filtros.status);
-            query += ` AND h.status = $${params.length}`;
-        }
-
-        query += ' ORDER BY h.data_validade ASC, h.id DESC';
-
-        const { rows } = await db.query(query, params);
-        return rows;
+function calcularDataValidade(tipo, dataColeta) {
+    const tipoNormalizado = String(tipo || '').trim().toUpperCase();
+    const prazos = {
+        CH: { dias: 35 },
+        CONCENTRADO_HEMACIAS: { dias: 35 },
+        CONCENTRADO_DE_HEMACIAS: { dias: 35 },
+        PLAQUETAS: { dias: 5 },
+        PLASMA: { anos: 1 },
+        PLASMA_FRESCO_CONGELADO: { anos: 1 },
+        CRIO: { anos: 1 },
+        CRIOPRECIPITADO: { anos: 1 }
+    };
+    const prazo = prazos[tipoNormalizado];
+    const textoData = String(dataColeta || '').trim();
+    const iso = textoData.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);
+    const br = textoData.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+    const partes = iso ? [Number(iso[1]), Number(iso[2]), Number(iso[3])] :
+        br ? [Number(br[3]), Number(br[2]), Number(br[1])] : null;
+    if (!prazo || !partes) {
+        throw new Error('Confira o hemocomponente e a data da coleta. Selecione novamente a data no calendário.');
     }
-
-    static async buscarPorId(id) {
-        const { rows } = await db.query(
-            `SELECT h.*, ${COLUNAS_DATAS} FROM hemocomponentes h WHERE h.id = $1`,
-            [id]
-        );
-        return rows[0];
+    const [ano, mes, dia] = partes;
+    const data = new Date(Date.UTC(ano, mes - 1, dia));
+    if (data.getUTCFullYear() !== ano || data.getUTCMonth() !== mes - 1 || data.getUTCDate() !== dia) {
+        throw new Error('A data da coleta informada não é válida.');
     }
-
-    static async criar(dados, usuarioId) {
-        // Não aceita bolsas em lote inexistente ou já fechado
-        const lote = (await db.query(
-            'SELECT status FROM lotes_recebimento WHERE id = $1', [dados.lote_id])).rows[0];
-        if (!lote) {
-            const erro = new Error('Lote não encontrado');
-            erro.code = '23503';
-            throw erro;
-        }
-        if (lote.status !== 'ABERTO') {
-            const erro = new Error('Lote fechado');
-            erro.code = 'LOTE_FECHADO';
-            throw erro;
-        }
-
-        const query = `
-            INSERT INTO hemocomponentes
-                (lote_id, codigo_original, tipo, abo, fator_rh,
-                 data_coleta, data_validade,
-                 inspecao_visual, integridade_confirmada, tipagem_confirmada,
-                 status, observacoes, cadastrado_por)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-            RETURNING id
-        `;
-        const { rows } = await db.query(query, [
-            dados.lote_id,
-            dados.codigo_original.trim(),
-            dados.tipo,
-            dados.abo || null,
-            dados.fator_rh || null,
-            dados.data_coleta,
-            dados.data_validade,
-            dados.inspecao_visual === 'on',
-            dados.integridade_confirmada === 'on',
-            dados.tipagem_confirmada === 'on',
-            dados.status || 'EM_CONFERENCIA',
-            dados.observacoes || null,
-            usuarioId
-        ]);
-        return rows[0].id;
-    }
-
-    static async atualizar(id, dados) {
-        // Bolsas reservadas ou transfundidas só mudam de status pelo fluxo próprio
-        // (solicitação, compatibilidade e transfusão), nunca por esta tela.
-        const atual = await HemocomponenteService.buscarPorId(id);
-        if (!atual) return false;
-
-        const protegido = ['RESERVADA', 'TRANSFUNDIDA'];
-        let novoStatus = dados.status || atual.status;
-        if (protegido.includes(atual.status) || protegido.includes(novoStatus)) {
-            novoStatus = atual.status;
-        }
-        dados = { ...dados, status: novoStatus };
-
-        const query = `
-            UPDATE hemocomponentes
-            SET tipo = $1,
-                abo = $2,
-                fator_rh = $3,
-                data_validade = $4,
-                inspecao_visual = $5,
-                integridade_confirmada = $6,
-                tipagem_confirmada = $7,
-                status = $8,
-                observacoes = $9,
-                atualizado_em = CURRENT_TIMESTAMP
-            WHERE id = $10
-        `;
-        if (['DESCARTADA', 'VENCIDA'].includes(dados.status)) {
-            await db.query('DELETE FROM armazenamento WHERE hemocomponente_id = $1', [id]);
-        }
-
-        const resultado = await db.query(query, [
-            dados.tipo,
-            dados.abo || null,
-            dados.fator_rh || null,
-            dados.data_validade,
-            dados.inspecao_visual === 'on',
-            dados.integridade_confirmada === 'on',
-            dados.tipagem_confirmada === 'on',
-            dados.status,
-            dados.observacoes || null,
-            id
-        ]);
-        return resultado.rowCount > 0;
-    }
-
-    // Descarte lógico: a bolsa continua registrada, com status DESCARTADA
-    static async deletar(id) {
-        const atual = await HemocomponenteService.buscarPorId(id);
-        if (atual && atual.status === 'RESERVADA') {
-            const erro = new Error('Bolsa reservada');
-            erro.code = 'BOLSA_RESERVADA';
-            throw erro;
-        }
-        const resultado = await db.query(
-            `UPDATE hemocomponentes
-             SET status = 'DESCARTADA', atualizado_em = CURRENT_TIMESTAMP
-             WHERE id = $1`,
-            [id]
-        );
-        await db.query('DELETE FROM armazenamento WHERE hemocomponente_id = $1', [id]);
-        return resultado.rowCount > 0;
-    }
+    if (prazo.dias) data.setUTCDate(data.getUTCDate() + prazo.dias);
+    if (prazo.anos) data.setUTCFullYear(data.getUTCFullYear() + prazo.anos);
+    return data.toISOString().slice(0, 10);
 }
 
-module.exports = HemocomponenteService;
+const EXAMES=['anti_hbc','anti_hcv','anti_hiv_1_2','anti_htlv_i_ii','chagas','hbsag','nat_hbv','nat_hcv','nat_hiv','nat_malaria','sifilis','pesquisa_hbs','pai_negativo'];
+class HemocomponenteService{
+static async listarTodos(f={}){let q=`SELECT h.*,l.codigo AS codigo_lote,${COLUNAS_DATAS} FROM hemocomponentes h LEFT JOIN lotes_recebimento l ON h.lote_id=l.id WHERE 1=1`;const p=[];if(f.lote_id){p.push(f.lote_id);q+=` AND h.lote_id=$${p.length}`;}if(f.status){p.push(f.status);q+=` AND h.status=$${p.length}`;}q+=' ORDER BY h.data_validade ASC,h.id DESC';return (await db.query(q,p)).rows;}
+static async buscarPorId(id){return (await db.query(`SELECT h.*,${COLUNAS_DATAS} FROM hemocomponentes h WHERE h.id=$1`,[id])).rows[0];}
+static async criar(d,u){
+const lote=(await db.query('SELECT status FROM lotes_recebimento WHERE id=$1',[d.lote_id])).rows[0];
+if(!lote){const e=new Error('Lote não encontrado.');e.code='23503';throw e;}if(lote.status!=='ABERTO'){const e=new Error('Lote fechado.');e.code='LOTE_FECHADO';throw e;}
+const volume=Number(d.volume_ml);if(!Number.isInteger(volume)||volume<1||volume>5000)throw new Error('Informe um volume válido em mL.');
+if(!d.abo||!['A','B','AB','O'].includes(d.abo)||!['+','-'].includes(d.fator_rh||''))throw new Error('Informe o grupo ABO e o fator Rh da bolsa.');
+if(!d.codigo_original||!d.codigo_original.trim())throw new Error('O código original é obrigatório.');
+const dataValidadeCalculada=calcularDataValidade(d.tipo,d.data_coleta);
+const codigo=(await db.query(`SELECT 'CB-'||to_char(CURRENT_DATE,'YY')||'-'||lpad(nextval('hemocomponentes_codigo_interno_seq')::text,7,'0') codigo`)).rows[0].codigo;
+const cols=EXAMES.join(',');const vals=EXAMES.map((_,i)=>`$${16+i}`).join(',');
+const sql=`INSERT INTO hemocomponentes(lote_id,codigo_original,codigo_interno,tipo,abo,fator_rh,data_coleta,data_validade,volume_ml,inspecao_visual,integridade_confirmada,tipagem_confirmada,status,observacoes,cadastrado_por,${cols}) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,${vals}) RETURNING id,codigo_interno`;
+const params=[d.lote_id,d.codigo_original.trim(),codigo,d.tipo,d.abo,d.fator_rh,d.data_coleta,dataValidadeCalculada,volume,d.inspecao_visual==='on',d.integridade_confirmada==='on',d.tipagem_confirmada==='on',d.status||'EM_CONFERENCIA',d.observacoes||null,u,...EXAMES.map(k=>d[k]==='on')];
+return (await db.query(sql,params)).rows[0];
+}
+static async atualizar(id,d){const atual=await this.buscarPorId(id);if(!atual)return false;let status=d.status||atual.status;if(['RESERVADA','TRANSFUNDIDA'].includes(atual.status)||['RESERVADA','TRANSFUNDIDA'].includes(status))status=atual.status;const r=await db.query(`UPDATE hemocomponentes SET tipo=$1,abo=$2,fator_rh=$3,data_validade=$4,inspecao_visual=$5,integridade_confirmada=$6,tipagem_confirmada=$7,status=$8,observacoes=$9,atualizado_em=CURRENT_TIMESTAMP WHERE id=$10`,[d.tipo,d.abo||null,d.fator_rh||null,d.data_validade,d.inspecao_visual==='on',d.integridade_confirmada==='on',d.tipagem_confirmada==='on',status,d.observacoes||null,id]);return r.rowCount>0;}
+static async deletar(id){const a=await this.buscarPorId(id);if(a&&a.status==='RESERVADA'){const e=new Error('Bolsa reservada');e.code='BOLSA_RESERVADA';throw e;}const r=await db.query(`UPDATE hemocomponentes SET status='DESCARTADA',atualizado_em=CURRENT_TIMESTAMP WHERE id=$1`,[id]);await db.query('DELETE FROM armazenamento WHERE hemocomponente_id=$1',[id]);return r.rowCount>0;}
+}
+module.exports=HemocomponenteService;

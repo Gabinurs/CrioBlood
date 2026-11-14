@@ -1,0 +1,13 @@
+<%- include('../partials/inicio', { titulo:'Setores solicitantes', subtitulo:'Configuração de setores pelo supervisor', ativo:'solicitacoes' }) %>
+<section class="painel formulario">
+ <h3>Adicionar setor</h3><p class="descricao">Somente administradores podem configurar setores.</p>
+ <form method="POST" action="/solicitacoes/setores" class="filtros">
+  <input name="nome" maxlength="100" required placeholder="Nome do setor" aria-label="Nome do setor">
+  <button class="botao" type="submit">Adicionar setor</button>
+ </form>
+</section>
+<section class="painel"><h3>Setores cadastrados</h3><div class="tabela-container"><table><thead><tr><th>Setor</th><th>Status</th><th>Ação</th></tr></thead><tbody>
+<% setores.forEach(function(s){ %><tr><td><%= s.nome %></td><td><%= s.ativo ? 'Ativo':'Inativo' %></td><td>
+<form method="POST" action="/solicitacoes/setores/<%= s.id %>/status"><button class="botao botao-claro botao-pequeno" type="submit"><%= s.ativo?'Desativar':'Ativar' %></button></form></td></tr><% }) %>
+</tbody></table></div></section>
+<%- include('../partials/fim') %>

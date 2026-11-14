@@ -302,3 +302,315 @@ td.vazio, .vazio {
     .mapa-tipagem { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .barra-linha { grid-template-columns: 90px 1fr 34px; }
 }
+
+
+/* ---------- Consulta e cadastro de receptores ---------- */
+.receptor-consulta { display: grid; gap: 22px; max-width: 1320px; margin: 0 auto; }
+.receptor-busca, .receptor-resultados { margin: 0; padding: 24px; }
+.receptor-titulo { display: flex; align-items: center; gap: 13px; padding-bottom: 16px; margin-bottom: 18px; border-bottom: 1px solid var(--borda); }
+.receptor-icone { width: 38px; height: 38px; display: grid; place-items: center; flex: 0 0 auto; color: #d7193f; font-size: 28px; font-weight: bold; }
+.receptor-titulo h3 { margin: 0 0 5px; color: var(--azul); font-size: 19px; }
+.receptor-titulo p { color: var(--cinza); font-size: 12px; line-height: 1.5; }
+.rotulo-busca { display: block; margin: 0 0 8px; color: var(--azul); font-size: 13px; font-weight: bold; }
+.campo-busca-receptor { display: flex; width: 100%; max-width: 780px; }
+.campo-busca-receptor input { min-width: 0; flex: 1; padding: 14px 16px; border: 1px solid #cbd5e1; border-right: 0; border-radius: 9px 0 0 9px; color: var(--texto); font: inherit; font-size: 16px; }
+.campo-busca-receptor input:focus { outline: 2px solid #f3b6c4; border-color: #d7193f; }
+.botao-busca { border-radius: 0 9px 9px 0; min-width: 52px; font-size: 24px; background: #c91535; }
+.ajuda-busca { display: block; margin-top: 8px; color: var(--cinza); font-size: 11px; }
+.receptor-titulo-lista { margin-bottom: 8px; }
+.contador-receptores { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 7px; margin-left: 5px; border-radius: 20px; background: #fce8ec; color: #b71936; font-size: 12px; }
+.tabela-receptores { white-space: normal; }
+.tabela-receptores th, .tabela-receptores td { padding: 13px 12px; font-size: 12px; }
+.tabela-receptores th { text-transform: none; }
+.tabela-receptores tbody tr[hidden] { display: none; }
+.receptor-inserir { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; padding: 17px 18px; border: 1px solid #e1e6ef; border-radius: 10px; background: #f7f9fc; }
+.receptor-inserir strong, .receptor-inserir span { display: block; }
+.receptor-inserir strong { margin-bottom: 5px; color: var(--azul); font-size: 14px; }
+.receptor-inserir span { color: var(--cinza); font-size: 12px; }
+.botao-inserir { background: #c91535; min-width: 150px; }
+.botao-inserir:hover { background: #a90f2a; }
+
+/* Modal */
+.modal-aberto { overflow: hidden; }
+.modal-receptor { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 22px; }
+.modal-receptor[hidden] { display: none; }
+.modal-fundo { position: absolute; inset: 0; background: rgba(8, 22, 42, .62); backdrop-filter: blur(3px); }
+.modal-conteudo { position: relative; display: flex; flex-direction: column; width: min(920px, 100%); max-height: min(92vh, 900px); overflow: hidden; border: 1px solid #d9e0eb; border-radius: 15px; background: white; box-shadow: 0 22px 70px rgba(6, 20, 40, .28); }
+.modal-cabecalho { display: flex; align-items: center; justify-content: space-between; padding: 17px 22px; background: var(--azul); color: white; }
+.modal-cabecalho > div { display: flex; align-items: center; gap: 12px; }
+.modal-cabecalho h3 { font-size: 18px; }
+.modal-cabecalho > div span { font-size: 25px; }
+.modal-fechar { border: 0; background: transparent; color: white; font-size: 30px; line-height: 1; cursor: pointer; }
+.form-receptor-modal { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.modal-corpo { padding: 22px 26px; overflow-y: auto; }
+.secao-modal + .secao-modal { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--borda); }
+.secao-modal h4 { margin-bottom: 16px; padding-bottom: 9px; border-bottom: 1px solid #e7a9b5; color: #bd1836; font-size: 15px; }
+.secao-modal h4 span, .campo-receptor label span { color: #c91535; }
+.secao-modal h4 small { color: var(--cinza); font-size: 12px; font-weight: normal; }
+.grade-receptor-modal { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px 20px; }
+.campo-receptor { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.campo-receptor-largo { grid-column: 1 / -1; }
+.campo-receptor label { color: var(--azul); font-size: 12px; font-weight: bold; }
+.campo-receptor input, .campo-receptor select, .campo-receptor textarea { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #cbd5e1; border-radius: 7px; background: white; color: var(--texto); font: inherit; font-size: 13px; }
+.campo-receptor input:focus, .campo-receptor select:focus, .campo-receptor textarea:focus { outline: 2px solid #f3b6c4; border-color: #c91535; }
+.linha-tipagem { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+.modal-rodape { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 22px; border-top: 1px solid var(--borda); background: #f8f9fc; }
+@media (max-width: 700px) {
+    .receptor-busca, .receptor-resultados { padding: 17px; }
+    .receptor-inserir { align-items: stretch; flex-direction: column; }
+    .botao-inserir { width: 100%; }
+    .modal-receptor { padding: 8px; }
+    .modal-conteudo { max-height: 96vh; }
+    .modal-corpo { padding: 17px; }
+    .grade-receptor-modal { grid-template-columns: 1fr; }
+    .campo-receptor-largo { grid-column: auto; }
+    .modal-rodape { padding: 12px 15px; }
+    .modal-rodape .botao { flex: 1; }
+}
+
+/* Fluxo de amostras do receptor */
+.acoes-receptor { min-width: 350px; }
+.acoes-receptor .botao { white-space: nowrap; }
+.separador-amostra { border: 0; border-top: 1px solid var(--borda); margin: 22px 0; }
+.amostra-form h3 { margin-bottom: 8px; color: var(--azul); }
+.amostra-form .alerta { margin-top: 18px; }
+
+.menu-acoes-receptor { position: relative; display: inline-block; }
+.menu-acoes-receptor summary { list-style: none; cursor: pointer; padding: 9px 13px; border: 1px solid #d9e0eb; border-radius: 7px; background: white; color: var(--azul); font-size: 12px; font-weight: bold; }
+.menu-acoes-receptor summary::-webkit-details-marker { display: none; }
+.menu-acoes-conteudo { position: absolute; right: 0; top: calc(100% + 5px); z-index: 20; min-width: 180px; padding: 6px; border: 1px solid var(--borda); border-radius: 8px; background: white; box-shadow: 0 8px 24px rgba(16,36,62,.14); }
+.menu-acoes-conteudo a { display: block; padding: 10px 11px; border-radius: 5px; color: var(--azul); text-decoration: none; font-size: 12px; white-space: nowrap; }
+.menu-acoes-conteudo a:hover { background: var(--fundo); color: #c91535; }
+
+/* Autocomplete do receptor: resultados abaixo do campo e painel após seleção */
+.campo-busca-receptor { position: relative; }
+.sugestoes-receptor {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    max-height: 270px;
+    overflow-y: auto;
+    padding: 6px;
+    border: 1px solid #dce3ed;
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 10px 25px rgba(16, 36, 62, .14);
+}
+.sugestoes-receptor[hidden] { display: none !important; }
+.sugestao-receptor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    padding: 11px 13px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--azul);
+    text-align: left;
+    cursor: pointer;
+}
+.sugestao-receptor:hover, .sugestao-receptor:focus { background: #f2f5fa; outline: none; }
+.sugestao-receptor strong { font-size: 13px; }
+.sugestao-receptor small, .sugestao-vazia { color: #73829a; font-size: 11px; }
+.sugestao-vazia { padding: 12px; }
+.receptor-selecionado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 17px;
+    border: 1px solid #e1e7f0;
+    border-radius: 9px;
+    background: #fbfcfe;
+}
+.receptor-selecionado[hidden] { display: none !important; }
+.receptor-selecionado-dados { display: grid; grid-template-columns: minmax(220px, 2fr) minmax(140px, 1fr) minmax(120px, 1fr); gap: 22px; flex: 1; }
+.receptor-selecionado-dados div { display: flex; flex-direction: column; gap: 5px; }
+.receptor-selecionado-dados small { color: #73829a; font-size: 11px; }
+.receptor-selecionado-dados strong { color: var(--azul); font-size: 13px; }
+.receptor-selecionado .acoes-receptor { display: flex; align-items: center; gap: 9px; min-width: auto; }
+.receptor-selecionado .menu-acoes-conteudo { top: calc(100% + 5px); }
+@media (max-width: 760px) {
+    .receptor-selecionado { align-items: stretch; flex-direction: column; }
+    .receptor-selecionado-dados { grid-template-columns: 1fr; gap: 12px; }
+    .receptor-selecionado .acoes-receptor { flex-wrap: wrap; }
+}
+
+/* Refinamento visual da tela de nova amostra */
+.amostra-form {
+    width: min(100%, 1040px);
+    padding: 30px;
+    border: 1px solid #e4eaf2;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 12px 34px rgba(18, 42, 72, .06);
+}
+.amostra-form > h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 7px;
+    color: #142b46;
+    font-size: 21px;
+    font-weight: 750;
+    letter-spacing: -.3px;
+}
+.amostra-form > h3::before {
+    content: "";
+    width: 4px;
+    height: 23px;
+    border-radius: 4px;
+    background: #e51e43;
+}
+.amostra-form .descricao {
+    margin: 0 0 24px;
+    color: #718096;
+    font-size: 13px;
+    line-height: 1.6;
+}
+.amostra-form .grade-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 19px 20px;
+}
+.amostra-form .campo {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+}
+.amostra-form .campo.largo { grid-column: 1 / -1; }
+.amostra-form .campo label {
+    color: #263b55;
+    font-size: 12px;
+    font-weight: 700;
+}
+.amostra-form .campo input,
+.amostra-form .campo select,
+.amostra-form .campo textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 13px;
+    border: 1px solid #d8e1ec;
+    border-radius: 9px;
+    background: #fbfcfe;
+    color: #203650;
+    font: inherit;
+    font-size: 13px;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.amostra-form .campo input:focus,
+.amostra-form .campo select:focus,
+.amostra-form .campo textarea:focus {
+    outline: none;
+    border-color: #008c8c;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 140, 140, .12);
+}
+.amostra-form .separador-amostra {
+    margin: 27px 0;
+    border: 0;
+    border-top: 1px solid #e8edf3;
+}
+.amostra-form .separador-amostra + h3 {
+    margin-bottom: 20px;
+    font-size: 17px;
+}
+.amostra-form .alerta-aviso {
+    padding: 14px 16px;
+    border: 1px solid #f2d59a;
+    border-radius: 10px;
+    background: #fff9e9;
+    color: #805b16;
+    font-size: 12px;
+    line-height: 1.6;
+}
+.amostra-form .rodape-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 11px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e8edf3;
+}
+.amostra-form .rodape-form .botao {
+    min-height: 43px;
+    padding: 0 20px;
+    border-radius: 9px;
+    font-weight: 700;
+}
+.amostra-form .rodape-form button[type="submit"] {
+    background: #e51e43;
+    box-shadow: 0 5px 12px rgba(229, 30, 67, .16);
+}
+.amostra-form .rodape-form button[type="submit"]:hover { background: #c91638; transform: translateY(-1px); }
+.amostra-form .rodape-form .botao-claro { border: 1px solid #d8e1ec; background: #fff; color: #203650; }
+.amostra-form .alerta-erro { padding: 12px 15px; border-radius: 9px; }
+@media (max-width: 700px) {
+    .amostra-form { padding: 19px; border-radius: 12px; }
+    .amostra-form .grade-form { grid-template-columns: 1fr; gap: 15px; }
+    .amostra-form .campo.largo { grid-column: auto; }
+    .amostra-form .rodape-form { flex-direction: column; }
+    .amostra-form .rodape-form .botao { width: 100%; justify-content: center; }
+}
+
+/* Solicitação transfusional em duas etapas */
+.solicitacao-form { max-width: 1000px; padding: 30px; border-radius: 15px; box-shadow: 0 12px 32px rgba(16,36,62,.05); }
+.solicitacao-form .grade-form { gap: 20px; }
+.solicitacao-form .campo input[type="datetime-local"] { width:100%; padding:11px 12px; border:1px solid #dce2eb; border-radius:7px; background:white; color:var(--texto); font:inherit; font-size:14px; }
+.solicitacao-form .marca { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--azul); font-weight:600; }
+.solicitacao-form .marca input { width:17px; height:17px; accent-color:#d7193f; }
+.solicitacao-etapas { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding-bottom:20px; margin-bottom:24px; border-bottom:1px solid var(--borda); }
+.solicitacao-etapas .etapa { padding:14px 18px; border:1px solid #dce2eb; border-radius:9px; background:#f8fafc; color:var(--azul); font-size:14px; font-weight:700; cursor:pointer; text-align:left; }
+.solicitacao-etapas .etapa.ativa { border-color:#e51e43; background:#fff0f3; color:#b51233; box-shadow:inset 0 -3px 0 #e51e43; }
+.solicitacao-form h3 { color:var(--azul); margin-bottom:7px; }
+.solicitacao-form .rodape-form { justify-content:flex-end; }
+@media(max-width:650px){.solicitacao-form{padding:17px}.solicitacao-etapas .etapa{padding:11px 9px;font-size:12px}}
+
+
+/* Cadastro de bolsa: layout em fileiras, responsivo e com hierarquia visual */
+.cadastro-bolsa{width:min(100%,1120px);max-width:1120px;margin:0 auto;padding:28px 30px;border:1px solid #e5eaf1;border-radius:16px;box-shadow:0 10px 30px rgba(18,42,72,.055)}
+.bolsa-aviso{display:flex;align-items:center;gap:13px;padding:15px 17px;margin-bottom:25px;border:1px solid #cfe5e8;border-radius:11px;background:#f1f9fa}
+.bolsa-aviso-icone{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:#d8f0ed;color:#087d78;font-weight:900}
+.bolsa-aviso strong{display:block;color:#15334c;font-size:13px;margin-bottom:4px}
+.bolsa-aviso p{margin:0;color:#62758a;font-size:12px;line-height:1.5}
+.bolsa-secao{padding:22px 0;border-top:1px solid #e9edf3}
+.bolsa-secao:first-of-type{border-top:0;padding-top:0}
+.bolsa-secao-titulo{display:flex;align-items:center;gap:12px;margin-bottom:19px}
+.bolsa-secao-titulo>span{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border-radius:9px;background:#fff0f3;color:#d51d43;font-size:12px;font-weight:800}
+.bolsa-secao-titulo h3{margin:0 0 4px;color:#172f4a;font-size:16px;font-weight:750}
+.bolsa-secao-titulo p{margin:0;color:#77869a;font-size:12px;line-height:1.5}
+.bolsa-campos{display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px 18px}
+.bolsa-campos>.campo{flex:1 1 220px;min-width:190px}
+.bolsa-campos-curtos>.campo{flex:0 1 290px}
+.cadastro-bolsa .campo{min-width:0;gap:7px}
+.cadastro-bolsa .campo label{color:#30445d;font-size:12px;font-weight:700}
+.cadastro-bolsa .campo input,.cadastro-bolsa .campo select,.cadastro-bolsa .campo textarea{min-height:43px;padding:10px 12px;border:1px solid #d9e2ec;border-radius:8px;background:#fbfcfe;color:#243b55;font:inherit;font-size:13px;transition:border-color .15s,box-shadow .15s,background .15s}
+.cadastro-bolsa .campo input:focus,.cadastro-bolsa .campo select:focus,.cadastro-bolsa .campo textarea:focus{outline:0;border-color:#008c8c;background:#fff;box-shadow:0 0 0 3px rgba(0,140,140,.11)}
+.cadastro-bolsa .campo small{font-size:11px;color:#8190a3}
+.bolsa-confirmacao{display:flex;align-items:flex-start;gap:10px;min-width:230px;padding:12px 14px;border:1px solid #e1e8ef;border-radius:9px;background:#fbfcfe}
+.bolsa-confirmacao input,.bolsa-exame input{width:17px;height:17px;flex:0 0 17px;margin:1px 0 0;accent-color:#008c8c}
+.bolsa-confirmacao span{display:flex;flex-direction:column;gap:4px}
+.bolsa-confirmacao strong{color:#30445d;font-size:12px}
+.bolsa-confirmacao small{color:#8190a3;font-size:11px;line-height:1.4}
+.bolsa-regra-validade{display:inline-flex;align-items:center;margin-top:12px;padding:8px 11px;border-radius:7px;background:#eff8f7;color:#087d78;font-size:11px;font-weight:650}
+.bolsa-exames-cabecalho{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.bolsa-exames-contador{color:#738298;font-size:11px;font-weight:650}
+.bolsa-marcar-todos{min-height:35px;padding:0 13px;font-size:11px}
+.bolsa-exames-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}
+.bolsa-exame{display:flex;align-items:center;gap:9px;min-height:40px;padding:9px 11px;border:1px solid #e4eaf1;border-radius:8px;background:#fff;color:#3c5068;font-size:12px;cursor:pointer;transition:background .15s,border-color .15s}
+.bolsa-exame:has(input:checked){border-color:#b9ded9;background:#f1f9f8;color:#176b68}
+.bolsa-conferencias{display:flex;flex-wrap:wrap;gap:12px}
+.bolsa-conferencias .bolsa-confirmacao{flex:1 1 260px}
+.bolsa-status{max-width:360px;margin-top:17px}
+.bolsa-observacoes{margin-top:16px}
+.cadastro-bolsa .campo textarea{min-height:82px;resize:vertical}
+.bolsa-rodape{justify-content:flex-end;align-items:center}
+.bolsa-rodape .botao{min-height:43px;padding:0 19px;border-radius:8px;font-weight:700}
+.bolsa-rodape button[type=submit]{background:#e51e43;box-shadow:0 5px 12px rgba(229,30,67,.14)}
+.bolsa-rodape button[type=submit]:hover{background:#c91638;transform:translateY(-1px)}
+@media(max-width:700px){.cadastro-bolsa{padding:18px}.bolsa-campos>.campo,.bolsa-campos-curtos>.campo{flex:1 1 100%}.bolsa-exames-grade{grid-template-columns:repeat(2,minmax(0,1fr))}.bolsa-conferencias{flex-direction:column}.bolsa-rodape{flex-direction:column-reverse;align-items:stretch}.bolsa-rodape .botao{width:100%;justify-content:center}}
+@media(max-width:420px){.bolsa-exames-grade{grid-template-columns:1fr}.bolsa-secao-titulo p{font-size:11px}}

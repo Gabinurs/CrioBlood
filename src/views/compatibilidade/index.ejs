@@ -51,14 +51,14 @@
             <div class="tabela-container">
                 <table>
                     <thead>
-                        <tr><th>Código</th><th>Lote</th><th>ABO/Rh</th><th>Compatibilidade</th><th>Validade</th><th>Prazo</th><th>Localização</th><th></th></tr>
+                        <tr><th>Código interno CrioBlood</th><th>Código original</th><th>Lote</th><th>ABO/Rh</th><th>Compatibilidade</th><th>Validade</th><th>Prazo</th><th>Localização</th><th></th></tr>
                     </thead>
                     <tbody>
                         <% if (bolsas.length === 0) { %>
-                            <tr><td colspan="8" class="vazio">Nenhuma bolsa compatível disponível no estoque agora.</td></tr>
+                            <tr><td colspan="9" class="vazio">Nenhuma bolsa compatível disponível no estoque agora.</td></tr>
                         <% } else { bolsas.forEach(function (b) { %>
                             <tr>
-                                <td><strong><%= b.codigo_original %></strong></td>
+                                <td><strong><%= b.codigo_interno %></strong></td><td><small><%= b.codigo_original %></small></td>
                                 <td><%= b.codigo_lote %></td>
                                 <td><%= rot.tipagem(b.abo, b.fator_rh) %></td>
                                 <td>
@@ -70,9 +70,10 @@
                                 <td><%= rot.local(b) %></td>
                                 <td>
                                     <form action="/compatibilidade/reservar" method="POST"
-                                          data-confirmar="Reservar a bolsa <%= b.codigo_original %> para <%= solicitacao.paciente_nome %>?">
+                                          data-confirmar="Confirme que o código digitado corresponde à etiqueta da bolsa antes de reservar para <%= solicitacao.paciente_nome %>.">
                                         <input type="hidden" name="solicitacao_id" value="<%= solicitacao.id %>">
                                         <input type="hidden" name="hemocomponente_id" value="<%= b.id %>">
+                                        <label class="campo"><small>Digite o código interno da etiqueta para confirmar</small><input type="text" name="confirmacao_codigo" required autocomplete="off" placeholder="<%= b.codigo_interno %>"></label>
                                         <button class="botao botao-pequeno" type="submit">Reservar</button>
                                     </form>
                                 </td>
