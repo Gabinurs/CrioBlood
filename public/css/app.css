@@ -438,3 +438,121 @@ td.vazio, .vazio {
     .receptor-selecionado-dados { grid-template-columns: 1fr; gap: 12px; }
     .receptor-selecionado .acoes-receptor { flex-wrap: wrap; }
 }
+
+/* Refinamento visual da tela de nova amostra */
+.amostra-form {
+    width: min(100%, 1040px);
+    padding: 30px;
+    border: 1px solid #e4eaf2;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 12px 34px rgba(18, 42, 72, .06);
+}
+.amostra-form > h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 7px;
+    color: #142b46;
+    font-size: 21px;
+    font-weight: 750;
+    letter-spacing: -.3px;
+}
+.amostra-form > h3::before {
+    content: "";
+    width: 4px;
+    height: 23px;
+    border-radius: 4px;
+    background: #e51e43;
+}
+.amostra-form .descricao {
+    margin: 0 0 24px;
+    color: #718096;
+    font-size: 13px;
+    line-height: 1.6;
+}
+.amostra-form .grade-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 19px 20px;
+}
+.amostra-form .campo {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+}
+.amostra-form .campo.largo { grid-column: 1 / -1; }
+.amostra-form .campo label {
+    color: #263b55;
+    font-size: 12px;
+    font-weight: 700;
+}
+.amostra-form .campo input,
+.amostra-form .campo select,
+.amostra-form .campo textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 13px;
+    border: 1px solid #d8e1ec;
+    border-radius: 9px;
+    background: #fbfcfe;
+    color: #203650;
+    font: inherit;
+    font-size: 13px;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.amostra-form .campo input:focus,
+.amostra-form .campo select:focus,
+.amostra-form .campo textarea:focus {
+    outline: none;
+    border-color: #008c8c;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 140, 140, .12);
+}
+.amostra-form .separador-amostra {
+    margin: 27px 0;
+    border: 0;
+    border-top: 1px solid #e8edf3;
+}
+.amostra-form .separador-amostra + h3 {
+    margin-bottom: 20px;
+    font-size: 17px;
+}
+.amostra-form .alerta-aviso {
+    padding: 14px 16px;
+    border: 1px solid #f2d59a;
+    border-radius: 10px;
+    background: #fff9e9;
+    color: #805b16;
+    font-size: 12px;
+    line-height: 1.6;
+}
+.amostra-form .rodape-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 11px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e8edf3;
+}
+.amostra-form .rodape-form .botao {
+    min-height: 43px;
+    padding: 0 20px;
+    border-radius: 9px;
+    font-weight: 700;
+}
+.amostra-form .rodape-form button[type="submit"] {
+    background: #e51e43;
+    box-shadow: 0 5px 12px rgba(229, 30, 67, .16);
+}
+.amostra-form .rodape-form button[type="submit"]:hover { background: #c91638; transform: translateY(-1px); }
+.amostra-form .rodape-form .botao-claro { border: 1px solid #d8e1ec; background: #fff; color: #203650; }
+.amostra-form .alerta-erro { padding: 12px 15px; border-radius: 9px; }
+@media (max-width: 700px) {
+    .amostra-form { padding: 19px; border-radius: 12px; }
+    .amostra-form .grade-form { grid-template-columns: 1fr; gap: 15px; }
+    .amostra-form .campo.largo { grid-column: auto; }
+    .amostra-form .rodape-form { flex-direction: column; }
+    .amostra-form .rodape-form .botao { width: 100%; justify-content: center; }
+}
