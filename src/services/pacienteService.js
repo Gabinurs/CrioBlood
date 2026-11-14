@@ -102,11 +102,11 @@ class PacienteService {
             await db.query(
                 `UPDATE pacientes
                  SET nome = $1, nome_mae = $2, prontuario = $3, data_nascimento = $4,
-                     abo = $5, fator_rh = $6, cns = $7, cpf = $8, rg = $9, sexo = $10,
-                     telefone = $11, convenio = $12, plano = $13, observacoes = $14,
-                     ativo = $15, atualizado_em = CURRENT_TIMESTAMP
-                 WHERE id = $16`,
-                [d.nome, d.nome_mae, d.prontuario, d.data_nascimento, d.abo, d.fator_rh,
+                     cns = $5, cpf = $6, rg = $7, sexo = $8, telefone = $9,
+                     convenio = $10, plano = $11, observacoes = $12,
+                     ativo = $13, atualizado_em = CURRENT_TIMESTAMP
+                 WHERE id = $14`,
+                [d.nome, d.nome_mae, d.prontuario, d.data_nascimento,
                  d.cns, d.cpf, d.rg, d.sexo, d.telefone, d.convenio, d.plano, d.observacoes,
                  dados.ativo === 'on', id]
             );
