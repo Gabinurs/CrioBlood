@@ -32,6 +32,13 @@ O projeto será organizado seguindo o padrão MVC (Model, View e Controller).
 
 No desenvolvimento local, acesse o servidor por `http://localhost:<PORT>` (não `https://`). Em produção, acesse a URL HTTPS fornecida pela plataforma; o proxy termina o HTTPS e encaminha as requisições ao servidor Express.
 
+## Atualizar a senha do Supervisor
+
+1. Altere `SUPERVISOR_PASSWORD` no arquivo `.env` para a nova senha, sem compartilhá-la.
+2. Execute `node src/scripts/criar-supervisor.js --atualizar-senha`.
+
+O comando atualiza somente o hash bcrypt da conta Supervisor existente, exige que ela esteja ativa e seja administradora, e verifica a senha antes de confirmar a transação. Não imprime a senha nem cria uma conta quando executado nesse modo.
+
 ## Status
 
 Em desenvolvimento.
