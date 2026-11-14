@@ -35,8 +35,6 @@
                         <th>Nome</th>
                         <th>Data de nascimento</th>
                         <th>Prontuário</th>
-                        <th>Situação</th>
-                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody data-lista-receptores>
@@ -48,17 +46,11 @@
                             <td><strong><%= p.nome %></strong></td>
                             <td><%= p.data_nascimento_br %></td>
                             <td><%= p.prontuario || '—' %></td>
-                            <td><span class="status <%= p.ativo ? 's-verde' : 's-cinza' %>"><%= p.ativo ? 'Ativo' : 'Inativo' %></span></td>
-                            <td class="acoes">
-                                <a class="botao botao-claro botao-pequeno" href="/pacientes/<%= p.id %>/editar">Editar</a>
-                                <% if (p.ativo) { %>
-                                    <a class="botao botao-pequeno" href="/solicitacoes/nova?paciente_id=<%= p.id %>">Solicitar bolsa</a>
-                                <% } %>
-                            </td>
+                             
                         </tr>
                     <% }) } %>
                     <tr data-sem-receptor hidden>
-                        <td colspan="5" class="vazio">Nenhum receptor encontrado com esse nome.</td>
+                        <td colspan="3" class="vazio">Nenhum receptor encontrado com esse nome.</td>
                     </tr>
                     <% if (!pacientes.length) { %>
                         <tr><td colspan="5" class="vazio">Ainda não há receptores cadastrados. Use o botão Inserir para cadastrar o primeiro.</td></tr>
