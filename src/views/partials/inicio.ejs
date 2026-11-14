@@ -1,11 +1,11 @@
 <%
     var paginaAtiva = locals.ativo || '';
+    if (paginaAtiva === 'hemocomponentes') paginaAtiva = 'lotes';
     var usuarioLogado = locals.usuario || null;
     var itensMenu = [
         ['inicio',        '/dashboard',      '⌂  Início'],
         ['pacientes',     '/pacientes',      '♙  Receptor'],
         ['lotes',         '/lotes',          '▣  Lotes de recebimento'],
-        ['hemocomponentes','/hemocomponentes','✚  Cadastro de bolsas'],
         ['estoque',       '/estoque',        '♥  Bolsas (Estoque)'],
         ['equipamentos',  '/equipamentos',   '❄  Equipamentos'],
         ['solicitacoes',  '/solicitacoes',   '▤  Solicitação transfusional'],
