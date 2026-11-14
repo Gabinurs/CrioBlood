@@ -34,8 +34,9 @@ class AmostraReceptorService {
         if (dados.pai === 'POSITIVO' && String(dados.pai_justificativa || '').trim().length < 5) {
             throw new ErroNegocio('Justifique o PAI positivo.');
         }
-        const coleta = new Date(dados.coletado_em);
-        const recebimento = new Date(dados.recebido_em);
+        const interpretarHorarioLocal = valor => new Date(valor.length === 16 ? valor + ':00-03:00' : valor);
+        const coleta = interpretarHorarioLocal(dados.coletado_em);
+        const recebimento = interpretarHorarioLocal(dados.recebido_em);
         if (isNaN(coleta) || isNaN(recebimento) || recebimento < coleta) {
             throw new ErroNegocio('Confira as datas e horários de coleta e recebimento.');
         }
