@@ -56,6 +56,8 @@ class TransfusaoService {
             if (s.status !== 'RESERVADA') {
                 throw new ErroNegocio('Só é possível registrar a transfusão de solicitações com bolsa reservada.');
             }
+            const liberacao = await AmostraReceptorService.podeSolicitar(s.paciente_id);
+            if (!liberacao.permitido) throw new ErroNegocio(liberacao.motivo);
 
             const b = (await cliente.query(
                 `SELECT id, codigo_original, status, (data_validade >= CURRENT_DATE) AS na_validade
