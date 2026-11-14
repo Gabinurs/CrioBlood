@@ -37,7 +37,7 @@ class AmostraReceptorService {
         const interpretarHorarioLocal = valor => new Date(valor.length === 16 ? valor + ':00-03:00' : valor);
         const coleta = interpretarHorarioLocal(dados.coletado_em);
         const recebimento = interpretarHorarioLocal(dados.recebido_em);
-        if (isNaN(coleta) || isNaN(recebimento) || recebimento < coleta) {
+        if (isNaN(coleta) || isNaN(recebimento) || coleta > new Date() || recebimento > new Date() || recebimento < coleta) {
             throw new ErroNegocio('Confira as datas e horários de coleta e recebimento.');
         }
         const paciente = (await db.query('SELECT id, ativo FROM pacientes WHERE id=$1',[pacienteId])).rows[0];
