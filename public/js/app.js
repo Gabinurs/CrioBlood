@@ -32,41 +32,78 @@
         selects.forEach(function (campo) { campo.addEventListener('change', filtrar); });
     });
 
-    // Consulta de receptores: pesquisa parcial, sem diferenciar maiúsculas ou acentos
+    // Busca de receptores com autocomplete e seleção antes de mostrar ações.
     var buscaReceptor = document.querySelector('[data-busca-receptor]');
     if (buscaReceptor) {
-        var linhasReceptor = Array.prototype.slice.call(document.querySelectorAll('[data-receptor-linha]'));
-        var semReceptor = document.querySelector('[data-sem-receptor]');
-        var contador = document.querySelector('[data-contador-receptores]');
+        var opcoesReceptor = Array.prototype.slice.call(document.querySelectorAll('[data-opcao-receptor]'));
+        var sugestoes = document.querySelector('[data-sugestoes-receptor]');
+        var selecionado = document.querySelector('[data-receptor-selecionado]');
         var instrucao = document.querySelector('[data-instrucao-busca]');
         var limpar = document.querySelector('[data-limpar-busca]');
+        var trocar = document.querySelector('[data-trocar-receptor]');
 
         function normalizar(valor) {
             return (valor || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         }
-
+        function fecharSugestoes() {
+            if (sugestoes) sugestoes.hidden = true;
+            buscaReceptor.setAttribute('aria-expanded', 'false');
+        }
         function filtrarReceptores() {
             var termo = normalizar(buscaReceptor.value.trim());
             var encontrados = 0;
-            linhasReceptor.forEach(function (linha) {
-                var nome = normalizar(linha.getAttribute('data-nome-receptor'));
-                var corresponde = termo.length > 0 && nome.includes(termo);
-                linha.hidden = !corresponde;
+            opcoesReceptor.forEach(function (opcao) {
+                var corresponde = termo.length > 0 && normalizar(opcao.getAttribute('data-nome')).includes(termo);
+                opcao.hidden = !corresponde;
                 if (corresponde) encontrados++;
             });
-            if (contador) contador.textContent = encontrados;
-            if (semReceptor) semReceptor.hidden = termo.length === 0 || encontrados > 0;
-            if (instrucao) {
+            var mostrar = termo.length > 0 && encontrados > 0 && (!selecionado || selecionado.hidden);
+            if (sugestoes) sugestoes.hidden = !mostrar;
+            buscaReceptor.setAttribute('aria-expanded', mostrar ? 'true' : 'false');
+            if (instrucao && (!selecionado || selecionado.hidden)) {
                 instrucao.textContent = termo.length === 0
-                    ? 'Digite um nome acima para exibir os resultados.'
-                    : encontrados + (encontrados === 1 ? ' receptor encontrado.' : ' receptores encontrados.');
+                    ? 'Nenhum paciente selecionado.'
+                    : encontrados === 0 ? 'Nenhum receptor encontrado. Confira o nome ou clique em Inserir.' : 'Selecione um paciente na lista que apareceu abaixo do campo.';
             }
         }
-        buscaReceptor.addEventListener('input', filtrarReceptores);
+        function selecionarReceptor(opcao) {
+            var nome = opcao.getAttribute('data-nome');
+            selecionado.querySelector('[data-selecionado-nome]').textContent = nome;
+            selecionado.querySelector('[data-selecionado-nascimento]').textContent = opcao.getAttribute('data-nascimento');
+            selecionado.querySelector('[data-selecionado-prontuario]').textContent = opcao.getAttribute('data-prontuario');
+            selecionado.querySelector('[data-acao-dossie]').href = opcao.getAttribute('data-dossie');
+            selecionado.querySelector('[data-acao-amostra]').href = opcao.getAttribute('data-amostra');
+            selecionado.querySelector('[data-acao-edicao]').href = opcao.getAttribute('data-edicao');
+            selecionado.querySelector('[data-acao-urgencia]').href = opcao.getAttribute('data-urgencia');
+            selecionado.hidden = false;
+            buscaReceptor.value = nome;
+            fecharSugestoes();
+            if (instrucao) instrucao.textContent = 'Paciente selecionado. Escolha uma das ações ao lado.';
+        }
+        opcoesReceptor.forEach(function (opcao) {
+            opcao.addEventListener('click', function () { selecionarReceptor(opcao); });
+        });
+        buscaReceptor.addEventListener('input', function () {
+            if (selecionado && !selecionado.hidden) selecionado.hidden = true;
+            filtrarReceptores();
+        });
+        buscaReceptor.addEventListener('focus', filtrarReceptores);
         if (limpar) limpar.addEventListener('click', function () {
             buscaReceptor.value = '';
-            filtrarReceptores();
+            if (selecionado) selecionado.hidden = true;
+            fecharSugestoes();
+            if (instrucao) instrucao.textContent = 'Nenhum paciente selecionado.';
             buscaReceptor.focus();
+        });
+        if (trocar) trocar.addEventListener('click', function () {
+            if (selecionado) selecionado.hidden = true;
+            buscaReceptor.value = '';
+            fecharSugestoes();
+            if (instrucao) instrucao.textContent = 'Pesquise e selecione outro paciente.';
+            buscaReceptor.focus();
+        });
+        document.addEventListener('click', function (evento) {
+            if (!evento.target.closest('.campo-busca-receptor')) fecharSugestoes();
         });
     }
 
