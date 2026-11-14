@@ -1,5 +1,6 @@
 const db = require('../database');
 const { ErroNegocio } = require('../utils/erros');
+const AmostraReceptorService = require('./amostraReceptorService');
 
 // Para cada grupo ABO do RECEPTOR, quais grupos ABO do DOADOR são aceitos.
 // Hemácias: o receptor não pode ter anticorpos contra os antígenos da bolsa.
@@ -83,12 +84,14 @@ class CompatibilidadeService {
             await cliente.query('BEGIN');
 
             const s = (await cliente.query(
-                `SELECT s.id, s.tipo, s.status, p.abo AS paciente_abo, p.fator_rh AS paciente_rh
+                `SELECT s.id, s.tipo, s.status, s.paciente_id, p.abo AS paciente_abo, p.fator_rh AS paciente_rh
                  FROM solicitacoes_transfusionais s
                  JOIN pacientes p ON p.id = s.paciente_id
                  WHERE s.id = $1 FOR UPDATE OF s`, [solicitacaoId])).rows[0];
             if (!s) throw new ErroNegocio('Solicitação não encontrada.');
             if (s.status !== 'PENDENTE') throw new ErroNegocio('Só é possível reservar bolsa para solicitações pendentes.');
+            const liberacao = await AmostraReceptorService.podeSolicitar(s.paciente_id);
+            if (!liberacao.permitido) throw new ErroNegocio(liberacao.motivo);
             if (!s.paciente_abo || !s.paciente_rh) {
                 throw new ErroNegocio('O paciente não tem tipagem (ABO/Rh) cadastrada.');
             }
