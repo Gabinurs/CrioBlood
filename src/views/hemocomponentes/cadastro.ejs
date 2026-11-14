@@ -1,82 +1,23 @@
-<%- include('../partials/inicio', { titulo: 'Cadastrar hemocomponente', subtitulo: 'Registro de uma bolsa recebida', ativo: 'hemocomponentes' }) %>
-
+<%- include('../partials/inicio', { titulo: 'Cadastrar hemocomponente', subtitulo: 'Identificação interna, volume e conferência da bolsa', ativo: 'hemocomponentes' }) %>
 <section class="painel formulario">
-    <form action="/hemocomponentes/novo" method="POST">
-        <div class="grade-form">
-            <div class="campo">
-                <label for="lote_id">ID do lote de origem</label>
-                <input type="number" id="lote_id" name="lote_id" min="1" value="<%= locals.lote_id || '' %>" required>
-                <small>O número do lote aparece na tela de Lotes (o lote precisa estar aberto).</small>
-            </div>
-
-            <div class="campo">
-                <label for="codigo_original">Código original da bolsa</label>
-                <input type="text" id="codigo_original" name="codigo_original" maxlength="50" required>
-            </div>
-
-            <div class="campo largo">
-                <label for="tipo">Tipo de hemocomponente</label>
-                <select id="tipo" name="tipo" required>
-                    <option value="">Selecione...</option>
-                    <% ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'].forEach(function (t) { %>
-                        <option value="<%= t %>"><%= rot.tipo(t) %> (<%= t %>)</option>
-                    <% }) %>
-                </select>
-            </div>
-
-            <div class="campo">
-                <label for="abo">Grupo ABO</label>
-                <select id="abo" name="abo">
-                    <% ['', 'A', 'B', 'AB', 'O'].forEach(function (o) { %>
-                        <option value="<%= o %>"><%= o || 'Não informado' %></option>
-                    <% }) %>
-                </select>
-            </div>
-
-            <div class="campo">
-                <label for="fator_rh">Fator Rh</label>
-                <select id="fator_rh" name="fator_rh">
-                    <option value="">Não informado</option>
-                    <option value="+">Positivo (+)</option>
-                    <option value="-">Negativo (-)</option>
-                </select>
-            </div>
-
-            <div class="campo">
-                <label for="data_coleta">Data da coleta</label>
-                <input type="date" id="data_coleta" name="data_coleta" required>
-            </div>
-
-            <div class="campo">
-                <label for="data_validade">Data de validade</label>
-                <input type="date" id="data_validade" name="data_validade" required>
-            </div>
-
-            <div class="campo largo marcas">
-                <label class="marca"><input type="checkbox" name="inspecao_visual"> Inspeção visual realizada</label>
-                <label class="marca"><input type="checkbox" name="integridade_confirmada"> Integridade da bolsa confirmada</label>
-                <label class="marca"><input type="checkbox" name="tipagem_confirmada"> Tipagem sanguínea confirmada</label>
-            </div>
-
-            <div class="campo largo">
-                <label for="status">Status inicial</label>
-                <select id="status" name="status">
-                    <option value="EM_CONFERENCIA">Em conferência</option>
-                    <option value="DISPONIVEL">Disponível (exige as 3 confirmações, ABO e Rh)</option>
-                </select>
-            </div>
-
-            <div class="campo largo">
-                <label for="observacoes">Observações</label>
-                <textarea id="observacoes" name="observacoes" rows="3"></textarea>
-            </div>
-        </div>
-
-        <div class="rodape-form">
-            <button class="botao" type="submit">Salvar registro</button>
-            <a class="botao botao-claro" href="/hemocomponentes">Cancelar</a>
-        </div>
-    </form>
-</section>
-
+<div class="alerta alerta-info">O código original será preservado. O CrioBlood gera automaticamente um código interno exclusivo para identificação e rastreabilidade.</div>
+<form action="/hemocomponentes/novo" method="POST"><div class="grade-form">
+<div class="campo"><label for="lote_id">ID do lote *</label><input type="number" id="lote_id" name="lote_id" min="1" value="<%= locals.lote_id||'' %>" required><small>O lote precisa estar aberto.</small></div>
+<div class="campo"><label for="codigo_original">Código original da bolsa *</label><input id="codigo_original" name="codigo_original" maxlength="50" placeholder="Ex.: B345326011725601" required></div>
+<div class="campo"><label for="tipo">Hemocomponente *</label><select id="tipo" name="tipo" required><option value="">Selecione...</option><% ['CH','PLASMA','PLAQUETAS','CRIO'].forEach(t=>{ %><option value="<%= t %>"><%= rot.tipo(t) %> (<%= t %>)</option><% }) %></select></div>
+<div class="campo"><label for="volume_ml">Volume (mL) *</label><input type="number" id="volume_ml" name="volume_ml" min="1" max="5000" step="1" placeholder="298" required></div>
+<div class="campo"><label for="abo">Grupo ABO *</label><select id="abo" name="abo" required><option value="">Selecione...</option><% ['A','B','AB','O'].forEach(o=>{ %><option value="<%= o %>"><%= o %></option><% }) %></select></div>
+<div class="campo"><label for="fator_rh">Fator Rh *</label><select id="fator_rh" name="fator_rh" required><option value="">Selecione...</option><option value="+">Positivo (+)</option><option value="-">Negativo (-)</option></select></div>
+<div class="campo"><label for="data_coleta">Data da coleta *</label><input type="date" id="data_coleta" name="data_coleta" required></div>
+<div class="campo"><label for="data_validade">Data de validade *</label><input type="date" id="data_validade" name="data_validade" required></div>
+</div><hr>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h3>Exames realizados</h3><p class="descricao">Marque os exames que constam na documentação da bolsa.</p></div><button type="button" class="botao botao-claro" data-marcar-exames>Marcar todos</button></div>
+<div class="grade-form marcas" style="margin-top:16px"><% [['anti_hbc','Anti-HBc'],['anti_hcv','Anti-HCV'],['anti_hiv_1_2','Anti-HIV 1/2'],['anti_htlv_i_ii','Anti-HTLV I/II'],['chagas','Chagas'],['hbsag','HBsAg'],['nat_hbv','NAT HBV'],['nat_hcv','NAT HCV'],['nat_hiv','NAT HIV'],['nat_malaria','NAT Malária'],['sifilis','Sífilis'],['pesquisa_hbs','Pesquisa HbS — ausente'],['pai_negativo','PAI — negativo']].forEach(e=>{ %><label class="marca"><input type="checkbox" name="<%= e[0] %>" data-exame-bolsa> <%= e[1] %></label><% }) %></div>
+<hr><h3>Conferências para entrada no estoque</h3><div class="grade-form marcas" style="margin-top:16px">
+<label class="marca"><input type="checkbox" name="inspecao_visual" required> Inspeção visual realizada</label>
+<label class="marca"><input type="checkbox" name="integridade_confirmada" required> Integridade da bolsa confirmada</label>
+<label class="marca"><input type="checkbox" name="tipagem_confirmada" required> Confirmação ABO/Rh realizada</label></div>
+<div class="campo largo" style="margin-top:18px"><label for="status">Status inicial</label><select id="status" name="status"><option value="EM_CONFERENCIA">Em conferência</option><option value="DISPONIVEL">Disponível (exige todas as conferências)</option></select></div>
+<div class="campo largo" style="margin-top:18px"><label for="observacoes">Observações</label><textarea id="observacoes" name="observacoes" rows="3"></textarea></div>
+<div class="rodape-form"><button class="botao" type="submit">Salvar bolsa e gerar etiqueta</button><a class="botao botao-claro" href="/lotes">Cancelar</a></div></form></section>
 <%- include('../partials/fim') %>
