@@ -41,8 +41,9 @@ class HemocomponenteController {
 
             res.render('hemocomponentes/index', {
                 hemocomponentes,
+                lote_id: lote_id || '',
                 usuario: req.session.usuario,
-                title: 'Gestão de Hemocomponentes'
+                title: 'Bolsas do lote'
             });
         } catch (erro) {
             console.error('Erro ao listar hemocomponentes:', erro);
@@ -53,6 +54,7 @@ class HemocomponenteController {
     // Formulário de cadastro
     static async renderizarCadastro(req, res) {
         const lote_id = req.query.lote_id || '';
+        if (!lote_id) return res.redirect('/lotes');
         res.render('hemocomponentes/cadastro', {
             lote_id,
             usuario: req.session.usuario,
@@ -63,8 +65,9 @@ class HemocomponenteController {
     // Salva um novo hemocomponente
     static async salvarNovo(req, res) {
         try {
+            if (!req.body.lote_id) return res.redirect('/lotes');
             await HemocomponenteService.criar(req.body, req.session.usuario.id);
-            res.redirect('/hemocomponentes');
+            res.redirect('/hemocomponentes?lote_id=' + encodeURIComponent(req.body.lote_id));
         } catch (erro) {
             console.error('Erro ao salvar hemocomponente:', erro);
             const mensagem = mensagemDeErro(erro);
