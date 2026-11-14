@@ -93,6 +93,25 @@
         if (!modal.hidden) document.body.classList.add('modal-aberto');
     }
 
+    // Exige justificativa explícita para resultados positivos de Controle Rh e PAI.
+    document.querySelectorAll('[data-resultado-alerta]').forEach(function (campo) {
+        var tipo = campo.getAttribute('data-resultado-alerta');
+        var justificativa = document.querySelector('[data-justificativa="' + tipo + '"]');
+        var textarea = justificativa ? justificativa.querySelector('textarea') : null;
+        function atualizar() {
+            var positivo = campo.value === 'POSITIVO';
+            if (justificativa) justificativa.hidden = !positivo;
+            if (textarea) { textarea.required = positivo; if (!positivo) textarea.value = ''; }
+            if (positivo) {
+                window.alert(tipo === 'pai'
+                    ? 'ATENÇÃO: PAI POSITIVO. O resultado exige justificativa e bloqueia a criação de solicitação transfusional neste sistema.'
+                    : 'ATENÇÃO: Controle Rh POSITIVO. Confirme o resultado e informe a justificativa obrigatória.');
+                if (textarea) textarea.focus();
+            }
+        }
+        campo.addEventListener('change', atualizar);
+    });
+
     document.querySelectorAll('.alerta-ok').forEach(function (aviso) {
         setTimeout(function () { aviso.hidden = true; }, 6000);
     });
