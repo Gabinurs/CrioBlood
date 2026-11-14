@@ -226,13 +226,54 @@
     }
 
 
+
+    // Validade automática conforme o hemocomponente e a data da coleta.
+    var tipoBolsa = document.getElementById('tipo');
+    var coletaBolsa = document.getElementById('data_coleta');
+    var validadeBolsa = document.getElementById('data_validade');
+    var regraValidade = document.getElementById('regra-validade');
+    var ajudaValidade = document.getElementById('ajuda-validade');
+    function calcularValidadeBolsa() {
+        if (!tipoBolsa || !coletaBolsa || !validadeBolsa) return;
+        var prazos = { CH: { dias: 35, texto: '35 dias' }, PLASMA: { anos: 1, texto: '1 ano' }, CRIO: { anos: 1, texto: '1 ano' }, PLAQUETAS: { dias: 5, texto: '5 dias' } };
+        var prazo = prazos[tipoBolsa.value];
+        if (!prazo) {
+            if (regraValidade) regraValidade.textContent = 'Prazo aplicado: aguardando seleção do hemocomponente.';
+            if (ajudaValidade) ajudaValidade.textContent = 'Selecione o hemocomponente e a data da coleta.';
+            return;
+        }
+        if (regraValidade) regraValidade.textContent = 'Prazo aplicado: ' + prazo.text + ' após a data da coleta.';
+        if (ajudaValidade) ajudaValidade.textContent = 'Calculada automaticamente. Você pode conferir a data exibida.';
+        if (!coletaBolsa.value) { validadeBolsa.value = ''; return; }
+        var partes = coletaBolsa.value.split('-').map(Number);
+        var data = new Date(partes[0], partes[1] - 1, partes[2]);
+        if (prazo.dias) data.setDate(data.getDate() + prazo.dias);
+        if (prazo.anos) data.setFullYear(data.getFullYear() + prazo.anos);
+        var ano = data.getFullYear();
+        var mes = String(data.getMonth() + 1).padStart(2, '0');
+        var dia = String(data.getDate()).padStart(2, '0');
+        validadeBolsa.value = ano + '-' + mes + '-' + dia;
+    }
+    if (tipoBolsa && coletaBolsa && validadeBolsa) {
+        tipoBolsa.addEventListener('change', calcularValidadeBolsa);
+        coletaBolsa.addEventListener('change', calcularValidadeBolsa);
+    }
+
     var marcarExamesBolsa = document.querySelector('[data-marcar-exames]');
     if (marcarExamesBolsa) {
         var checksExamesBolsa = Array.prototype.slice.call(document.querySelectorAll('[data-exame-bolsa]'));
+        var contadorExames = document.getElementById('contador-exames');
+        function atualizarContadorExames() {
+            var marcados = checksExamesBolsa.filter(function (c) { return c.checked; }).length;
+            if (contadorExames) contadorExames.textContent = marcados + ' de ' + checksExamesBolsa.length + ' selecionados';
+            marcarExamesBolsa.textContent = marcados === checksExamesBolsa.length ? 'Desmarcar todos' : 'Marcar todos';
+        }
+        checksExamesBolsa.forEach(function (c) { c.addEventListener('change', atualizarContadorExames); });
         marcarExamesBolsa.addEventListener('click', function () {
             var marcar = !checksExamesBolsa.every(function (c) { return c.checked; });
             checksExamesBolsa.forEach(function (c) { c.checked = marcar; });
-            marcarExamesBolsa.textContent = marcar ? 'Desmarcar todos' : 'Marcar todos';
+            atualizarContadorExames();
         });
+        atualizarContadorExames();
     }
 })();
