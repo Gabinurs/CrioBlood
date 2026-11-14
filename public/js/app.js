@@ -102,11 +102,21 @@
             var positivo = campo.value === 'POSITIVO';
             if (justificativa) justificativa.hidden = !positivo;
             if (textarea) { textarea.required = positivo; if (!positivo) textarea.value = ''; }
-            if (positivo) {
-                window.alert(tipo === 'pai'
-                    ? 'ATENÇÃO: PAI POSITIVO. O resultado exige justificativa e bloqueia a criação de solicitação transfusional neste sistema.'
-                    : 'ATENÇÃO: Controle Rh POSITIVO. Confirme o resultado e informe a justificativa obrigatória.');
-                if (textarea) textarea.focus();
+            if (positivo && textarea) {
+                var mensagem = tipo === 'pai'
+                    ? 'PAI POSITIVO: informe a justificativa. Este resultado bloqueará a solicitação e a transfusão neste sistema.'
+                    : 'Controle Rh POSITIVO: confirme o resultado e informe a justificativa.';
+                var resposta = window.prompt(mensagem, textarea.value || '');
+                if (resposta === null || resposta.trim().length < 5) {
+                    campo.value = '';
+                    justificativa.hidden = true;
+                    textarea.required = false;
+                    textarea.value = '';
+                    window.alert('Resultado positivo não registrado. Selecione novamente e informe uma justificativa válida.');
+                    return;
+                }
+                textarea.value = resposta.trim();
+                textarea.focus();
             }
         }
         campo.addEventListener('change', atualizar);
