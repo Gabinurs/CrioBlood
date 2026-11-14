@@ -51,18 +51,5 @@
  </div>
  </form>
 </section>
-<script>
-(function(){
- const form=document.querySelector('[data-form-solicitacao]');if(!form)return;
- const etapas=[...document.querySelectorAll('[data-etapa]')],paineis=[...document.querySelectorAll('[data-painel-etapa]')];
- const voltar=document.querySelector('[data-voltar-etapa]'),proxima=document.querySelector('[data-proxima-etapa]'),salvar=document.querySelector('[data-salvar-solicitacao]');
- function mostrar(n){paineis.forEach((p,i)=>p.hidden=i!==n-1);etapas.forEach((b,i)=>{b.classList.toggle('ativa',i===n-1);b.setAttribute('aria-selected',i===n-1?'true':'false')});voltar.hidden=n===1;proxima.hidden=n===2;salvar.hidden=n!==2;}
- function validar(n){const campos=[...paineis[n-1].querySelectorAll('input,select,textarea')].filter(c=>!c.disabled&&!c.checkValidity());if(campos.length){campos[0].reportValidity();return false;}return true;}
- proxima.addEventListener('click',()=>{if(validar(1))mostrar(2)});
- voltar.addEventListener('click',()=>mostrar(1));
- etapas.forEach((b,i)=>b.addEventListener('click',()=>{if(i===0||validar(1))mostrar(i+1)}));
- form.addEventListener('submit',e=>{if(!validar(1)){e.preventDefault();mostrar(1)}else if(!validar(2)){e.preventDefault();mostrar(2)}});
- mostrar(1);
-})();
-</script>
+
 <%- include('../partials/fim') %>
