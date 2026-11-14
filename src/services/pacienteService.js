@@ -16,7 +16,7 @@ function validar(dados) {
 
     if (nome.length < 3) throw new ErroNegocio('Informe o nome completo do receptor (mínimo de 3 letras).');
     if (nomeMae.length < 3) throw new ErroNegocio('Informe o nome completo da mãe.');
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dataNascimento)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) {
         throw new ErroNegocio('Informe uma data de nascimento válida.');
     }
     const nascimento = new Date(dataNascimento + 'T00:00:00');
