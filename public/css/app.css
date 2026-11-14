@@ -381,3 +381,60 @@ td.vazio, .vazio {
 .menu-acoes-conteudo { position: absolute; right: 0; top: calc(100% + 5px); z-index: 20; min-width: 180px; padding: 6px; border: 1px solid var(--borda); border-radius: 8px; background: white; box-shadow: 0 8px 24px rgba(16,36,62,.14); }
 .menu-acoes-conteudo a { display: block; padding: 10px 11px; border-radius: 5px; color: var(--azul); text-decoration: none; font-size: 12px; white-space: nowrap; }
 .menu-acoes-conteudo a:hover { background: var(--fundo); color: #c91535; }
+
+/* Autocomplete do receptor: resultados abaixo do campo e painel após seleção */
+.campo-busca-receptor { position: relative; }
+.sugestoes-receptor {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    max-height: 270px;
+    overflow-y: auto;
+    padding: 6px;
+    border: 1px solid #dce3ed;
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 10px 25px rgba(16, 36, 62, .14);
+}
+.sugestoes-receptor[hidden] { display: none !important; }
+.sugestao-receptor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    padding: 11px 13px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--azul);
+    text-align: left;
+    cursor: pointer;
+}
+.sugestao-receptor:hover, .sugestao-receptor:focus { background: #f2f5fa; outline: none; }
+.sugestao-receptor strong { font-size: 13px; }
+.sugestao-receptor small, .sugestao-vazia { color: #73829a; font-size: 11px; }
+.sugestao-vazia { padding: 12px; }
+.receptor-selecionado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 17px;
+    border: 1px solid #e1e7f0;
+    border-radius: 9px;
+    background: #fbfcfe;
+}
+.receptor-selecionado[hidden] { display: none !important; }
+.receptor-selecionado-dados { display: grid; grid-template-columns: minmax(220px, 2fr) minmax(140px, 1fr) minmax(120px, 1fr); gap: 22px; flex: 1; }
+.receptor-selecionado-dados div { display: flex; flex-direction: column; gap: 5px; }
+.receptor-selecionado-dados small { color: #73829a; font-size: 11px; }
+.receptor-selecionado-dados strong { color: var(--azul); font-size: 13px; }
+.receptor-selecionado .acoes-receptor { display: flex; align-items: center; gap: 9px; min-width: auto; }
+.receptor-selecionado .menu-acoes-conteudo { top: calc(100% + 5px); }
+@media (max-width: 760px) {
+    .receptor-selecionado { align-items: stretch; flex-direction: column; }
+    .receptor-selecionado-dados { grid-template-columns: 1fr; gap: 12px; }
+    .receptor-selecionado .acoes-receptor { flex-wrap: wrap; }
+}
