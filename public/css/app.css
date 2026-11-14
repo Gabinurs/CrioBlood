@@ -302,3 +302,68 @@ td.vazio, .vazio {
     .mapa-tipagem { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .barra-linha { grid-template-columns: 90px 1fr 34px; }
 }
+
+
+/* ---------- Consulta e cadastro de receptores ---------- */
+.receptor-consulta { display: grid; gap: 22px; max-width: 1320px; margin: 0 auto; }
+.receptor-busca, .receptor-resultados { margin: 0; padding: 24px; }
+.receptor-titulo { display: flex; align-items: center; gap: 13px; padding-bottom: 16px; margin-bottom: 18px; border-bottom: 1px solid var(--borda); }
+.receptor-icone { width: 38px; height: 38px; display: grid; place-items: center; flex: 0 0 auto; color: #d7193f; font-size: 28px; font-weight: bold; }
+.receptor-titulo h3 { margin: 0 0 5px; color: var(--azul); font-size: 19px; }
+.receptor-titulo p { color: var(--cinza); font-size: 12px; line-height: 1.5; }
+.rotulo-busca { display: block; margin: 0 0 8px; color: var(--azul); font-size: 13px; font-weight: bold; }
+.campo-busca-receptor { display: flex; width: 100%; max-width: 780px; }
+.campo-busca-receptor input { min-width: 0; flex: 1; padding: 14px 16px; border: 1px solid #cbd5e1; border-right: 0; border-radius: 9px 0 0 9px; color: var(--texto); font: inherit; font-size: 16px; }
+.campo-busca-receptor input:focus { outline: 2px solid #f3b6c4; border-color: #d7193f; }
+.botao-busca { border-radius: 0 9px 9px 0; min-width: 52px; font-size: 24px; background: #c91535; }
+.ajuda-busca { display: block; margin-top: 8px; color: var(--cinza); font-size: 11px; }
+.receptor-titulo-lista { margin-bottom: 8px; }
+.contador-receptores { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 7px; margin-left: 5px; border-radius: 20px; background: #fce8ec; color: #b71936; font-size: 12px; }
+.tabela-receptores { white-space: normal; }
+.tabela-receptores th, .tabela-receptores td { padding: 13px 12px; font-size: 12px; }
+.tabela-receptores th { text-transform: none; }
+.tabela-receptores tbody tr[hidden] { display: none; }
+.receptor-inserir { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 20px; padding: 17px 18px; border: 1px solid #e1e6ef; border-radius: 10px; background: #f7f9fc; }
+.receptor-inserir strong, .receptor-inserir span { display: block; }
+.receptor-inserir strong { margin-bottom: 5px; color: var(--azul); font-size: 14px; }
+.receptor-inserir span { color: var(--cinza); font-size: 12px; }
+.botao-inserir { background: #c91535; min-width: 150px; }
+.botao-inserir:hover { background: #a90f2a; }
+
+/* Modal */
+.modal-aberto { overflow: hidden; }
+.modal-receptor { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 22px; }
+.modal-receptor[hidden] { display: none; }
+.modal-fundo { position: absolute; inset: 0; background: rgba(8, 22, 42, .62); backdrop-filter: blur(3px); }
+.modal-conteudo { position: relative; display: flex; flex-direction: column; width: min(920px, 100%); max-height: min(92vh, 900px); overflow: hidden; border: 1px solid #d9e0eb; border-radius: 15px; background: white; box-shadow: 0 22px 70px rgba(6, 20, 40, .28); }
+.modal-cabecalho { display: flex; align-items: center; justify-content: space-between; padding: 17px 22px; background: var(--azul); color: white; }
+.modal-cabecalho > div { display: flex; align-items: center; gap: 12px; }
+.modal-cabecalho h3 { font-size: 18px; }
+.modal-cabecalho > div span { font-size: 25px; }
+.modal-fechar { border: 0; background: transparent; color: white; font-size: 30px; line-height: 1; cursor: pointer; }
+.form-receptor-modal { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.modal-corpo { padding: 22px 26px; overflow-y: auto; }
+.secao-modal + .secao-modal { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--borda); }
+.secao-modal h4 { margin-bottom: 16px; padding-bottom: 9px; border-bottom: 1px solid #e7a9b5; color: #bd1836; font-size: 15px; }
+.secao-modal h4 span, .campo-receptor label span { color: #c91535; }
+.secao-modal h4 small { color: var(--cinza); font-size: 12px; font-weight: normal; }
+.grade-receptor-modal { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px 20px; }
+.campo-receptor { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.campo-receptor-largo { grid-column: 1 / -1; }
+.campo-receptor label { color: var(--azul); font-size: 12px; font-weight: bold; }
+.campo-receptor input, .campo-receptor select, .campo-receptor textarea { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid #cbd5e1; border-radius: 7px; background: white; color: var(--texto); font: inherit; font-size: 13px; }
+.campo-receptor input:focus, .campo-receptor select:focus, .campo-receptor textarea:focus { outline: 2px solid #f3b6c4; border-color: #c91535; }
+.linha-tipagem { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+.modal-rodape { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 22px; border-top: 1px solid var(--borda); background: #f8f9fc; }
+@media (max-width: 700px) {
+    .receptor-busca, .receptor-resultados { padding: 17px; }
+    .receptor-inserir { align-items: stretch; flex-direction: column; }
+    .botao-inserir { width: 100%; }
+    .modal-receptor { padding: 8px; }
+    .modal-conteudo { max-height: 96vh; }
+    .modal-corpo { padding: 17px; }
+    .grade-receptor-modal { grid-template-columns: 1fr; }
+    .campo-receptor-largo { grid-column: auto; }
+    .modal-rodape { padding: 12px 15px; }
+    .modal-rodape .botao { flex: 1; }
+}
