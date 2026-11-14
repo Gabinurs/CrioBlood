@@ -1,0 +1,25 @@
+<%- include('../partials/inicio',{titulo:'Nova amostra',subtitulo:'Coleta, recebimento e testes pré-transfusionais',ativo:'pacientes'}) %>
+<section class="painel formulario amostra-form">
+<h3><%= paciente.nome %></h3><p class="descricao">A validade será de 72 horas contadas da data e hora da coleta.</p>
+<% if(locals.erro){ %><div class="alerta alerta-erro"><%= erro %></div><% } %>
+<form method="POST" action="/pacientes/<%= paciente.id %>/amostras">
+<div class="grade-form">
+<div class="campo"><label>Data e hora da coleta *</label><input type="datetime-local" name="coletado_em" value="<%= valores.coletado_em || '' %>" required></div>
+<div class="campo"><label>Data e hora do recebimento *</label><input type="datetime-local" name="recebido_em" value="<%= valores.recebido_em || '' %>" required></div>
+<div class="campo"><label>Responsável pela coleta</label><input name="responsavel_coleta" value="<%= valores.responsavel_coleta || '' %>"></div>
+<div class="campo"><label>Responsável pelo recebimento</label><input name="responsavel_recebimento" value="<%= valores.responsavel_recebimento || '' %>"></div>
+<div class="campo largo"><label>Responsável pela dupla checagem *</label><input name="dupla_checagem" required value="<%= valores.dupla_checagem || '' %>"></div>
+</div>
+<hr class="separador-amostra"><h3>Resultados dos exames</h3>
+<div class="grade-form">
+<div class="campo"><label>Tipo sanguíneo ABO *</label><select name="abo" required><option value="">Selecione</option><% ['A','B','AB','O'].forEach(x=>{ %><option value="<%= x %>" <%= valores.abo===x?'selected':'' %>><%= x %></option><% }) %></select></div>
+<div class="campo"><label>Fator Rh *</label><select name="fator_rh" required><option value="">Selecione</option><option value="+" <%= valores.fator_rh==='+'?'selected':'' %>>Positivo (+)</option><option value="-" <%= valores.fator_rh==='-'?'selected':'' %>>Negativo (-)</option></select></div>
+<div class="campo"><label>Controle Rh *</label><select name="controle_rh" data-resultado-alerta="controle" required><option value="">Selecione</option><option value="NEGATIVO">Negativo</option><option value="POSITIVO">Positivo</option></select></div>
+<div class="campo" data-justificativa="controle" hidden><label>Justificativa do Controle Rh positivo *</label><textarea name="controle_rh_justificativa" rows="3"></textarea></div>
+<div class="campo"><label>PAI *</label><select name="pai" data-resultado-alerta="pai" required><option value="">Selecione</option><option value="NEGATIVO">Negativo</option><option value="POSITIVO">Positivo</option></select></div>
+<div class="campo" data-justificativa="pai" hidden><label>Justificativa do PAI positivo *</label><textarea name="pai_justificativa" rows="3"></textarea></div>
+</div>
+<div class="alerta alerta-aviso">PAI positivo impede a liberação automática para solicitação transfusional. O registro não substitui avaliação técnica e protocolo institucional.</div>
+<div class="rodape-form"><button class="botao" type="submit">Salvar amostra e exames</button><a class="botao botao-claro" href="/pacientes/<%= paciente.id %>/dossie">Cancelar</a></div>
+</form></section>
+<%- include('../partials/fim') %>
