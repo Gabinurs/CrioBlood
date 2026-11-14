@@ -2,13 +2,31 @@ const db=require('../database');
 const COLUNAS_DATAS=`to_char(h.data_coleta,'DD/MM/YYYY') AS data_coleta_br,to_char(h.data_validade,'DD/MM/YYYY') AS data_validade_br,to_char(h.data_coleta,'YYYY-MM-DD') AS data_coleta_iso,to_char(h.data_validade,'YYYY-MM-DD') AS data_validade_iso`;
 
 function calcularDataValidade(tipo, dataColeta) {
-    const prazos = { CH: { dias: 35 }, PLAQUETAS: { dias: 5 }, PLASMA: { anos: 1 }, CRIO: { anos: 1 } };
-    const prazo = prazos[tipo];
-    if (!prazo || !/^\d{4}-\d{2}-\d{2}$/.test(String(dataColeta || ''))) {
-        throw new Error('Informe o tipo de hemocomponente e uma data de coleta válida.');
+    const tipoNormalizado = String(tipo || '').trim().toUpperCase();
+    const prazos = {
+        CH: { dias: 35 },
+        CONCENTRADO_HEMACIAS: { dias: 35 },
+        CONCENTRADO_DE_HEMACIAS: { dias: 35 },
+        PLAQUETAS: { dias: 5 },
+        PLASMA: { anos: 1 },
+        PLASMA_FRESCO_CONGELADO: { anos: 1 },
+        CRIO: { anos: 1 },
+        CRIOPRECIPITADO: { anos: 1 }
+    };
+    const prazo = prazos[tipoNormalizado];
+    const textoData = String(dataColeta || '').trim();
+    const iso = textoData.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);
+    const br = textoData.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+    const partes = iso ? [Number(iso[1]), Number(iso[2]), Number(iso[3])] :
+        br ? [Number(br[3]), Number(br[2]), Number(br[1])] : null;
+    if (!prazo || !partes) {
+        throw new Error('Confira o hemocomponente e a data da coleta. Selecione novamente a data no calendário.');
     }
-    const [ano, mes, dia] = dataColeta.split('-').map(Number);
+    const [ano, mes, dia] = partes;
     const data = new Date(Date.UTC(ano, mes - 1, dia));
+    if (data.getUTCFullYear() !== ano || data.getUTCMonth() !== mes - 1 || data.getUTCDate() !== dia) {
+        throw new Error('A data da coleta informada não é válida.');
+    }
     if (prazo.dias) data.setUTCDate(data.getUTCDate() + prazo.dias);
     if (prazo.anos) data.setUTCFullYear(data.getUTCFullYear() + prazo.anos);
     return data.toISOString().slice(0, 10);
