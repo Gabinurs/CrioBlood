@@ -42,7 +42,7 @@
         var limpar = document.querySelector('[data-limpar-busca]');
 
         function normalizar(valor) {
-            return (valor || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+            return (valor || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         }
 
         function filtrarReceptores() {
