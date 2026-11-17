@@ -9,7 +9,7 @@ function validar(d){
  const medico=String(d.medico_solicitante||'').trim();
  if(!Number.isSafeInteger(pacienteId)||pacienteId<=0)throw new ErroNegocio('Selecione o receptor.');
  if(!TIPOS.includes(d.tipo))throw new ErroNegocio('Selecione o hemocomponente.');
- if(!URGENCIAS.includes(d.urgencia))throw new ErroNegocio('Selecione a urgência.');
+ if(!URGENCIAS.includes(d.urgencia))throw new ErroNegocio('Selecione o prazo ou a modalidade da solicitação.');
  if(medico.length<3||medico.length>255)throw new ErroNegocio('Informe o médico solicitante.');
  if(!Number.isSafeInteger(setorId)||setorId<=0)throw new ErroNegocio('Selecione o setor solicitante.');
  if(!Number.isInteger(quantidade)||quantidade<1||quantidade>10)throw new ErroNegocio('Quantidade deve ser entre 1 e 10 bolsas.');
