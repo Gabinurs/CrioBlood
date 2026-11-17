@@ -1,26 +1,34 @@
 const SolicitacaoService = require('../services/solicitacaoService');
 const CompatibilidadeService = require('../services/compatibilidadeService');
 const AuditoriaService = require('../services/auditoriaService');
-const { avisar, tratar } = require('../utils/erros');
+const { ErroNegocio, avisar, tratar } = require('../utils/erros');
 
 class CompatibilidadeController {
     static async index(req, res) {
         try {
             const pendentes = await SolicitacaoService.listarPendentes();
             const id = parseInt(req.query.solicitacao, 10);
-
             let solicitacao = null;
-            let bolsas = [];
+            let bolsa = null;
             let aceitos = null;
+            let erroBusca = null;
+            const codigo = String(req.query.codigo || '').trim();
 
             if (id) {
                 solicitacao = await SolicitacaoService.buscarPorId(id);
                 if (solicitacao && solicitacao.status === 'PENDENTE') {
-                    bolsas = await CompatibilidadeService.listarBolsasCompativeis(solicitacao);
                     aceitos = CompatibilidadeService.descreverAceitos(
                         { abo: solicitacao.paciente_abo, fator_rh: solicitacao.paciente_rh },
                         solicitacao.tipo
                     );
+                    if (codigo) {
+                        try {
+                            bolsa = await CompatibilidadeService.buscarBolsaPorCodigo(solicitacao, codigo);
+                        } catch (erro) {
+                            if (erro instanceof ErroNegocio) erroBusca = erro.message;
+                            else throw erro;
+                        }
+                    }
                 } else if (solicitacao) {
                     avisar(req, 'aviso', 'Essa solicitação não está mais pendente.');
                     return res.redirect('/solicitacoes');
@@ -28,7 +36,8 @@ class CompatibilidadeController {
             }
 
             res.render('compatibilidade/index', {
-                pendentes, solicitacao, bolsas, aceitos, usuario: req.session.usuario
+                pendentes, solicitacao, bolsa, aceitos, codigo, erroBusca,
+                usuario: req.session.usuario
             });
         } catch (erro) {
             tratar(req, res, erro, '/dashboard', 'Erro na tela de compatibilidade');
@@ -37,16 +46,22 @@ class CompatibilidadeController {
 
     static async reservar(req, res) {
         const solicitacaoId = parseInt(req.body.solicitacao_id, 10);
-        const bolsaId = parseInt(req.body.hemocomponente_id, 10);
         try {
-            const resultado = await CompatibilidadeService.reservar(solicitacaoId, bolsaId, req.session.usuario.id, req.body.confirmacao_codigo);
+            const resultado = await CompatibilidadeService.reservar(
+                solicitacaoId,
+                Number(req.body.hemocomponente_id),
+                req.session.usuario.id,
+                req.body
+            );
             await AuditoriaService.registrarLog(
-                req.session.usuario.id, 'RESERVA_BOLSA', 'solicitacoes_transfusionais', solicitacaoId,
-                `Bolsa ${resultado.codigo} (${resultado.nivel})`);
-            avisar(req, 'ok', `Bolsa ${resultado.codigo} reservada. Registre a transfusão quando ela for realizada.`);
+                req.session.usuario.id, 'CONFERENCIA_E_RESERVA_BOLSA',
+                'solicitacoes_transfusionais', solicitacaoId,
+                `Bolsa ${resultado.codigo}; colaborador: ${resultado.colaborador}; função: ${resultado.funcao}; compatibilidade: ${resultado.nivel}`
+            );
+            avisar(req, 'ok', `Conferência registrada e bolsa ${resultado.codigo} reservada por ${resultado.colaborador}.`);
             res.redirect('/transfusoes');
         } catch (erro) {
-            tratar(req, res, erro, `/compatibilidade?solicitacao=${solicitacaoId || ''}`, 'Erro ao reservar bolsa');
+            tratar(req, res, erro, `/compatibilidade?solicitacao=${solicitacaoId || ''}&codigo=${encodeURIComponent(req.body.codigo_informado || '')}`, 'Erro ao confirmar compatibilidade');
         }
     }
 }
