@@ -21,16 +21,17 @@
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>ID</th><th>Nome</th><th>Login</th><th>Perfil</th><th>Status</th><th>Ações</th></tr>
+                <tr><th>ID</th><th>Nome</th><th>Login</th><th>Função</th><th>Perfil</th><th>Status</th><th>Ações</th></tr>
             </thead>
             <tbody>
                 <% if (usuarios.length === 0) { %>
-                    <tr><td colspan="6" class="vazio">Nenhum usuário cadastrado.</td></tr>
+                    <tr><td colspan="7" class="vazio">Nenhum usuário cadastrado.</td></tr>
                 <% } else { usuarios.forEach(function (item) { %>
                     <tr data-busca="<%= (item.nome + ' ' + item.login).toLowerCase() %>" data-situacao="<%= item.ativo ? 'ativo' : 'inativo' %>">
                         <td><%= item.id %></td>
                         <td><strong><%= item.nome %></strong></td>
                         <td><%= item.login %></td>
+                        <td><%= ({TECNICO_ENFERMAGEM:'Técnico de enfermagem',TECNICO_LABORATORIO:'Técnico de laboratório',TECNICO_TRANSFUSAO:'Técnico de transfusão',NAO_INFORMADO:'Função não definida'})[item.funcao] || '—' %></td>
                         <td><span class="status <%= item.administrador ? 's-azul' : 's-cinza' %>"><%= item.administrador ? 'Administrador' : 'Usuário' %></span></td>
                         <td><span class="status <%= item.ativo ? 's-verde' : 's-cinza' %>"><%= item.ativo ? 'Ativo' : 'Inativo' %></span></td>
                         <td class="acoes">
