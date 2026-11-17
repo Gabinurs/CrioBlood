@@ -258,8 +258,21 @@
             var camposInvalidos = Array.prototype.slice.call(
                 painel.querySelectorAll('input, select, textarea')
             ).filter(function (campo) {
-                return !campo.disabled && !campo.checkValidity();
+                return !campo.disabled && campo.type !== 'hidden' && !campo.checkValidity();
             });
+            if (numero === 1) {
+                var receptorId = formularioSolicitacao.querySelector('[data-id-paciente-solicitacao]');
+                var buscaReceptor = formularioSolicitacao.querySelector('[data-busca-paciente-solicitacao]');
+                if (receptorId && !receptorId.value) {
+                    if (buscaReceptor) {
+                        buscaReceptor.setCustomValidity('Digite e selecione um receptor da lista.');
+                        buscaReceptor.reportValidity();
+                        buscaReceptor.focus();
+                    }
+                    return false;
+                }
+                if (buscaReceptor) buscaReceptor.setCustomValidity('');
+            }
             if (camposInvalidos.length) {
                 camposInvalidos[0].reportValidity();
                 camposInvalidos[0].focus();
