@@ -29,7 +29,7 @@ async function listarUsuarios() {
 // Buscar usuário pelo ID
 async function buscarPorId(id) {
     const resultado = await pool.query(
-        `SELECT id, nome, login, ativo, administrador,
+        `SELECT id, nome, login, ativo, administrador, funcao,
                 criado_em, atualizado_em
          FROM usuarios
          WHERE id = $1`,
@@ -89,7 +89,7 @@ async function definirAtivo(id, ativo) {
          SET ativo = $1,
              atualizado_em = CURRENT_TIMESTAMP
          WHERE id = $2
-         RETURNING id, nome, login, ativo, administrador`,
+         RETURNING id, nome, login, ativo, administrador, funcao`,
         [ativo, id]
     );
 
