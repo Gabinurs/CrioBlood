@@ -19,7 +19,7 @@ class TransfusaoService {
             LEFT JOIN armazenamento ar ON ar.hemocomponente_id = h.id
             LEFT JOIN equipamentos e ON e.id = ar.equipamento_id
             WHERE s.status = 'RESERVADA'
-            ORDER BY CASE s.urgencia WHEN 'EMERGENCIA' THEN 0 WHEN 'URGENTE' THEN 1 ELSE 2 END,
+            ORDER BY CASE s.urgencia WHEN 'EXTREMA_URGENCIA' THEN 0 WHEN 'SOLICITACAO_3H' THEN 1 WHEN 'SOLICITACAO_6H' THEN 2 WHEN 'URGENTE' THEN 1 WHEN 'EMERGENCIA' THEN 0 WHEN 'RESERVA_CIRURGICA' THEN 3 WHEN 'ROTINA_24H' THEN 4 ELSE 5 END,
                      s.criado_em ASC
         `);
         return rows;
