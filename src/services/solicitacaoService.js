@@ -2,7 +2,7 @@ const db=require('../database');
 const {ErroNegocio}=require('../utils/erros');
 const AmostraReceptorService=require('./amostraReceptorService');
 const TIPOS=['CH','PLASMA','PLAQUETAS','CRIO'];
-const URGENCIAS=['ROTINA','URGENTE','EMERGENCIA'];
+const URGENCIAS=['SOLICITACAO_3H','SOLICITACAO_6H','ROTINA_24H','RESERVA_CIRURGICA','EXTREMA_URGENCIA','ROTINA','URGENTE','EMERGENCIA'];
 function validar(d){
  const pacienteId=Number(d.paciente_id), setorId=Number(d.setor_id);
  const quantidade=Number(d.quantidade||d.quantidade_solicitada||1);
@@ -36,7 +36,7 @@ class SolicitacaoService{
    LEFT JOIN hemocomponentes h ON h.id=s.hemocomponente_id
    LEFT JOIN setores_solicitacao ss ON ss.id=s.setor_id
    ORDER BY CASE s.status WHEN 'PENDENTE' THEN 0 WHEN 'RESERVADA' THEN 1 ELSE 2 END,
-   CASE s.urgencia WHEN 'EMERGENCIA' THEN 0 WHEN 'URGENTE' THEN 1 ELSE 2 END,s.criado_em DESC`);
+   CASE s.urgencia WHEN 'EXTREMA_URGENCIA' THEN 0 WHEN 'SOLICITACAO_3H' THEN 1 WHEN 'SOLICITACAO_6H' THEN 2 WHEN 'URGENTE' THEN 1 WHEN 'EMERGENCIA' THEN 0 WHEN 'RESERVA_CIRURGICA' THEN 3 WHEN 'ROTINA_24H' THEN 4 ELSE 5 END,s.criado_em DESC`);
   return rows;
  }
  static async listarPendentes(){return (await this.listar()).filter(s=>s.status==='PENDENTE');}
