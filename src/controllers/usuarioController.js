@@ -2,6 +2,8 @@
 const usuarioService = require('../services/usuarioService');
 const { avisar } = require('../utils/erros');
 
+const FUNCOES = ['TECNICO_ENFERMAGEM', 'TECNICO_LABORATORIO', 'TECNICO_TRANSFUSAO'];
+
 // Valida o ID recebido pela URL
 function lerId(req) {
     const id = Number(req.params.id);
@@ -39,7 +41,7 @@ async function cadastrar(req, res) {
 
     const mostrarErro = (mensagem, status = 400) => res.status(status).render('usuarios/cadastro', {
         usuario: req.session.usuario,
-        valores: { nome, login },
+        valores: { nome, login, funcao },
         erro: mensagem
     });
 
@@ -52,6 +54,10 @@ async function cadastrar(req, res) {
             return mostrarErro('Nome ou login ultrapassa o limite permitido.');
         }
 
+        if (!FUNCOES.includes(funcao)) {
+            return mostrarErro('Selecione a função profissional do colaborador.');
+        }
+
         if (senha.length < 8) {
             return mostrarErro('A senha deve ter pelo menos 8 caracteres.');
         }
@@ -60,7 +66,8 @@ async function cadastrar(req, res) {
             nome,
             login,
             senha,
-            administrador: false
+            administrador: false,
+            funcao
         });
 
         avisar(req, 'ok', 'Usuário cadastrado com sucesso.');
@@ -105,10 +112,11 @@ async function atualizar(req, res) {
     const id = lerId(req);
     const nome = req.body.nome?.trim();
     const login = req.body.login?.trim();
+    const funcao = req.body.funcao;
 
     const mostrarErro = (mensagem, status = 400) => res.status(status).render('usuarios/editar', {
         usuario: req.session.usuario,
-        usuarioAlvo: { id, nome, login },
+        usuarioAlvo: { id, nome, login, funcao },
         erro: mensagem
     });
 
@@ -124,8 +132,11 @@ async function atualizar(req, res) {
         if (nome.length > 150 || login.length > 80) {
             return mostrarErro('Nome ou login ultrapassa o limite permitido.');
         }
+        if (!FUNCOES.includes(funcao)) {
+            return mostrarErro('Selecione a função profissional do colaborador.');
+        }
 
-        const usuarioAtualizado = await usuarioService.atualizarUsuario(id, { nome, login });
+        const usuarioAtualizado = await usuarioService.atualizarUsuario(id, { nome, login, funcao });
 
         if (!usuarioAtualizado) {
             return res.status(404).send('Usuário não encontrado.');
