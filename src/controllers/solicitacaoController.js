@@ -19,7 +19,7 @@ function horarioLocal(v){
 }
 class SolicitacaoController{
  static async listar(req,res){try{res.render('solicitacoes/index',{solicitacoes:await SolicitacaoService.listar(),usuario:req.session.usuario});}catch(e){tratar(req,res,e,'/dashboard','Erro ao listar solicitações');}}
- static async formNova(req,res){try{await formulario(req,res,{paciente_id:req.query.paciente_id||'',urgencia:req.query.urgencia||'ROTINA'});}catch(e){tratar(req,res,e,'/solicitacoes','Erro ao abrir solicitação');}}
+ static async formNova(req,res){try{await formulario(req,res,{paciente_id:req.query.paciente_id||'',urgencia:req.query.urgencia||'ROTINA_24H'});}catch(e){tratar(req,res,e,'/solicitacoes','Erro ao abrir solicitação');}}
  static async criar(req,res){
   try{
    const ids=await SolicitacaoService.criar(req.body,req.session.usuario.id);
@@ -33,7 +33,8 @@ class SolicitacaoController{
   const s=await SolicitacaoService.buscarPorId(Number(req.params.id));
   if(!s)return res.status(404).send('Solicitação não encontrada.');
   if(s.status!=='PENDENTE'){avisar(req,'aviso','Somente solicitações pendentes podem ser editadas.');return res.redirect('/solicitacoes');}
-  return await formulario(req,res,{...s,horario_pedido:horarioLocal(s.horario_pedido),quantidade:1},true);
+  const urgenciaLegada={ROTINA:'ROTINA_24H',URGENTE:'SOLICITACAO_3H',EMERGENCIA:'EXTREMA_URGENCIA'};
+  return await formulario(req,res,{...s,urgencia:urgenciaLegada[s.urgencia]||s.urgencia,horario_pedido:horarioLocal(s.horario_pedido),quantidade:1},true);
  }catch(e){tratar(req,res,e,'/solicitacoes','Erro ao abrir edição');}}
  static async atualizar(req,res){try{
   await SolicitacaoService.atualizar(Number(req.params.id),req.body);
