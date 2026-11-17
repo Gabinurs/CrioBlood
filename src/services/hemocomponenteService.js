@@ -15,8 +15,8 @@ function calcularDataValidade(tipo, dataColeta) {
     };
     const prazo = prazos[tipoNormalizado];
     const textoData = String(dataColeta || '').trim();
-    const iso = textoData.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);
-    const br = textoData.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+    const iso = textoData.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const br = textoData.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
     const partes = iso ? [Number(iso[1]), Number(iso[2]), Number(iso[3])] :
         br ? [Number(br[3]), Number(br[2]), Number(br[1])] : null;
     if (!prazo || !partes) {
