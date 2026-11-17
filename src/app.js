@@ -21,12 +21,13 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
 
+// O Codespaces encaminha as requisições por um proxy.
+// Confiamos no primeiro proxy para que IP e rate-limit funcionem corretamente.
+app.set('trust proxy', 1);
+
 // Configurações gerais
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-if (isProduction) {
-    app.set('trust proxy', 1);
-}
 
 // Proteções e leitura das requisições
 app.use(helmet());
