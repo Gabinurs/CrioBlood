@@ -113,15 +113,16 @@ async function abrir(req, res) {
 
         const codigo = `LOT-${ano}${mes}${dia}-${identificador}`;
 
-        await pool.query(
+        const novoLote = (await pool.query(
             `INSERT INTO lotes_recebimento
                 (codigo, origem, aberto_por)
-             VALUES ($1, $2, $3)`,
+             VALUES ($1, $2, $3)
+             RETURNING id`,
             [codigo, 'Taubaté', usuarioId]
-        );
+        )).rows[0];
 
-        avisar(req, 'ok', `Lote ${codigo} aberto. Já é possível cadastrar as bolsas recebidas.`);
-        return res.redirect('/lotes');
+        avisar(req, 'ok', `Lote ${codigo} aberto. Cadastre agora as bolsas recebidas.`);
+        return res.redirect(`/hemocomponentes/novo?lote_id=${novoLote.id}`);
     } catch (erro) {
         console.error('Erro ao abrir lote:', erro.message);
 
