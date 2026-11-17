@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS solicitacoes_transfusionais (
     paciente_id INTEGER NOT NULL REFERENCES pacientes(id),
     tipo VARCHAR(10) NOT NULL
         CHECK (tipo IN ('CH', 'PLASMA', 'PLAQUETAS', 'CRIO')),
-    urgencia VARCHAR(10) NOT NULL DEFAULT 'ROTINA'
-        CHECK (urgencia IN ('ROTINA', 'URGENTE', 'EMERGENCIA')),
+    urgencia VARCHAR(30) NOT NULL DEFAULT 'ROTINA_24H'
+        CHECK (urgencia IN ('SOLICITACAO_3H', 'SOLICITACAO_6H', 'ROTINA_24H', 'RESERVA_CIRURGICA', 'EXTREMA_URGENCIA', 'ROTINA', 'URGENTE', 'EMERGENCIA')),
     medico_solicitante VARCHAR(255) NOT NULL,
     indicacao TEXT,
     status VARCHAR(12) NOT NULL DEFAULT 'PENDENTE'
@@ -40,8 +40,7 @@ ALTER TABLE solicitacoes_transfusionais
     ADD COLUMN IF NOT EXISTS tipo VARCHAR(10)
         CHECK (tipo IN ('CH', 'PLASMA', 'PLAQUETAS', 'CRIO'));
 ALTER TABLE solicitacoes_transfusionais
-    ADD COLUMN IF NOT EXISTS urgencia VARCHAR(10) NOT NULL DEFAULT 'ROTINA'
-        CHECK (urgencia IN ('ROTINA', 'URGENTE', 'EMERGENCIA'));
+    ADD COLUMN IF NOT EXISTS urgencia VARCHAR(30) NOT NULL DEFAULT 'ROTINA_24H';
 ALTER TABLE solicitacoes_transfusionais
     ADD COLUMN IF NOT EXISTS indicacao TEXT;
 
