@@ -38,6 +38,7 @@ async function cadastrar(req, res) {
     const nome = req.body.nome?.trim();
     const login = req.body.login?.trim();
     const senha = req.body.senha;
+    const funcao = req.body.funcao;
 
     const mostrarErro = (mensagem, status = 400) => res.status(status).render('usuarios/cadastro', {
         usuario: req.session.usuario,
