@@ -9,13 +9,27 @@
  <div data-painel-etapa="1">
   <h3>Dados da solicitação</h3><p class="descricao">Identifique o receptor e o pedido médico.</p>
   <div class="grade-form" style="margin-top:20px">
-   <div class="campo largo"><label for="paciente_id">Paciente *</label>
-    <select name="paciente_id" id="paciente_id" required <%= edicao?'disabled':'' %>>
-     <option value="">Selecione o receptor...</option>
-     <% pacientes.forEach(function(p){ %><option value="<%= p.id %>" <%= String(val.paciente_id||'')===String(p.id)?'selected':'' %>><%= p.nome %> — <%= p.prontuario||'Sem prontuário' %> — <%= rot.tipagem(p.abo,p.fator_rh) %></option><% }) %>
-    </select>
-    <% if(edicao){ %><input type="hidden" name="paciente_id" value="<%= val.paciente_id %>"><% } %>
-    <small>Para registrar a solicitação, o receptor precisa ter amostra válida e exames registrados.</small>
+   <div class="campo largo campo-autocomplete-solicitacao">
+    <label for="busca-paciente-solicitacao">Paciente *</label>
+    <% const pacienteAtual = pacientes.find(function(p){ return String(p.id)===String(val.paciente_id||''); }); %>
+    <input type="search" id="busca-paciente-solicitacao" autocomplete="off"
+      placeholder="Digite o nome do receptor..." value="<%= pacienteAtual ? pacienteAtual.nome : '' %>"
+      aria-controls="sugestoes-paciente-solicitacao" aria-expanded="false"
+      data-busca-paciente-solicitacao <%= edicao?'readonly':'' %>>
+    <input type="hidden" name="paciente_id" id="paciente_id" value="<%= val.paciente_id||'' %>" required data-id-paciente-solicitacao>
+    <div class="sugestoes-paciente-solicitacao" id="sugestoes-paciente-solicitacao" data-sugestoes-paciente-solicitacao hidden>
+     <% pacientes.forEach(function(p){ %>
+      <button type="button" class="opcao-paciente-solicitacao" data-opcao-paciente-solicitacao
+       data-id="<%= p.id %>" data-nome="<%= p.nome %>"
+       data-descricao="Prontuário: <%= p.prontuario||'Sem prontuário' %> · <%= rot.tipagem(p.abo,p.fator_rh) %>">
+       <strong><%= p.nome %></strong>
+       <small>Prontuário: <%= p.prontuario||'Sem prontuário' %> · <%= rot.tipagem(p.abo,p.fator_rh) %></small>
+      </button>
+     <% }) %>
+     <p class="sem-paciente-solicitacao" data-sem-paciente-solicitacao hidden>Nenhum receptor encontrado. Confira a grafia ou cadastre o receptor na tela Receptor.</p>
+    </div>
+    <small data-ajuda-paciente-solicitacao><%= pacienteAtual ? 'Receptor selecionado.' : 'Digite o nome e selecione o receptor na lista que aparecer.' %> Para registrar a solicitação, o receptor precisa ter amostra válida e exames registrados.</small>
+    <% if(edicao){ %><small>O receptor desta solicitação não pode ser alterado.</small><% } %>
    </div>
    <div class="campo"><label for="tipo">Hemocomponente *</label><select id="tipo" name="tipo" required>
     <option value="">Selecione...</option><% ['CH','PLASMA','PLAQUETAS','CRIO'].forEach(function(t){ %><option value="<%= t %>" <%= val.tipo===t?'selected':'' %>><%= rot.tipo(t) %></option><% }) %>
