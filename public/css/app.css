@@ -614,3 +614,16 @@ td.vazio, .vazio {
 .bolsa-rodape button[type=submit]:hover{background:#c91638;transform:translateY(-1px)}
 @media(max-width:700px){.cadastro-bolsa{padding:18px}.bolsa-campos>.campo,.bolsa-campos-curtos>.campo{flex:1 1 100%}.bolsa-exames-grade{grid-template-columns:repeat(2,minmax(0,1fr))}.bolsa-conferencias{flex-direction:column}.bolsa-rodape{flex-direction:column-reverse;align-items:stretch}.bolsa-rodape .botao{width:100%;justify-content:center}}
 @media(max-width:420px){.bolsa-exames-grade{grid-template-columns:1fr}.bolsa-secao-titulo p{font-size:11px}}
+
+
+/* Autocomplete de receptor na solicitação transfusional */
+.campo-autocomplete-solicitacao{position:relative}
+.campo-autocomplete-solicitacao>input[type="search"]{width:100%;min-height:44px;padding:11px 13px;border:1px solid #dce2eb;border-radius:8px;background:#fff;color:var(--texto);font:inherit;font-size:14px}
+.campo-autocomplete-solicitacao>input[type="search"]:focus{outline:2px solid #f6b9cc;border-color:var(--rosa)}
+.sugestoes-paciente-solicitacao{position:absolute;top:calc(100% - 25px);left:0;right:0;z-index:60;max-height:260px;overflow-y:auto;padding:6px;border:1px solid #dce2eb;border-radius:9px;background:#fff;box-shadow:0 10px 25px rgba(16,36,62,.14)}
+.sugestoes-paciente-solicitacao[hidden]{display:none!important}
+.opcao-paciente-solicitacao{display:flex;flex-direction:column;gap:4px;width:100%;padding:11px 13px;border:0;border-radius:6px;background:#fff;color:var(--azul);text-align:left;cursor:pointer}
+.opcao-paciente-solicitacao:hover,.opcao-paciente-solicitacao:focus{outline:0;background:#f2f5fa}
+.opcao-paciente-solicitacao strong{font-size:13px}
+.opcao-paciente-solicitacao small,.sem-paciente-solicitacao{color:var(--cinza);font-size:11px}
+.sem-paciente-solicitacao{padding:12px}
