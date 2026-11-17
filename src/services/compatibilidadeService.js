@@ -77,14 +77,69 @@ class CompatibilidadeService {
             });
     }
 
+    // Localiza uma bolsa pelo código físico informado pelo colaborador.
+    static async buscarBolsaPorCodigo(solicitacao, codigo) {
+        const informado = String(codigo || '').trim();
+        if (informado.length < 4 || informado.length > 80) {
+            throw new ErroNegocio('Digite um código de bolsa válido.');
+        }
+
+        const { rows } = await db.query(
+            `SELECT h.id, h.codigo_interno, h.codigo_original, h.tipo, h.abo, h.fator_rh,
+                    h.status, h.tipagem_confirmada,
+                    (h.data_validade >= CURRENT_DATE) AS na_validade,
+                    to_char(h.data_validade, 'DD/MM/YYYY') AS data_validade_br,
+                    (h.data_validade - CURRENT_DATE) AS dias_restantes,
+                    l.codigo AS codigo_lote
+             FROM hemocomponentes h
+             LEFT JOIN lotes_recebimento l ON l.id = h.lote_id
+             WHERE UPPER(h.codigo_interno) = UPPER($1)
+                OR UPPER(h.codigo_original) = UPPER($1)
+             LIMIT 1`,
+            [informado]
+        );
+        const bolsa = rows[0];
+        if (!bolsa) throw new ErroNegocio('Nenhuma bolsa foi encontrada com esse código.');
+
+        const nivel = bolsa.tipo === solicitacao.tipo
+            ? avaliar(
+                { abo: solicitacao.paciente_abo, fator_rh: solicitacao.paciente_rh },
+                bolsa,
+                solicitacao.tipo
+            )
+            : null;
+
+        return {
+            ...bolsa,
+            nivel,
+            codigo_corresponde: [bolsa.codigo_interno, bolsa.codigo_original]
+                .some(c => String(c || '').toUpperCase() === informado.toUpperCase()),
+            apta_para_reserva: bolsa.status === 'DISPONIVEL'
+                && bolsa.na_validade === true
+                && bolsa.tipagem_confirmada === true
+                && bolsa.tipo === solicitacao.tipo
+                && Boolean(nivel)
+        };
+    }
+
     // Reserva a bolsa para a solicitação (tudo ou nada)
-    static async reservar(solicitacaoId, bolsaId, usuarioId, codigoConfirmado) {
+    static async reservar(solicitacaoId, bolsaId, usuarioId, confirmacoes) {
         const cliente = await db.connect();
         try {
             await cliente.query('BEGIN');
 
+            const colaborador = (await cliente.query(
+                `SELECT id, nome, funcao, ativo
+                 FROM usuarios WHERE id = $1 FOR SHARE`, [usuarioId]
+            )).rows[0];
+            const funcoesPermitidas = ['TECNICO_ENFERMAGEM', 'TECNICO_LABORATORIO', 'TECNICO_TRANSFUSAO'];
+            if (!colaborador || !colaborador.ativo || !funcoesPermitidas.includes(colaborador.funcao)) {
+                throw new ErroNegocio('Seu usuário precisa estar cadastrado com uma função profissional válida para realizar a conferência.');
+            }
+
             const s = (await cliente.query(
-                `SELECT s.id, s.tipo, s.status, s.paciente_id, p.abo AS paciente_abo, p.fator_rh AS paciente_rh
+                `SELECT s.id, s.tipo, s.status, s.paciente_id,
+                        p.abo AS paciente_abo, p.fator_rh AS paciente_rh
                  FROM solicitacoes_transfusionais s
                  JOIN pacientes p ON p.id = s.paciente_id
                  WHERE s.id = $1 FOR UPDATE OF s`, [solicitacaoId])).rows[0];
@@ -101,17 +156,40 @@ class CompatibilidadeService {
                         (data_validade >= CURRENT_DATE) AS na_validade
                  FROM hemocomponentes WHERE id = $1 FOR UPDATE`, [bolsaId])).rows[0];
             if (!b) throw new ErroNegocio('Bolsa não encontrada.');
-            if (!codigoConfirmado || String(codigoConfirmado).trim().toUpperCase() !== String(b.codigo_interno).toUpperCase()) {
-                throw new ErroNegocio('O código interno digitado não confere. Confira a etiqueta da bolsa.');
+
+            const codigoInformado = String(confirmacoes?.codigo_informado || '').trim();
+            const codigoConfere = [b.codigo_interno, b.codigo_original]
+                .some(c => String(c || '').toUpperCase() === codigoInformado.toUpperCase());
+            if (!codigoInformado || !codigoConfere) {
+                throw new ErroNegocio('O código digitado não corresponde ao código interno ou original da bolsa.');
             }
-            if (b.status !== 'DISPONIVEL') throw new ErroNegocio('Essa bolsa não está mais disponível.');
+            if (confirmacoes?.confirmou_codigo !== '1') {
+                throw new ErroNegocio('Confirme a identificação física do código da bolsa.');
+            }
+            if (confirmacoes?.confirmou_tipagem !== '1') {
+                throw new ErroNegocio('Confirme a conferência da tipagem ABO/Rh do receptor e da bolsa.');
+            }
+            if (confirmacoes?.confirmou_compatibilidade !== '1') {
+                throw new ErroNegocio('Confirme que verificou o resultado de compatibilidade.');
+            }
+            if (b.status !== 'DISPONIVEL') throw new ErroNegocio('Essa bolsa não está disponível.');
             if (!b.na_validade) throw new ErroNegocio('Essa bolsa está vencida.');
-            if (!b.tipagem_confirmada) throw new ErroNegocio('A tipagem dessa bolsa não foi confirmada.');
+            if (!b.tipagem_confirmada) throw new ErroNegocio('A tipagem cadastrada da bolsa ainda não foi confirmada.');
             if (b.tipo !== s.tipo) throw new ErroNegocio('O tipo da bolsa não corresponde ao tipo solicitado.');
 
-            // Confere a compatibilidade no servidor, sem confiar no que veio da tela
+            // Recalcula no servidor; a confirmação visual nunca substitui a regra técnica.
             const nivel = avaliar({ abo: s.paciente_abo, fator_rh: s.paciente_rh }, b, s.tipo);
-            if (!nivel) throw new ErroNegocio('Bolsa incompatível com o paciente.');
+            if (!nivel) throw new ErroNegocio('A bolsa não é compatível pela regra ABO/Rh cadastrada. Não é possível reservá-la.');
+
+            await cliente.query(
+                `INSERT INTO conferencias_compatibilidade
+                    (solicitacao_id, hemocomponente_id, colaborador_id, funcao_colaborador,
+                     codigo_informado, codigo_confirmado, tipagem_confirmada,
+                     compatibilidade_confirmada, tipagem_receptor, tipagem_bolsa, resultado_sistema)
+                 VALUES ($1,$2,$3,$4,$5,TRUE,TRUE,TRUE,$6,$7,$8)`,
+                [solicitacaoId, bolsaId, colaborador.id, colaborador.funcao, codigoInformado,
+                 s.paciente_abo + s.paciente_rh, b.abo + b.fator_rh, nivel]
+            );
 
             await cliente.query(
                 `UPDATE hemocomponentes SET status = 'RESERVADA', atualizado_em = CURRENT_TIMESTAMP WHERE id = $1`,
@@ -122,7 +200,7 @@ class CompatibilidadeService {
                  WHERE id = $2`, [bolsaId, solicitacaoId]);
 
             await cliente.query('COMMIT');
-            return { codigo: b.codigo_interno, nivel };
+            return { codigo: b.codigo_interno, nivel, colaborador: colaborador.nome, funcao: colaborador.funcao };
         } catch (erro) {
             await cliente.query('ROLLBACK');
             throw erro;
