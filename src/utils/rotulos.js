@@ -23,7 +23,12 @@ const STATUS_SOLICITACAO = {
 };
 
 const URGENCIAS = {
-    ROTINA: ['Rotina', 's-cinza'],
+    SOLICITACAO_3H: ['3 horas', 's-vermelho'],
+    SOLICITACAO_6H: ['6 horas', 's-amarelo'],
+    ROTINA_24H: ['Rotina — 24 horas', 's-cinza'],
+    RESERVA_CIRURGICA: ['Reserva cirúrgica', 's-azul'],
+    EXTREMA_URGENCIA: ['Extrema urgência', 's-vermelho'],
+    ROTINA: ['Rotina — 24 horas', 's-cinza'],
     URGENTE: ['Urgente', 's-amarelo'],
     EMERGENCIA: ['Emergência', 's-vermelho']
 };
