@@ -1,6 +1,7 @@
 
 const usuarioService = require('../services/usuarioService');
 const { avisar } = require('../utils/erros');
+const { validarNovaSenha } = require('../services/authService');
 
 // Valida o ID recebido pela URL
 function lerId(req) {
@@ -52,8 +53,9 @@ async function cadastrar(req, res) {
             return mostrarErro('Nome ou login ultrapassa o limite permitido.');
         }
 
-        if (senha.length < 8) {
-            return mostrarErro('A senha deve ter pelo menos 8 caracteres.');
+        const problemaSenha = validarNovaSenha(senha);
+        if (problemaSenha) {
+            return mostrarErro(problemaSenha);
         }
 
         await usuarioService.criarUsuario({

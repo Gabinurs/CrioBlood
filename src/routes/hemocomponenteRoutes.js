@@ -1,11 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const hemocomponenteController = require('../controllers/hemocomponenteController');
-const { exigirAutenticacao } = require('../middlewares/autenticacao');
+const { exigirAutenticacao, exigirPermissao } = require('../middlewares/autenticacao');
 const { validarHemocomponente } = require('../middlewares/validacao');
 const { apenasSupervisor } = require('../middlewares/autorizacao');
 
 router.use(exigirAutenticacao);
+router.use(exigirPermissao('bolsas.gerenciar'));
+
+router.param('id', (req, res, next, valor) => {
+    if (!/^\d+$/.test(valor)) return res.status(400).send('ID inválido.');
+    next();
+});
 
 router.get('/', hemocomponenteController.index);
 router.get('/novo', hemocomponenteController.renderizarCadastro);

@@ -34,6 +34,8 @@ services:
       DB_NAME: crioblood
       DB_USER: postgres
       DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      # Usada só por: docker compose exec app node src/scripts/criar-supervisor.js
+      SUPERVISOR_PASSWORD: ${SUPERVISOR_PASSWORD:-}
     depends_on:
       db:
         condition: service_healthy

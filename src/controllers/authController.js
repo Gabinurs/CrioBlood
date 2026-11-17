@@ -1,12 +1,21 @@
 
+const bcrypt = require('bcrypt');
 const usuarioService = require('../services/usuarioService');
+
+// Hash descartável: gasta o mesmo tempo mesmo quando o login não existe,
+// para não revelar quais logins estão cadastrados.
+const HASH_FALSO = bcrypt.hashSync('senha-inexistente', 12);
+
+function recusar(res, mensagem, status = 401) {
+    return res.status(status).render('auth/login', { erro: mensagem });
+}
 
 async function login(req, res) {
     try {
         const { login, senha } = req.body;
 
-        if (!login || !senha) {
-            return res.status(400).send('Informe o login e a senha.');
+        if (typeof login !== 'string' || typeof senha !== 'string' || !login || !senha) {
+            return recusar(res, 'Informe o login e a senha.', 400);
         }
 
         const usuario = await usuarioService.buscarPorLogin(
@@ -14,7 +23,8 @@ async function login(req, res) {
         );
 
         if (!usuario || !usuario.ativo) {
-            return res.status(401).send('Login ou senha inválidos.');
+            await usuarioService.verificarSenha(senha, HASH_FALSO);
+            return recusar(res, 'Login ou senha inválidos.');
         }
 
         const senhaCorreta = await usuarioService.verificarSenha(
@@ -22,7 +32,7 @@ async function login(req, res) {
             usuario.senha_hash
         );
         if (!senhaCorreta) {
-            return res.status(401).send('Login ou senha inválidos.');
+            return recusar(res, 'Login ou senha inválidos.');
         }
 
         req.session.regenerate((erro) => {

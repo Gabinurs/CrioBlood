@@ -8,7 +8,35 @@ const COLUNAS_DATAS = `
     to_char(h.data_validade, 'YYYY-MM-DD') AS data_validade_iso
 `;
 
+// Status que só mudam pelos fluxos próprios (reserva, transfusão, descarte e validade).
+const STATUS_FINAIS = ['RESERVADA', 'TRANSFUNDIDA', 'DESCARTADA', 'VENCIDA'];
+// Únicos status que a tela de edição pode escolher.
+const STATUS_EDITAVEIS = ['EM_CONFERENCIA', 'DISPONIVEL'];
+
+// Decide qual status vale numa edição: bolsa em status final nunca "volta" pela tela
+// de edição, e a tela nunca coloca a bolsa em descartada, vencida, reservada ou transfundida.
+function resolverStatusEdicao(statusAtual, statusSolicitado) {
+    if (STATUS_FINAIS.includes(statusAtual)) return statusAtual;
+    if (!STATUS_EDITAVEIS.includes(statusSolicitado)) return statusAtual;
+    return statusSolicitado;
+}
+
 class HemocomponenteService {
+    static resolverStatusEdicao = resolverStatusEdicao;
+    static STATUS_FINAIS = STATUS_FINAIS;
+
+    // Lotes que ainda aceitam bolsas (para o formulário de cadastro)
+    static async listarLotesAbertos() {
+        const { rows } = await db.query(`
+            SELECT id, codigo,
+                   to_char(data_recebimento AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY') AS data_br
+            FROM lotes_recebimento
+            WHERE status = 'ABERTO'
+            ORDER BY id DESC
+        `);
+        return rows;
+    }
+
     // Lista os hemocomponentes, com filtro opcional por lote ou status
     static async listarTodos(filtros = {}) {
         let query = `
@@ -86,19 +114,12 @@ class HemocomponenteService {
     }
 
     static async atualizar(id, dados) {
-        // Bolsas reservadas ou transfundidas só mudam de status pelo fluxo próprio
-        // (solicitação, compatibilidade e transfusão), nunca por esta tela.
         const atual = await HemocomponenteService.buscarPorId(id);
         if (!atual) return false;
 
-        const protegido = ['RESERVADA', 'TRANSFUNDIDA'];
-        let novoStatus = dados.status || atual.status;
-        if (protegido.includes(atual.status) || protegido.includes(novoStatus)) {
-            novoStatus = atual.status;
-        }
-        dados = { ...dados, status: novoStatus };
+        const status = resolverStatusEdicao(atual.status, dados.status);
 
-        const query = `
+        const resultado = await db.query(`
             UPDATE hemocomponentes
             SET tipo = $1,
                 abo = $2,
@@ -111,12 +132,7 @@ class HemocomponenteService {
                 observacoes = $9,
                 atualizado_em = CURRENT_TIMESTAMP
             WHERE id = $10
-        `;
-        if (['DESCARTADA', 'VENCIDA'].includes(dados.status)) {
-            await db.query('DELETE FROM armazenamento WHERE hemocomponente_id = $1', [id]);
-        }
-
-        const resultado = await db.query(query, [
+        `, [
             dados.tipo,
             dados.abo || null,
             dados.fator_rh || null,
@@ -124,7 +140,7 @@ class HemocomponenteService {
             dados.inspecao_visual === 'on',
             dados.integridade_confirmada === 'on',
             dados.tipagem_confirmada === 'on',
-            dados.status,
+            status,
             dados.observacoes || null,
             id
         ]);
@@ -134,9 +150,15 @@ class HemocomponenteService {
     // Descarte lógico: a bolsa continua registrada, com status DESCARTADA
     static async deletar(id) {
         const atual = await HemocomponenteService.buscarPorId(id);
-        if (atual && atual.status === 'RESERVADA') {
+        if (!atual) return false;
+        if (atual.status === 'RESERVADA') {
             const erro = new Error('Bolsa reservada');
             erro.code = 'BOLSA_RESERVADA';
+            throw erro;
+        }
+        if (['TRANSFUNDIDA', 'DESCARTADA'].includes(atual.status)) {
+            const erro = new Error('Bolsa já finalizada');
+            erro.code = 'BOLSA_FINALIZADA';
             throw erro;
         }
         const resultado = await db.query(

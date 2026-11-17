@@ -7,9 +7,11 @@ const helmet = require('helmet');
 const session = require('express-session');
 const rateLimit = require('express-rate-limit');
 const pool = require('./database');
+const { carregarPermissoes } = require('./middlewares/autenticacao');
 
 // Importação das rotas
 const usuarioRoutes = require('./routes/usuarioRoutes');
+const contaRoutes = require('./routes/contaRoutes');
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const loteRoutes = require('./routes/loteRoutes');
@@ -18,7 +20,7 @@ const modulosRoutes = require('./routes/modulosRoutes');
 const iniciarRotinaValidade = require('./scripts/cronValidade');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Configurações gerais
@@ -43,6 +45,18 @@ app.use(rateLimit({
     standardHeaders: 'draft-7',
     legacyHeaders: false
 }));
+
+// Limite mais rígido para tentativas de login (só conta as que falham)
+const limitarLogin = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    skipSuccessfulRequests: true,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    handler: (req, res) => res.status(429).render('auth/login', {
+        erro: 'Muitas tentativas de login. Aguarde 15 minutos e tente novamente.'
+    })
+});
 
 // Verifica se a chave de sessão está configurada
 if (!process.env.SESSION_SECRET) {
@@ -72,6 +86,9 @@ app.use((req, res, next) => {
     next();
 });
 
+// Atualiza as permissões do usuário logado e barra contas desativadas
+app.use(carregarPermissoes);
+
 // Página de login
 app.get('/login', (req, res) => {
     res.render('auth/login');
@@ -82,7 +99,11 @@ app.use(dashboardRoutes);
 app.use(loteRoutes);
 
 // Rotas de autenticação: login e logout
+app.post('/login', limitarLogin);
 app.use(authRoutes);
+
+// Troca da própria senha
+app.use(contaRoutes);
 
 // Rotas de gerenciamento de usuários
 app.use(usuarioRoutes);
@@ -98,31 +119,27 @@ app.get('/', (req, res) => {
     res.redirect('/login');
 });
 
-// Rota para verificar a conexão com o PostgreSQL
-app.get('/teste-banco', async (req, res) => {
+// Verificação de saúde (sem dados internos): usada por monitoramento/Docker
+app.get('/saude', async (req, res) => {
     try {
-        const resultado = await pool.query(
-            'SELECT current_database() AS banco'
-        );
-
-        res.json({
-            sucesso: true,
-            mensagem: 'CrioBlood conectado ao PostgreSQL!',
-            banco: resultado.rows[0].banco
-        });
+        await pool.query('SELECT 1');
+        res.json({ status: 'ok' });
     } catch (erro) {
         console.error('Erro na conexão:', erro.message);
-
-        res.status(500).json({
-            sucesso: false,
-            mensagem: 'Erro ao conectar ao banco de dados.'
-        });
+        res.status(503).json({ status: 'erro' });
     }
 });
 
 // Tratamento de rotas inexistentes
 app.use((req, res) => {
     res.status(404).send('Página não encontrada.');
+});
+
+// Erros inesperados (a mensagem detalhada fica só no log do servidor)
+app.use((erro, req, res, next) => {
+    console.error('Erro não tratado:', erro);
+    if (res.headersSent) return next(erro);
+    res.status(500).send('Erro interno do servidor.');
 });
 
 // Rotina diária que marca bolsas vencidas

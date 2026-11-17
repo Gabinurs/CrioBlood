@@ -1,6 +1,6 @@
 <%
-    var bloqueado = hemocomponente.status === 'RESERVADA' || hemocomponente.status === 'TRANSFUNDIDA';
-    var opcoesStatus = ['EM_CONFERENCIA', 'DISPONIVEL', 'DESCARTADA', 'VENCIDA'];
+    var bloqueado = ['RESERVADA', 'TRANSFUNDIDA', 'DESCARTADA', 'VENCIDA'].includes(hemocomponente.status);
+    var opcoesStatus = ['EM_CONFERENCIA', 'DISPONIVEL'];
     if (bloqueado) opcoesStatus = [hemocomponente.status];
 %>
 <%- include('../partials/inicio', { titulo: 'Editar hemocomponente', subtitulo: 'Código ' + hemocomponente.codigo_original, ativo: 'hemocomponentes' }) %>

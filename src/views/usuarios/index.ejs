@@ -36,6 +36,7 @@
                         <td class="acoes">
                             <a class="botao botao-claro botao-pequeno" href="/usuarios/<%= item.id %>/editar">Editar</a>
                             <a class="botao botao-claro botao-pequeno" href="/usuarios/<%= item.id %>/permissoes">Permissões</a>
+                            <a class="botao botao-claro botao-pequeno" href="/usuarios/<%= item.id %>/senha">Senha</a>
 
                             <% if (Number(usuario.id) !== Number(item.id)) { %>
                                 <form action="/usuarios/<%= item.id %>/status" method="POST"

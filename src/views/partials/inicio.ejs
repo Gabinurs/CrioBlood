@@ -2,19 +2,23 @@
     var paginaAtiva = locals.ativo || '';
     var usuarioLogado = locals.usuario || null;
     var itensMenu = [
-        ['inicio',        '/dashboard',      '⌂  Início'],
-        ['pacientes',     '/pacientes',      '♙  Pacientes'],
-        ['lotes',         '/lotes',          '▣  Lotes de recebimento'],
-        ['hemocomponentes','/hemocomponentes','✚  Cadastro de bolsas'],
-        ['estoque',       '/estoque',        '♥  Bolsas (Estoque)'],
-        ['equipamentos',  '/equipamentos',   '❄  Equipamentos'],
-        ['solicitacoes',  '/solicitacoes',   '▤  Solicitação transfusional'],
-        ['compatibilidade','/compatibilidade','⚗  Compatibilidade'],
-        ['transfusoes',   '/transfusoes',    '♧  Transfusão'],
-        ['relatorios',    '/relatorios',     '▥  Relatórios']
+        ['inicio',        '/dashboard',      '⌂  Início',                    null],
+        ['pacientes',     '/pacientes',      '♙  Pacientes',                 'pacientes.gerenciar'],
+        ['lotes',         '/lotes',          '▣  Lotes de recebimento',      'lotes.gerenciar'],
+        ['hemocomponentes','/hemocomponentes','✚  Cadastro de bolsas',       'bolsas.gerenciar'],
+        ['estoque',       '/estoque',        '♥  Bolsas (Estoque)',          'estoque.visualizar'],
+        ['equipamentos',  '/equipamentos',   '❄  Equipamentos',              'estoque.gerenciar'],
+        ['solicitacoes',  '/solicitacoes',   '▤  Solicitação transfusional', 'solicitacoes.gerenciar'],
+        ['compatibilidade','/compatibilidade','⚗  Compatibilidade',          'compatibilidade.reservar'],
+        ['transfusoes',   '/transfusoes',    '♧  Transfusão',                'transfusoes.registrar'],
+        ['relatorios',    '/relatorios',     '▥  Relatórios',                'relatorios.visualizar']
     ];
+    // Mostra só os módulos que o usuário pode abrir
+    itensMenu = itensMenu.filter(function (item) {
+        return !item[3] || !locals.pode || locals.pode(item[3]);
+    });
     if (usuarioLogado && usuarioLogado.administrador) {
-        itensMenu.push(['usuarios', '/usuarios', '⚙  Usuários']);
+        itensMenu.push(['usuarios', '/usuarios', '⚙  Usuários', null]);
     }
 %>
 <!DOCTYPE html>
@@ -41,6 +45,7 @@
         </nav>
 
         <nav class="menu menu-inferior">
+            <a href="/conta/senha">🔑  Alterar minha senha</a>
             <form action="/logout" method="POST">
                 <button type="submit">⇥  Sair do sistema</button>
             </form>

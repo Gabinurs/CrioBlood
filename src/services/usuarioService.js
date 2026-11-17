@@ -14,6 +14,46 @@ async function buscarPorLogin(login) {
     return resultado.rows[0] || null;
 }
 
+// Dados de acesso atualizados (ativo, administrador e códigos de permissão)
+async function carregarAcesso(id) {
+    const resultado = await pool.query(
+        `SELECT u.ativo, u.administrador,
+                COALESCE(array_agg(p.codigo) FILTER (WHERE p.codigo IS NOT NULL), '{}') AS codigos
+         FROM usuarios u
+         LEFT JOIN usuario_permissoes up ON up.usuario_id = u.id
+         LEFT JOIN permissoes p ON p.id = up.permissao_id
+         WHERE u.id = $1
+         GROUP BY u.id`,
+        [id]
+    );
+
+    return resultado.rows[0] || null;
+}
+
+// Hash atual da senha (usado para conferir a senha antiga na troca)
+async function buscarSenhaHash(id) {
+    const resultado = await pool.query(
+        'SELECT senha_hash FROM usuarios WHERE id = $1',
+        [id]
+    );
+
+    return resultado.rows[0] ? resultado.rows[0].senha_hash : null;
+}
+
+// Definir uma nova senha
+async function definirSenha(id, senha) {
+    const senhaHash = await gerarHashSenha(senha);
+    const resultado = await pool.query(
+        `UPDATE usuarios
+         SET senha_hash = $1,
+             atualizado_em = CURRENT_TIMESTAMP
+         WHERE id = $2`,
+        [senhaHash, id]
+    );
+
+    return resultado.rowCount > 0;
+}
+
 // Listar usuários cadastrados
 async function listarUsuarios() {
     const resultado = await pool.query(
@@ -180,6 +220,9 @@ async function salvarPermissoes(usuarioId, permissoesIds) {
 module.exports = {
     buscarPorLogin,
     buscarPorId,
+    carregarAcesso,
+    buscarSenhaHash,
+    definirSenha,
     listarUsuarios,
     criarUsuario,
     atualizarUsuario,

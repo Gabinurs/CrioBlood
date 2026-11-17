@@ -1,0 +1,11 @@
+<%- include('../partials/inicio', { titulo: 'Acesso negado', subtitulo: 'Seu usuário não tem acesso a esta área', ativo: '' }) %>
+
+<section class="painel">
+    <h3>Acesso negado (403)</h3>
+    <p class="descricao"><%= locals.mensagem || 'Você não tem permissão para esta ação.' %></p>
+    <div class="rodape-form">
+        <a class="botao" href="/dashboard">Voltar ao início</a>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>

@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { exigirAutenticacao } = require('../middlewares/autenticacao');
+const { exigirAutenticacao, exigirPermissao: permissao } = require('../middlewares/autenticacao');
 const Paciente = require('../controllers/pacienteController');
 const Solicitacao = require('../controllers/solicitacaoController');
 const Compatibilidade = require('../controllers/compatibilidadeController');
@@ -15,42 +15,54 @@ const Relatorio = require('../controllers/relatorioController');
 router.use(['/pacientes', '/estoque', '/equipamentos', '/solicitacoes', '/compatibilidade', '/transfusoes', '/relatorios'],
     exigirAutenticacao);
 
-// Pacientes
-router.get('/pacientes', Paciente.listar);
-router.get('/pacientes/novo', Paciente.formNovo);
-router.post('/pacientes/novo', Paciente.criar);
-router.get('/pacientes/:id/editar', Paciente.formEditar);
-router.post('/pacientes/:id/editar', Paciente.atualizar);
+// IDs da URL precisam ser numéricos
+router.param('id', (req, res, next, valor) => {
+    if (!/^\d+$/.test(valor)) return res.status(400).send('ID inválido.');
+    next();
+});
 
-// Bolsas (estoque)
-router.get('/estoque', EstoquePagina.index);
-router.get('/estoque/:id/localizacao', EstoquePagina.formLocalizacao);
-router.post('/estoque/:id/localizacao', EstoquePagina.salvarLocalizacao);
-router.post('/estoque/:id/localizacao/remover', EstoquePagina.removerLocalizacao);
+// Pacientes
+const pacientes = permissao('pacientes.gerenciar');
+router.get('/pacientes', pacientes, Paciente.listar);
+router.get('/pacientes/novo', pacientes, Paciente.formNovo);
+router.post('/pacientes/novo', pacientes, Paciente.criar);
+router.get('/pacientes/:id/editar', pacientes, Paciente.formEditar);
+router.post('/pacientes/:id/editar', pacientes, Paciente.atualizar);
+
+// Bolsas (estoque): consultar x alterar a localização
+router.get('/estoque', permissao('estoque.visualizar'), EstoquePagina.index);
+router.get('/estoque/:id/localizacao', permissao('estoque.gerenciar'), EstoquePagina.formLocalizacao);
+router.post('/estoque/:id/localizacao', permissao('estoque.gerenciar'), EstoquePagina.salvarLocalizacao);
+router.post('/estoque/:id/localizacao/remover', permissao('estoque.gerenciar'), EstoquePagina.removerLocalizacao);
 
 // Equipamentos (freezers, geladeiras...)
-router.get('/equipamentos', Equipamento.listar);
-router.get('/equipamentos/novo', Equipamento.formNovo);
-router.post('/equipamentos/novo', Equipamento.criar);
-router.get('/equipamentos/:id/editar', Equipamento.formEditar);
-router.post('/equipamentos/:id/editar', Equipamento.atualizar);
+const equipamentos = permissao('estoque.gerenciar');
+router.get('/equipamentos', equipamentos, Equipamento.listar);
+router.get('/equipamentos/novo', equipamentos, Equipamento.formNovo);
+router.post('/equipamentos/novo', equipamentos, Equipamento.criar);
+router.get('/equipamentos/:id/editar', equipamentos, Equipamento.formEditar);
+router.post('/equipamentos/:id/editar', equipamentos, Equipamento.atualizar);
 
 // Solicitações transfusionais
-router.get('/solicitacoes', Solicitacao.listar);
-router.get('/solicitacoes/nova', Solicitacao.formNova);
-router.post('/solicitacoes/nova', Solicitacao.criar);
-router.post('/solicitacoes/:id/cancelar', Solicitacao.cancelar);
+const solicitacoes = permissao('solicitacoes.gerenciar');
+router.get('/solicitacoes', solicitacoes, Solicitacao.listar);
+router.get('/solicitacoes/nova', solicitacoes, Solicitacao.formNova);
+router.post('/solicitacoes/nova', solicitacoes, Solicitacao.criar);
+router.post('/solicitacoes/:id/cancelar', solicitacoes, Solicitacao.cancelar);
 
 // Compatibilidade e reserva de bolsa
-router.get('/compatibilidade', Compatibilidade.index);
-router.post('/compatibilidade/reservar', Compatibilidade.reservar);
+const compatibilidade = permissao('compatibilidade.reservar');
+router.get('/compatibilidade', compatibilidade, Compatibilidade.index);
+router.post('/compatibilidade/reservar', compatibilidade, Compatibilidade.reservar);
 
 // Transfusão
-router.get('/transfusoes', Transfusao.index);
-router.post('/transfusoes/registrar', Transfusao.registrar);
+const transfusoes = permissao('transfusoes.registrar');
+router.get('/transfusoes', transfusoes, Transfusao.index);
+router.post('/transfusoes/registrar', transfusoes, Transfusao.registrar);
 
 // Relatórios
-router.get('/relatorios', Relatorio.index);
-router.get('/relatorios/transfusoes.csv', Relatorio.csv);
+const relatorios = permissao('relatorios.visualizar');
+router.get('/relatorios', relatorios, Relatorio.index);
+router.get('/relatorios/transfusoes.csv', relatorios, Relatorio.csv);
 
 module.exports = router;

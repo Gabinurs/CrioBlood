@@ -68,24 +68,6 @@ const validarHemocomponente = [
     checarErros
 ];
 
-// ==========================================
-// REGRAS DE VALIDAÇÃO: SAÍDA/TRANSFUSÃO
-// ==========================================
-const validarTransfusao = [
-    body('hemocomponente_id')
-        .isInt({ gt: 0 }).withMessage('ID do hemocomponente inválido.'),
-    
-    body('paciente_nome')
-        .trim().isLength({ min: 3, max: 255 }).withMessage('O nome do paciente deve ter entre 3 e 255 caracteres.')
-        .matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/).withMessage('O nome do paciente não pode conter números ou símbolos especiais.'),
-    
-    body('prontuario')
-        .trim().notEmpty().withMessage('O número do prontuário é obrigatório.'),
-    
-    checarErros
-];
-
 module.exports = {
-    validarHemocomponente,
-    validarTransfusao
+    validarHemocomponente
 };

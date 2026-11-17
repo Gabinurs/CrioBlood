@@ -227,6 +227,10 @@
             <p>Entre com suas credenciais para acessar o sistema.</p>
         </section>
 
+        <% if (locals.erro) { %>
+            <div role="alert" style="margin: 0 0 18px; padding: 12px 14px; border: 1px solid #f1b9c4; background: #fdeef1; color: #b3203f; border-radius: 8px; font-size: 14px;"><%= erro %></div>
+        <% } %>
+
         <form action="/login" method="POST">
 
             <div class="campo">

@@ -38,7 +38,7 @@
                         <td><%- rot.statusBolsa(item.status) %></td>
                         <td class="acoes">
                             <a class="botao botao-claro botao-pequeno" href="/hemocomponentes/editar/<%= item.id %>">Editar</a>
-                            <% if (item.status !== 'DESCARTADA' && item.status !== 'TRANSFUNDIDA' && item.status !== 'RESERVADA') { %>
+                            <% if (usuario && usuario.administrador && item.status !== 'DESCARTADA' && item.status !== 'TRANSFUNDIDA' && item.status !== 'RESERVADA') { %>
                                 <form action="/hemocomponentes/descartar/<%= item.id %>" method="POST"
                                       data-confirmar="ATENÇÃO: o descarte não pode ser desfeito. Confirmar?">
                                     <button class="botao botao-perigo botao-pequeno" type="submit">Descartar</button>

@@ -1,37 +1,32 @@
 <%- include('../partials/inicio', { titulo: 'Início', subtitulo: 'Visão geral do hemocentro', ativo: 'inicio' }) %>
+<%
+    // Cada usuário só vê links e dados dos módulos que pode acessar
+    var pode = locals.pode || function () { return true; };
+    function cartao(href, permissao, classe, valor, rotulo) {
+        var interno = '<strong>' + Number(valor) + '</strong><span>' + rotulo + '</span>';
+        return pode(permissao)
+            ? '<a class="indicador ' + classe + '" href="' + href + '">' + interno + '</a>'
+            : '<div class="indicador ' + classe + '">' + interno + '</div>';
+    }
+    var veSolicitacoes = pode('solicitacoes.gerenciar') || pode('compatibilidade.reservar');
+%>
 
 <% if (resumo.vencendo > 0) { %>
     <div class="alerta alerta-aviso">
         <strong><%= resumo.vencendo %></strong> bolsa(s) vencem nos próximos 7 dias.
-        <a href="/estoque">Ver no estoque</a>.
+        <% if (pode('estoque.visualizar')) { %><a href="/estoque">Ver no estoque</a>.<% } %>
     </div>
 <% } %>
 
 <section class="indicadores">
-    <a class="indicador destaque-verde" href="/estoque">
-        <strong><%= resumo.disponiveis %></strong><span>Bolsas disponíveis</span>
-    </a>
-    <a class="indicador destaque-azul" href="/transfusoes">
-        <strong><%= resumo.reservadas %></strong><span>Bolsas reservadas</span>
-    </a>
-    <a class="indicador destaque-amarelo" href="/hemocomponentes?status=EM_CONFERENCIA">
-        <strong><%= resumo.em_conferencia %></strong><span>Em conferência</span>
-    </a>
-    <a class="indicador destaque-vermelho" href="/estoque">
-        <strong><%= resumo.vencendo %></strong><span>Vencem em 7 dias</span>
-    </a>
-    <a class="indicador" href="/solicitacoes">
-        <strong><%= contagens.pendentes %></strong><span>Solicitações pendentes</span>
-    </a>
-    <a class="indicador" href="/transfusoes">
-        <strong><%= contagens.aguardando %></strong><span>Aguardando transfusão</span>
-    </a>
-    <a class="indicador" href="/lotes">
-        <strong><%= contagens.lotes_abertos %></strong><span>Lotes abertos</span>
-    </a>
-    <a class="indicador" href="/relatorios">
-        <strong><%= contagens.transfusoes_mes %></strong><span>Transfusões no mês</span>
-    </a>
+    <%- cartao('/estoque', 'estoque.visualizar', 'destaque-verde', resumo.disponiveis, 'Bolsas disponíveis') %>
+    <%- cartao('/transfusoes', 'transfusoes.registrar', 'destaque-azul', resumo.reservadas, 'Bolsas reservadas') %>
+    <%- cartao('/hemocomponentes?status=EM_CONFERENCIA', 'bolsas.gerenciar', 'destaque-amarelo', resumo.em_conferencia, 'Em conferência') %>
+    <%- cartao('/estoque', 'estoque.visualizar', 'destaque-vermelho', resumo.vencendo, 'Vencem em 7 dias') %>
+    <%- cartao('/solicitacoes', 'solicitacoes.gerenciar', '', contagens.pendentes, 'Solicitações pendentes') %>
+    <%- cartao('/transfusoes', 'transfusoes.registrar', '', contagens.aguardando, 'Aguardando transfusão') %>
+    <%- cartao('/lotes', 'lotes.gerenciar', '', contagens.lotes_abertos, 'Lotes abertos') %>
+    <%- cartao('/relatorios', 'relatorios.visualizar', '', contagens.transfusoes_mes, 'Transfusões no mês') %>
 </section>
 
 <section class="grade-2">
@@ -88,6 +83,7 @@
         </div>
     </div>
 
+<% if (veSolicitacoes) { %>
     <div class="painel">
         <h3>Solicitações pendentes</h3>
         <div class="tabela-container">
@@ -113,20 +109,25 @@
             </table>
         </div>
     </div>
+<% } %>
 </section>
 
+<% if (['lotes.gerenciar','bolsas.gerenciar','pacientes.gerenciar','solicitacoes.gerenciar','transfusoes.registrar','relatorios.visualizar'].some(pode)) { %>
 <section class="painel">
     <h3>Ações rápidas</h3>
     <div class="atalhos">
+        <% if (pode('lotes.gerenciar')) { %>
         <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
             <button class="botao" type="submit">+ Abrir lote</button>
         </form>
-        <a class="botao botao-claro" href="/hemocomponentes/novo">+ Cadastrar bolsa</a>
-        <a class="botao botao-claro" href="/pacientes/novo">+ Novo paciente</a>
-        <a class="botao botao-claro" href="/solicitacoes/nova">+ Nova solicitação</a>
-        <a class="botao botao-claro" href="/transfusoes">Registrar transfusão</a>
-        <a class="botao botao-claro" href="/relatorios">Ver relatórios</a>
+        <% } %>
+        <% if (pode('bolsas.gerenciar')) { %><a class="botao botao-claro" href="/hemocomponentes/novo">+ Cadastrar bolsa</a><% } %>
+        <% if (pode('pacientes.gerenciar')) { %><a class="botao botao-claro" href="/pacientes/novo">+ Novo paciente</a><% } %>
+        <% if (pode('solicitacoes.gerenciar')) { %><a class="botao botao-claro" href="/solicitacoes/nova">+ Nova solicitação</a><% } %>
+        <% if (pode('transfusoes.registrar')) { %><a class="botao botao-claro" href="/transfusoes">Registrar transfusão</a><% } %>
+        <% if (pode('relatorios.visualizar')) { %><a class="botao botao-claro" href="/relatorios">Ver relatórios</a><% } %>
     </div>
 </section>
+<% } %>
 
 <%- include('../partials/fim') %>

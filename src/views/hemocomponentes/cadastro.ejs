@@ -4,9 +4,14 @@
     <form action="/hemocomponentes/novo" method="POST">
         <div class="grade-form">
             <div class="campo">
-                <label for="lote_id">ID do lote de origem</label>
-                <input type="number" id="lote_id" name="lote_id" min="1" value="<%= locals.lote_id || '' %>" required>
-                <small>O número do lote aparece na tela de Lotes (o lote precisa estar aberto).</small>
+                <label for="lote_id">Lote de origem</label>
+                <select id="lote_id" name="lote_id" required>
+                    <option value="">Selecione um lote aberto</option>
+                    <% (locals.lotes || []).forEach(function (l) { %>
+                        <option value="<%= l.id %>" <%= String(l.id) === String(locals.lote_id) ? 'selected' : '' %>><%= l.codigo %> · <%= l.data_br %></option>
+                    <% }) %>
+                </select>
+                <small>Só aparecem lotes abertos. Abra um novo lote na tela de Lotes, se precisar.</small>
             </div>
 
             <div class="campo">

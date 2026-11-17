@@ -5,11 +5,17 @@ const router = express.Router();
 const loteController = require('../controllers/loteController');
 
 const {
-    exigirAutenticacao
+    exigirAutenticacao,
+    exigirPermissao
 } = require('../middlewares/autenticacao');
 
-// Exige login somente nas rotas de lotes.
-router.use('/lotes', exigirAutenticacao);
+// Exige login e permissão somente nas rotas de lotes.
+router.use('/lotes', exigirAutenticacao, exigirPermissao('lotes.gerenciar'));
+
+router.param('id', (req, res, next, valor) => {
+    if (!/^\d+$/.test(valor)) return res.status(400).send('ID inválido.');
+    next();
+});
 
 // Exibe a lista de lotes.
 router.get('/lotes', loteController.listar);
