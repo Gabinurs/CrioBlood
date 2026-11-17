@@ -3,7 +3,7 @@
 
 <section class="painel formulario">
     <div class="alerta alerta-info">
-        O novo usuário será criado sem privilégios administrativos. As permissões podem ser configuradas depois.
+        Cadastre cada colaborador com sua função profissional. O nome e a função serão identificados automaticamente nas conferências.
     </div>
 
     <form action="/usuarios" method="POST">
@@ -18,6 +18,16 @@
                 <label for="login">Nome de usuário (login)</label>
                 <input type="text" id="login" name="login" maxlength="80" autocomplete="username"
                        value="<%= val.login || '' %>" required>
+            </div>
+
+            <div class="campo largo">
+                <label for="funcao">Função profissional *</label>
+                <select id="funcao" name="funcao" required>
+                    <option value="">Selecione a função...</option>
+                    <option value="TECNICO_ENFERMAGEM" <%= val.funcao === 'TECNICO_ENFERMAGEM' ? 'selected' : '' %>>Técnico de enfermagem</option>
+                    <option value="TECNICO_LABORATORIO" <%= val.funcao === 'TECNICO_LABORATORIO' ? 'selected' : '' %>>Técnico de laboratório</option>
+                    <option value="TECNICO_TRANSFUSAO" <%= val.funcao === 'TECNICO_TRANSFUSAO' ? 'selected' : '' %>>Técnico de transfusão</option>
+                </select>
             </div>
 
             <div class="campo">
