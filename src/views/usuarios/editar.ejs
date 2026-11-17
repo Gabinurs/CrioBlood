@@ -9,6 +9,16 @@
             </div>
 
             <div class="campo largo">
+                <label for="funcao">Função profissional *</label>
+                <select id="funcao" name="funcao" required>
+                    <option value="">Selecione a função...</option>
+                    <option value="TECNICO_ENFERMAGEM" <%= usuarioAlvo.funcao === 'TECNICO_ENFERMAGEM' ? 'selected' : '' %>>Técnico de enfermagem</option>
+                    <option value="TECNICO_LABORATORIO" <%= usuarioAlvo.funcao === 'TECNICO_LABORATORIO' ? 'selected' : '' %>>Técnico de laboratório</option>
+                    <option value="TECNICO_TRANSFUSAO" <%= usuarioAlvo.funcao === 'TECNICO_TRANSFUSAO' ? 'selected' : '' %>>Técnico de transfusão</option>
+                </select>
+            </div>
+
+            <div class="campo largo">
                 <label for="login">Login</label>
                 <input type="text" id="login" name="login" maxlength="80" value="<%= usuarioAlvo.login %>" required>
             </div>
