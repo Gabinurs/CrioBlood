@@ -35,9 +35,9 @@
     <option value="">Selecione...</option><% ['CH','PLASMA','PLAQUETAS','CRIO'].forEach(function(t){ %><option value="<%= t %>" <%= val.tipo===t?'selected':'' %>><%= rot.tipo(t) %></option><% }) %>
    </select></div>
    <div class="campo"><label for="quantidade">Quantidade de bolsas *</label><input type="number" id="quantidade" name="quantidade" min="1" max="10" value="<%= edicao?1:(val.quantidade||1) %>" required <%= edicao?'readonly':'' %>><small>Uma solicitação será criada por bolsa. Máximo: 10.</small></div>
-   <div class="campo"><label for="urgencia">Urgência *</label><select name="urgencia" id="urgencia" required>
-    <% [['ROTINA','Rotina'],['URGENTE','Urgente'],['EMERGENCIA','Emergência']].forEach(function(t){ %><option value="<%= t[0] %>" <%= (val.urgencia||'ROTINA')===t[0]?'selected':'' %>><%= t[1] %></option><% }) %>
-   </select></div>
+   <div class="campo"><label for="urgencia">Solicitação *</label><select name="urgencia" id="urgencia" required>
+    <% [['SOLICITACAO_3H','3 horas'],['SOLICITACAO_6H','6 horas'],['ROTINA_24H','Rotina — 24 horas'],['RESERVA_CIRURGICA','Reserva cirúrgica'],['EXTREMA_URGENCIA','Extrema urgência']].forEach(function(t){ %><option value="<%= t[0] %>" <%= (val.urgencia||'ROTINA_24H')===t[0]?'selected':'' %>><%= t[1] %></option><% }) %>
+   </select><small>Selecione o prazo ou a modalidade indicada no pedido médico.</small></div>
    <div class="campo"><label for="horario_pedido">Horário do pedido médico *</label><input type="datetime-local" id="horario_pedido" name="horario_pedido" value="<%= val.horario_pedido||'' %>" required></div>
    <div class="campo largo"><label for="medico_solicitante">Médico solicitante *</label><input type="text" id="medico_solicitante" name="medico_solicitante" maxlength="255" value="<%= val.medico_solicitante||'' %>" required></div>
    <div class="campo largo"><label for="indicacao">Indicação clínica</label><textarea id="indicacao" name="indicacao" rows="3"><%= val.indicacao||'' %></textarea></div>
