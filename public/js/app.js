@@ -163,6 +163,73 @@
         setTimeout(function () { aviso.hidden = true; }, 6000);
     });
 
+    // Autocomplete do receptor na solicitação transfusional.
+    var buscaPacienteSolicitacao = document.querySelector('[data-busca-paciente-solicitacao]');
+    if (buscaPacienteSolicitacao) {
+        var idPacienteSolicitacao = document.querySelector('[data-id-paciente-solicitacao]');
+        var listaPacienteSolicitacao = document.querySelector('[data-sugestoes-paciente-solicitacao]');
+        var opcoesPacienteSolicitacao = Array.prototype.slice.call(document.querySelectorAll('[data-opcao-paciente-solicitacao]'));
+        var semPacienteSolicitacao = document.querySelector('[data-sem-paciente-solicitacao]');
+        var ajudaPacienteSolicitacao = document.querySelector('[data-ajuda-paciente-solicitacao]');
+        function normalizarPacienteSolicitacao(valor) {
+            return (valor || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');
+        }
+        function fecharListaPacienteSolicitacao() {
+            if (listaPacienteSolicitacao) listaPacienteSolicitacao.hidden = true;
+            buscaPacienteSolicitacao.setAttribute('aria-expanded', 'false');
+        }
+        function filtrarPacienteSolicitacao() {
+            var termo = normalizarPacienteSolicitacao(buscaPacienteSolicitacao.value.trim());
+            var encontrados = 0;
+            opcoesPacienteSolicitacao.forEach(function(opcao) {
+                var corresponde = termo.length > 0 && normalizarPacienteSolicitacao(opcao.getAttribute('data-nome')).includes(termo);
+                opcao.hidden = !corresponde;
+                if (corresponde) encontrados++;
+            });
+            if (semPacienteSolicitacao) semPacienteSolicitacao.hidden = termo.length === 0 || encontrados > 0;
+            var mostrar = termo.length > 0;
+            if (listaPacienteSolicitacao) listaPacienteSolicitacao.hidden = !mostrar;
+            buscaPacienteSolicitacao.setAttribute('aria-expanded', mostrar ? 'true' : 'false');
+            if (ajudaPacienteSolicitacao && !idPacienteSolicitacao.value) {
+                ajudaPacienteSolicitacao.textContent = termo.length === 0
+                    ? 'Digite o nome e selecione o receptor na lista que aparecer.'
+                    : encontrados > 0 ? 'Selecione o receptor na lista de resultados.' : 'Nenhum receptor encontrado. Confira a grafia ou cadastre o receptor na tela Receptor.';
+            }
+        }
+        opcoesPacienteSolicitacao.forEach(function(opcao) {
+            opcao.addEventListener('click', function() {
+                idPacienteSolicitacao.value = opcao.getAttribute('data-id');
+                buscaPacienteSolicitacao.value = opcao.getAttribute('data-nome');
+                fecharListaPacienteSolicitacao();
+                if (ajudaPacienteSolicitacao) ajudaPacienteSolicitacao.textContent = opcao.getAttribute('data-descricao') + ' — Receptor selecionado.';
+            });
+        });
+        buscaPacienteSolicitacao.addEventListener('input', function() {
+            idPacienteSolicitacao.value = '';
+            filtrarPacienteSolicitacao();
+        });
+        buscaPacienteSolicitacao.addEventListener('focus', filtrarPacienteSolicitacao);
+        buscaPacienteSolicitacao.addEventListener('keydown', function(evento) {
+            if (evento.key === 'Escape') fecharListaPacienteSolicitacao();
+        });
+        document.addEventListener('click', function(evento) {
+            if (!evento.target.closest('.campo-autocomplete-solicitacao')) fecharListaPacienteSolicitacao();
+        });
+        var formSolicitacaoAutocomplete = buscaPacienteSolicitacao.closest('form');
+        if (formSolicitacaoAutocomplete) {
+            formSolicitacaoAutocomplete.addEventListener('submit', function(evento) {
+                if (!idPacienteSolicitacao.value) {
+                    evento.preventDefault();
+                    buscaPacienteSolicitacao.setCustomValidity('Digite e selecione um receptor da lista.');
+                    buscaPacienteSolicitacao.reportValidity();
+                    buscaPacienteSolicitacao.focus();
+                } else {
+                    buscaPacienteSolicitacao.setCustomValidity('');
+                }
+            });
+        }
+    }
+
     // Navegação segura entre as etapas do formulário de solicitação transfusional.
     var formularioSolicitacao = document.querySelector('[data-form-solicitacao]');
     if (formularioSolicitacao) {
