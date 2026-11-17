@@ -41,6 +41,7 @@
                             <% if (usuario && usuario.administrador && item.status !== 'DESCARTADA' && item.status !== 'TRANSFUNDIDA' && item.status !== 'RESERVADA') { %>
                                 <form action="/hemocomponentes/descartar/<%= item.id %>" method="POST"
                                       data-confirmar="ATENÇÃO: o descarte não pode ser desfeito. Confirmar?">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                                     <button class="botao botao-perigo botao-pequeno" type="submit">Descartar</button>
                                 </form>
                             <% } %>
@@ -52,6 +53,7 @@
             </tbody>
         </table>
     </div>
+    <%- include('../partials/paginacao') %>
 </section>
 
 <%- include('../partials/fim') %>

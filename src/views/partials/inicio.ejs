@@ -47,6 +47,7 @@
         <nav class="menu menu-inferior">
             <a href="/conta/senha">🔑  Alterar minha senha</a>
             <form action="/logout" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                 <button type="submit">⇥  Sair do sistema</button>
             </form>
         </nav>

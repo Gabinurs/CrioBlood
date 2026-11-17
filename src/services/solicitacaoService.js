@@ -1,11 +1,12 @@
 const db = require('../database');
+const { sqlLimite } = require('../utils/paginacao');
 const { ErroNegocio } = require('../utils/erros');
 
 const TIPOS = ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'];
 const URGENCIAS = ['ROTINA', 'URGENTE', 'EMERGENCIA'];
 
 class SolicitacaoService {
-    static async listar() {
+    static async listar(pag = {}) {
         const { rows } = await db.query(`
             SELECT s.id, s.tipo, s.urgencia, s.medico_solicitante, s.indicacao, s.status,
                    s.hemocomponente_id,
@@ -19,8 +20,14 @@ class SolicitacaoService {
             ORDER BY CASE s.status WHEN 'PENDENTE' THEN 0 WHEN 'RESERVADA' THEN 1 ELSE 2 END,
                      CASE s.urgencia WHEN 'EMERGENCIA' THEN 0 WHEN 'URGENTE' THEN 1 ELSE 2 END,
                      s.criado_em DESC
+            ${sqlLimite(pag)}
         `);
         return rows;
+    }
+
+    static async contar() {
+        const { rows } = await db.query('SELECT COUNT(*)::int AS total FROM solicitacoes_transfusionais');
+        return rows[0].total;
     }
 
     static async listarPendentes() {

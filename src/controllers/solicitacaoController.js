@@ -1,3 +1,4 @@
+const { paginar } = require('../utils/paginacao');
 const SolicitacaoService = require('../services/solicitacaoService');
 const PacienteService = require('../services/pacienteService');
 const AuditoriaService = require('../services/auditoriaService');
@@ -6,8 +7,9 @@ const { ErroNegocio, avisar, tratar } = require('../utils/erros');
 class SolicitacaoController {
     static async listar(req, res) {
         try {
-            const solicitacoes = await SolicitacaoService.listar();
-            res.render('solicitacoes/index', { solicitacoes, usuario: req.session.usuario });
+            const { linhas: solicitacoes, paginacao } = await paginar(
+                req, () => SolicitacaoService.contar(), (pag) => SolicitacaoService.listar(pag));
+            res.render('solicitacoes/index', { solicitacoes, paginacao, usuario: req.session.usuario });
         } catch (erro) {
             tratar(req, res, erro, '/dashboard', 'Erro ao listar solicitações');
         }

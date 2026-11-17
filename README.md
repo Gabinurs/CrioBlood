@@ -25,7 +25,7 @@ Acesse `http://localhost:3001` e entre com o login `Supervisor` e a senha defini
 ### Sem Docker
 
 1. Crie um banco PostgreSQL chamado `crioblood`.
-2. Execute, **nesta ordem**, os scripts de `database/` (`01_...sql` até `08_...sql`).
+2. Execute, **nesta ordem**, os scripts de `database/` (`01_...sql` até `09_...sql`).
 3. `cp .env.example .env` e preencha os valores.
 4. `npm install`
 5. `node src/scripts/criar-supervisor.js` (cria o administrador)
@@ -69,7 +69,12 @@ controle de permissões.
 - Cadastro de usuários feito apenas pelo administrador; senhas com bcrypt (mín. 8 caracteres).
 - Cada pessoa pode trocar a própria senha (`Alterar minha senha`); o administrador pode redefinir a de qualquer usuário.
 - Limite de 10 tentativas de login falhas por 15 min e limite geral de requisições; `helmet` ativo.
+- **Proteção CSRF:** todo formulário leva um token secreto da sessão (`_csrf`); POST sem o token certo recebe 403.
+- **Sessões no PostgreSQL** (tabela `session`, via `connect-pg-simple`): reiniciar o servidor não desloga ninguém.
+- Trocar ou redefinir a senha **encerra as outras sessões** da conta (na troca da própria senha, a sessão atual continua).
+  Desativar um usuário também encerra os acessos dele.
 - Cookie de sessão `httpOnly`, `sameSite=lax` e `secure` em produção. Atrás de proxy HTTPS use `NODE_ENV=production`.
+- O banco trabalha no fuso de Brasília (`America/Sao_Paulo`), então a validade das bolsas vence à meia-noite daqui.
 - Ações importantes são registradas na tabela `logs_auditoria`.
 - Nunca versione o `.env`; o `.dockerignore` impede que ele entre na imagem.
 
@@ -77,6 +82,19 @@ controle de permissões.
 
 1. Altere `SUPERVISOR_PASSWORD` no `.env`.
 2. `node src/scripts/criar-supervisor.js --atualizar-senha`
+
+## Regras automáticas de validade
+
+À meia-noite (horário de Brasília) e sempre que o sistema inicia:
+
+- bolsas vencidas viram **Vencida** e liberam a posição física;
+- se a bolsa vencida estava **reservada**, a solicitação volta para **Pendente** (sem bolsa) para que outra
+  bolsa compatível seja escolhida, e o fato fica na auditoria (`RESERVA_DESFEITA_VENCIMENTO`, ação do sistema).
+
+## Listagens
+
+Pacientes, bolsas, estoque, solicitações, lotes e histórico de transfusões são paginados (20 por página,
+`?pagina=N`), preservando os filtros da URL. O relatório já é limitado por período e o CSV exporta tudo.
 
 ## Organização do código
 
@@ -92,12 +110,10 @@ public/          CSS e JavaScript do navegador
 
 ## Limitações conhecidas / próximos passos
 
-- A sessão fica na memória do servidor: reiniciar o app desloga todos. Em produção, usar um *session store*
-  (ex.: `connect-pg-simple`).
-- Não há tokens CSRF (a proteção hoje é o `sameSite=lax` do cookie).
-- Listagens sem paginação; indicadas para o volume de um hemocentro pequeno.
 - Cada solicitação pede uma única bolsa (para várias, crie várias solicitações).
-- Redefinir a senha de alguém não encerra as sessões já abertas dessa pessoa (desativar a conta encerra).
+- Equipamentos e usuários não são paginados (quantidade pequena por natureza).
+- O token CSRF é por sessão (não por formulário); suficiente para este porte de sistema.
+- Não há recuperação de senha por e-mail: a redefinição é feita por um administrador.
 
 ## Status
 

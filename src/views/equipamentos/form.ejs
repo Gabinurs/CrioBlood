@@ -15,6 +15,7 @@
 
 <section class="painel formulario">
     <form method="POST" action="<%= edicao ? '/equipamentos/' + equipamento.id + '/editar' : '/equipamentos/novo' %>">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <div class="grade-form">
             <div class="campo largo">
                 <label for="nome">Nome do equipamento</label>

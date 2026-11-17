@@ -10,6 +10,7 @@
     </div>
 
     <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <button class="botao" type="submit">+ Abrir novo lote</button>
     </form>
 </section>
@@ -68,6 +69,7 @@
                                 <a class="botao botao-claro botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">+ Adicionar bolsa</a>
                                 <form action="/lotes/<%= lote.id %>/fechar" method="POST"
                                       data-confirmar="Fechar o lote <%= lote.codigo %>? Depois de fechado, ele não recebe novas bolsas.">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                                     <button class="botao botao-perigo botao-pequeno" type="submit">Fechar lote</button>
                                 </form>
                             <% } %>
@@ -79,6 +81,7 @@
             </tbody>
         </table>
     </div>
+    <%- include('../partials/paginacao') %>
 </section>
 
 <%- include('../partials/fim') %>

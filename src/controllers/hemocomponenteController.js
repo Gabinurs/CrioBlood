@@ -1,5 +1,6 @@
 const HemocomponenteService = require('../services/hemocomponenteService');
 const AuditoriaService = require('../services/auditoriaService');
+const { paginar } = require('../utils/paginacao');
 
 // Compara a bolsa antes e depois da edição e descreve o que mudou (para a auditoria)
 function descreverMudancas(antes, depois) {
@@ -52,10 +53,15 @@ class HemocomponenteController {
     static async index(req, res) {
         try {
             const { lote_id, status } = req.query;
-            const hemocomponentes = await HemocomponenteService.listarTodos({ lote_id, status });
+            const filtros = { lote_id, status };
+            const { linhas: hemocomponentes, paginacao } = await paginar(
+                req,
+                () => HemocomponenteService.contarTodos(filtros),
+                (pag) => HemocomponenteService.listarTodos(filtros, pag));
 
             res.render('hemocomponentes/index', {
                 hemocomponentes,
+                paginacao,
                 usuario: req.session.usuario,
                 title: 'Gestão de Hemocomponentes'
             });

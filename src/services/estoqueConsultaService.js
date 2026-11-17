@@ -1,4 +1,5 @@
 const db = require('../database');
+const { sqlLimite } = require('../utils/paginacao');
 const { ErroNegocio } = require('../utils/erros');
 
 const STATUS_EM_ESTOQUE = "('DISPONIVEL', 'RESERVADA', 'EM_CONFERENCIA')";
@@ -55,7 +56,7 @@ class EstoqueConsultaService {
         return { linhas, porTipo };
     }
 
-    static async listarBolsas() {
+    static async listarBolsas(pag = {}) {
         const { rows } = await db.query(`
             SELECT h.id, h.codigo_original, h.tipo, h.abo, h.fator_rh, h.status,
                    l.codigo AS codigo_lote,
@@ -68,8 +69,18 @@ class EstoqueConsultaService {
             LEFT JOIN equipamentos e ON e.id = a.equipamento_id
             WHERE h.status IN ('DISPONIVEL', 'RESERVADA', 'EM_CONFERENCIA')
             ORDER BY h.data_validade ASC, h.id ASC
+            ${sqlLimite(pag)}
         `);
         return rows;
+    }
+
+    static async contarBolsas() {
+        const { rows } = await db.query(`
+            SELECT COUNT(*)::int AS total
+            FROM hemocomponentes
+            WHERE status IN ('DISPONIVEL', 'RESERVADA', 'EM_CONFERENCIA')
+        `);
+        return rows[0].total;
     }
 
     static async proximosVencimentos(limite = 5) {

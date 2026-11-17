@@ -18,6 +18,7 @@
 
 <section class="painel formulario">
     <form method="POST" action="<%= edicao ? '/pacientes/' + paciente.id + '/editar' : '/pacientes/novo' %>">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <div class="grade-form">
             <div class="campo largo">
                 <label for="nome">Nome completo</label>

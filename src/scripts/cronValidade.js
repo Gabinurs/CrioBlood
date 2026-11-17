@@ -3,8 +3,8 @@ const EstoqueService = require('../services/estoqueService');
 
 async function verificarValidades(origem) {
     try {
-        const total = await EstoqueService.invalidarVencidos();
-        console.log(`[CRON] (${origem}) ${total} bolsa(s) marcada(s) como vencida(s).`);
+        const { vencidas, solicitacoesLiberadas } = await EstoqueService.invalidarVencidos();
+        console.log(`[CRON] (${origem}) ${vencidas} bolsa(s) vencida(s); ${solicitacoesLiberadas} solicitação(ões) voltaram para pendente.`);
     } catch (erro) {
         console.error('[CRON] Erro ao verificar validades:', erro);
     }

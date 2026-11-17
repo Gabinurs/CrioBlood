@@ -2,6 +2,7 @@
 
 <section class="painel formulario">
     <form action="/hemocomponentes/novo" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <div class="grade-form">
             <div class="campo">
                 <label for="lote_id">Lote de origem</label>

@@ -1,3 +1,4 @@
+const { paginar } = require('../utils/paginacao');
 const EstoqueConsultaService = require('../services/estoqueConsultaService');
 const EquipamentoService = require('../services/equipamentoService');
 const AuditoriaService = require('../services/auditoriaService');
@@ -6,13 +7,13 @@ const { ErroNegocio, avisar, tratar } = require('../utils/erros');
 class EstoquePaginaController {
     static async index(req, res) {
         try {
-            const [resumo, matriz, bolsas] = await Promise.all([
+            const [resumo, matriz, { linhas: bolsas, paginacao }] = await Promise.all([
                 EstoqueConsultaService.resumo(),
                 EstoqueConsultaService.matriz(),
-                EstoqueConsultaService.listarBolsas()
+                paginar(req, () => EstoqueConsultaService.contarBolsas(), (pag) => EstoqueConsultaService.listarBolsas(pag))
             ]);
             res.render('estoque/index', {
-                resumo, matriz, bolsas, tipos: EstoqueConsultaService.TIPOS, usuario: req.session.usuario
+                resumo, matriz, bolsas, paginacao, tipos: EstoqueConsultaService.TIPOS, usuario: req.session.usuario
             });
         } catch (erro) {
             tratar(req, res, erro, '/dashboard', 'Erro ao carregar o estoque');

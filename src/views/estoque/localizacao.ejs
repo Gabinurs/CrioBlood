@@ -28,6 +28,7 @@
     <% } %>
 
     <form method="POST" action="/estoque/<%= bolsa.id %>/localizacao">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <div class="grade-form">
             <div class="campo largo">
                 <label for="equipamento_id">Equipamento</label>
@@ -67,6 +68,7 @@
     <% if (atual) { %>
         <form method="POST" action="/estoque/<%= bolsa.id %>/localizacao/remover"
               data-confirmar="Remover o local desta bolsa?" style="margin-top: 14px;">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
             <button class="botao botao-perigo botao-pequeno" type="submit">Remover local</button>
         </form>
     <% } %>

@@ -1,4 +1,5 @@
 const db = require('../database');
+const { sqlLimite } = require('../utils/paginacao');
 const { ErroNegocio } = require('../utils/erros');
 
 class TransfusaoService {
@@ -24,7 +25,7 @@ class TransfusaoService {
         return rows;
     }
 
-    static async listarHistorico(limite = 50) {
+    static async listarHistorico(pag = { limite: 50, deslocamento: 0 }) {
         const { rows } = await db.query(`
             SELECT t.id, t.paciente_nome, t.prontuario, t.medico_solicitante, t.observacoes,
                    h.codigo_original AS bolsa_codigo, h.tipo, h.abo, h.fator_rh,
@@ -34,9 +35,14 @@ class TransfusaoService {
             JOIN hemocomponentes h ON h.id = t.hemocomponente_id
             LEFT JOIN usuarios u ON u.id = t.registrado_por
             ORDER BY t.data_saida DESC
-            LIMIT $1
-        `, [limite]);
+            ${sqlLimite(pag)}
+        `);
         return rows;
+    }
+
+    static async contarHistorico() {
+        const { rows } = await db.query('SELECT COUNT(*)::int AS total FROM transusoes_saidas');
+        return rows[0].total;
     }
 
     // Registra a saída e baixa a bolsa (tudo ou nada)

@@ -2,6 +2,7 @@
 const usuarioService = require('../services/usuarioService');
 const { avisar } = require('../utils/erros');
 const { validarNovaSenha } = require('../services/authService');
+const { encerrarSessoesDoUsuario } = require('../services/sessaoService');
 
 // Valida o ID recebido pela URL
 function lerId(req) {
@@ -167,6 +168,11 @@ async function alternarStatus(req, res) {
         }
 
         await usuarioService.definirAtivo(id, !usuarioAlvo.ativo);
+
+        // Conta desativada perde os acessos abertos imediatamente
+        if (usuarioAlvo.ativo) {
+            await encerrarSessoesDoUsuario(id);
+        }
 
         avisar(req, 'ok', `Usuário ${usuarioAlvo.ativo ? 'desativado' : 'ativado'}.`);
         return res.redirect('/usuarios');

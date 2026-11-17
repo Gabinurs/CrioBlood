@@ -5,9 +5,11 @@ const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
 const session = require('express-session');
+const PgSession = require('connect-pg-simple')(session);
 const rateLimit = require('express-rate-limit');
 const pool = require('./database');
 const { carregarPermissoes } = require('./middlewares/autenticacao');
+const { protegerCsrf } = require('./middlewares/csrf');
 
 // Importação das rotas
 const usuarioRoutes = require('./routes/usuarioRoutes');
@@ -65,6 +67,13 @@ if (!process.env.SESSION_SECRET) {
 
 // Configuração das sessões
 app.use(session({
+    // Sessões guardadas no PostgreSQL: continuam válidas se o servidor reiniciar
+    store: new PgSession({
+        pool,
+        tableName: 'session',
+        createTableIfMissing: true,
+        pruneSessionInterval: 60 * 15
+    }),
     name: 'crioblood.sid',
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -82,12 +91,17 @@ app.use((req, res, next) => {
     res.locals.rot = require('./utils/rotulos');
     res.locals.usuario = req.session.usuario || null;
     res.locals.flash = req.session.flash || null;
+    res.locals.query = req.query;
+    res.locals.rotaAtual = req.path;
     delete req.session.flash;
     next();
 });
 
 // Atualiza as permissões do usuário logado e barra contas desativadas
 app.use(carregarPermissoes);
+
+// Exige o token CSRF em todos os formulários (POST)
+app.use(protegerCsrf);
 
 // Página de login
 app.get('/login', (req, res) => {

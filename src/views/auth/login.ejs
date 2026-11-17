@@ -232,6 +232,7 @@
         <% } %>
 
         <form action="/login" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
 
             <div class="campo">
                 <label for="login">Usuário</label>

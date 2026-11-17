@@ -3,6 +3,7 @@ const usuarioService = require('../services/usuarioService');
 const AuditoriaService = require('../services/auditoriaService');
 const { verificarSenha, validarNovaSenha } = require('../services/authService');
 const { avisar } = require('../utils/erros');
+const { encerrarSessoesDoUsuario } = require('../services/sessaoService');
 
 // ---------- Troca da própria senha ----------
 function mostrarTroca(req, res) {
@@ -37,7 +38,12 @@ async function trocar(req, res) {
         await usuarioService.definirSenha(req.session.usuario.id, nova_senha);
         await AuditoriaService.registrarLog(req.session.usuario.id, 'TROCA_SENHA', 'usuarios', req.session.usuario.id, '');
 
-        avisar(req, 'ok', 'Senha alterada com sucesso.');
+        // Encerra o login em outros aparelhos; esta sessão continua ativa
+        const encerradas = await encerrarSessoesDoUsuario(req.session.usuario.id, req.sessionID);
+
+        avisar(req, 'ok', encerradas > 0
+            ? 'Senha alterada. Os outros acessos da sua conta foram encerrados.'
+            : 'Senha alterada com sucesso.');
         return res.redirect('/dashboard');
     } catch (erro) {
         console.error('Erro ao trocar senha:', erro.message);
@@ -88,7 +94,10 @@ async function redefinir(req, res) {
         await usuarioService.definirSenha(id, nova_senha);
         await AuditoriaService.registrarLog(req.session.usuario.id, 'REDEFINICAO_SENHA', 'usuarios', id, alvo.login);
 
-        avisar(req, 'ok', `Senha de ${alvo.nome} redefinida.`);
+        // A pessoa precisa entrar de novo com a senha nova
+        await encerrarSessoesDoUsuario(id);
+
+        avisar(req, 'ok', `Senha de ${alvo.nome} redefinida. Ela precisará entrar novamente.`);
         return res.redirect('/usuarios');
     } catch (erro) {
         console.error('Erro ao redefinir senha:', erro.message);

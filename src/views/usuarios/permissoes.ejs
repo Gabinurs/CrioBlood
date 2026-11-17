@@ -5,6 +5,7 @@
     <p class="descricao">Selecione as permissões que esta conta poderá receber.</p>
 
     <form action="/usuarios/<%= usuarioAlvo.id %>/permissoes" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <div class="marcas" style="margin-top: 18px;">
             <% if (permissoes.length === 0) { %>
                 <p class="descricao">Nenhuma permissão cadastrada no sistema.</p>

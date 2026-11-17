@@ -71,6 +71,7 @@
                                 <td>
                                     <form action="/compatibilidade/reservar" method="POST"
                                           data-confirmar="Reservar a bolsa <%= b.codigo_original %> para <%= solicitacao.paciente_nome %>?">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                                         <input type="hidden" name="solicitacao_id" value="<%= solicitacao.id %>">
                                         <input type="hidden" name="hemocomponente_id" value="<%= b.id %>">
                                         <button class="botao botao-pequeno" type="submit">Reservar</button>

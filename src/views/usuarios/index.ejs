@@ -41,6 +41,7 @@
                             <% if (Number(usuario.id) !== Number(item.id)) { %>
                                 <form action="/usuarios/<%= item.id %>/status" method="POST"
                                       data-confirmar="Deseja realmente <%= item.ativo ? 'desativar' : 'ativar' %> este usuário?">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                                     <% if (item.ativo) { %>
                                         <button type="submit" class="botao botao-perigo botao-pequeno">Desativar</button>
                                     <% } else { %>

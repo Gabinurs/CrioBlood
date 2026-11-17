@@ -24,7 +24,8 @@
                         <td><%- rot.urgencia(s.urgencia) %></td>
                         <td>
                             <form id="reg-<%= s.id %>" action="/transfusoes/registrar" method="POST"
-                                  data-confirmar="Confirmar a transfusão da bolsa <%= s.bolsa_codigo %> para <%= s.paciente_nome %>?"></form>
+                                  data-confirmar="Confirmar a transfusão da bolsa <%= s.bolsa_codigo %> para <%= s.paciente_nome %>?">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>"></form>
                             <input type="hidden" name="solicitacao_id" value="<%= s.id %>" form="reg-<%= s.id %>">
                             <input type="text" name="observacoes" maxlength="500" placeholder="Opcional" form="reg-<%= s.id %>"
                                    style="padding: 8px; border: 1px solid #dce2eb; border-radius: 6px; width: 170px;">
@@ -71,6 +72,7 @@
             </tbody>
         </table>
     </div>
+    <%- include('../partials/paginacao') %>
 </section>
 
 <%- include('../partials/fim') %>

@@ -1,4 +1,5 @@
 const db = require('../database');
+const { sqlLimite } = require('../utils/paginacao');
 
 // Colunas de data já formatadas (evita problemas de fuso horário nas telas)
 const COLUNAS_DATAS = `
@@ -38,7 +39,7 @@ class HemocomponenteService {
     }
 
     // Lista os hemocomponentes, com filtro opcional por lote ou status
-    static async listarTodos(filtros = {}) {
+    static async listarTodos(filtros = {}, pag = {}) {
         let query = `
             SELECT h.*, l.codigo AS codigo_lote, ${COLUNAS_DATAS}
             FROM hemocomponentes h
@@ -57,10 +58,28 @@ class HemocomponenteService {
             query += ` AND h.status = $${params.length}`;
         }
 
-        query += ' ORDER BY h.data_validade ASC, h.id DESC';
+        query += ` ORDER BY h.data_validade ASC, h.id DESC ${sqlLimite(pag)}`;
 
         const { rows } = await db.query(query, params);
         return rows;
+    }
+
+    static async contarTodos(filtros = {}) {
+        let query = 'SELECT COUNT(*)::int AS total FROM hemocomponentes h WHERE 1=1';
+        const params = [];
+
+        if (filtros.lote_id) {
+            params.push(filtros.lote_id);
+            query += ` AND h.lote_id = $${params.length}`;
+        }
+
+        if (filtros.status) {
+            params.push(filtros.status);
+            query += ` AND h.status = $${params.length}`;
+        }
+
+        const { rows } = await db.query(query, params);
+        return rows[0].total;
     }
 
     static async buscarPorId(id) {

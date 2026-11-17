@@ -1,3 +1,4 @@
+const { paginar } = require('../utils/paginacao');
 const TransfusaoService = require('../services/transfusaoService');
 const AuditoriaService = require('../services/auditoriaService');
 const { avisar, tratar } = require('../utils/erros');
@@ -5,11 +6,11 @@ const { avisar, tratar } = require('../utils/erros');
 class TransfusaoController {
     static async index(req, res) {
         try {
-            const [prontas, historico] = await Promise.all([
+            const [prontas, { linhas: historico, paginacao }] = await Promise.all([
                 TransfusaoService.listarProntas(),
-                TransfusaoService.listarHistorico()
+                paginar(req, () => TransfusaoService.contarHistorico(), (pag) => TransfusaoService.listarHistorico(pag))
             ]);
-            res.render('transfusoes/index', { prontas, historico, usuario: req.session.usuario });
+            res.render('transfusoes/index', { prontas, historico, paginacao, usuario: req.session.usuario });
         } catch (erro) {
             tratar(req, res, erro, '/dashboard', 'Erro ao carregar transfusões');
         }

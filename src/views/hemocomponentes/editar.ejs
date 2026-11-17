@@ -17,6 +17,7 @@
     <% } %>
 
     <form action="/hemocomponentes/editar/<%= hemocomponente.id %>" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <input type="hidden" name="data_coleta" value="<%= hemocomponente.data_coleta_iso %>">
 
         <div class="grade-form">

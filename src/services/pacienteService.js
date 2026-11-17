@@ -1,4 +1,5 @@
 const db = require('../database');
+const { sqlLimite } = require('../utils/paginacao');
 const { ErroNegocio } = require('../utils/erros');
 
 const COLUNAS = `
@@ -43,11 +44,16 @@ function traduzirErro(erro) {
 }
 
 class PacienteService {
-    static async listar() {
+    static async listar(pag = {}) {
         const { rows } = await db.query(
-            `SELECT ${COLUNAS} FROM pacientes p ORDER BY p.ativo DESC, p.nome ASC`
+            `SELECT ${COLUNAS} FROM pacientes p ORDER BY p.ativo DESC, p.nome ASC ${sqlLimite(pag)}`
         );
         return rows;
+    }
+
+    static async contar() {
+        const { rows } = await db.query('SELECT COUNT(*)::int AS total FROM pacientes');
+        return rows[0].total;
     }
 
     static async listarAtivos() {

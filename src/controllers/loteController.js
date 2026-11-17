@@ -2,12 +2,16 @@
 const pool = require('../database');
 const crypto = require('crypto');
 const AuditoriaService = require('../services/auditoriaService');
+const { paginar, sqlLimite } = require('../utils/paginacao');
 const { ErroNegocio, avisar, tratar } = require('../utils/erros');
 
 // Listar lotes cadastrados
 async function listar(req, res) {
     try {
-        const resultado = await pool.query(`
+        const { linhas, paginacao } = await paginar(
+            req,
+            async () => (await pool.query('SELECT COUNT(*)::int AS total FROM lotes_recebimento')).rows[0].total,
+            async (pag) => (await pool.query(`
             SELECT
                 l.id,
                 l.codigo,
@@ -26,11 +30,13 @@ async function listar(req, res) {
                 ON h.lote_id = l.id
             GROUP BY l.id, u.nome
             ORDER BY l.criado_em DESC
-        `);
+            ${sqlLimite(pag)}
+        `)).rows);
 
         res.render('lotes/index', {
             usuario: req.session.usuario,
-            lotes: resultado.rows
+            lotes: linhas,
+            paginacao
         });
     } catch (erro) {
         console.error('Erro ao listar lotes:', erro.message);
