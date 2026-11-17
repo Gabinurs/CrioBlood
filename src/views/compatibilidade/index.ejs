@@ -1,8 +1,16 @@
-<%- include('../partials/inicio', { titulo: 'Compatibilidade', subtitulo: 'Busca de bolsas compatíveis e reserva para o paciente', ativo: 'compatibilidade' }) %>
+<%
+    const funcaoLabel = {
+        TECNICO_ENFERMAGEM: 'Técnico de enfermagem',
+        TECNICO_LABORATORIO: 'Técnico de laboratório',
+        TECNICO_TRANSFUSAO: 'Técnico de transfusão'
+    };
+    const colaboradorIdentificado = usuario && funcaoLabel[usuario.funcao];
+%>
+<%- include('../partials/inicio', { titulo: 'Compatibilidade', subtitulo: 'Conferência da bolsa antes da reserva', ativo: 'compatibilidade' }) %>
 
 <div class="alerta alerta-info">
-    Esta tela é um apoio à decisão e aplica regras gerais de compatibilidade ABO/Rh.
-    A prova de compatibilidade e o protocolo do serviço de hemoterapia continuam sendo obrigatórios.
+    O resultado automático é um apoio à conferência e considera os dados ABO/Rh cadastrados.
+    Ele não substitui a prova de compatibilidade, os testes pré-transfusionais nem o protocolo do serviço de hemoterapia.
 </div>
 
 <section class="painel">
@@ -30,59 +38,109 @@
         <div class="detalhes">
             <div><span>Paciente</span><strong><%= solicitacao.paciente_nome %></strong></div>
             <div><span>Prontuário</span><strong><%= solicitacao.prontuario %></strong></div>
-            <div><span>Tipagem do paciente</span><strong><%= rot.tipagem(solicitacao.paciente_abo, solicitacao.paciente_rh) %></strong></div>
+            <div><span>Tipagem cadastrada do receptor</span><strong><%= rot.tipagem(solicitacao.paciente_abo, solicitacao.paciente_rh) %></strong></div>
             <div><span>Produto solicitado</span><strong><%= rot.tipo(solicitacao.tipo) %></strong></div>
-            <div><span>Urgência</span><strong><%- rot.urgencia(solicitacao.urgencia) %></strong></div>
+            <div><span>Solicitação</span><strong><%- rot.urgencia(solicitacao.urgencia) %></strong></div>
             <div><span>Médico</span><strong><%= solicitacao.medico_solicitante %></strong></div>
         </div>
-        <% if (aceitos) { %><p class="descricao" style="margin-top: 16px;"><%= aceitos %></p><% } %>
+        <% if (aceitos) { %><p class="descricao" style="margin-top:16px"><%= aceitos %></p><% } %>
     </section>
 
     <% if (!solicitacao.paciente_abo || !solicitacao.paciente_rh) { %>
         <div class="alerta alerta-erro">
-            O paciente não tem tipagem ABO/Rh cadastrada, então não é possível buscar bolsas compatíveis.
-            <a href="/pacientes/<%= solicitacao.paciente_id %>/editar">Atualizar cadastro do paciente</a>.
+            O receptor não possui tipagem ABO/Rh cadastrada. Não é possível fazer a análise.
+            <a href="/pacientes/<%= solicitacao.paciente_id %>/editar">Atualizar cadastro do receptor</a>.
         </div>
     <% } else { %>
-        <section class="painel">
-            <h3>Bolsas compatíveis disponíveis</h3>
-            <p class="descricao">Ordenadas por compatibilidade idêntica primeiro e, depois, pela validade mais próxima.</p>
-
-            <div class="tabela-container">
-                <table>
-                    <thead>
-                        <tr><th>Código interno CrioBlood</th><th>Código original</th><th>Lote</th><th>ABO/Rh</th><th>Compatibilidade</th><th>Validade</th><th>Prazo</th><th>Localização</th><th></th></tr>
-                    </thead>
-                    <tbody>
-                        <% if (bolsas.length === 0) { %>
-                            <tr><td colspan="9" class="vazio">Nenhuma bolsa compatível disponível no estoque agora.</td></tr>
-                        <% } else { bolsas.forEach(function (b) { %>
-                            <tr>
-                                <td><strong><%= b.codigo_interno %></strong></td><td><small><%= b.codigo_original %></small></td>
-                                <td><%= b.codigo_lote %></td>
-                                <td><%= rot.tipagem(b.abo, b.fator_rh) %></td>
-                                <td>
-                                    <% if (b.nivel === 'IDENTICA') { %><span class="status s-verde">Idêntica</span>
-                                    <% } else { %><span class="status s-azul">Compatível</span><% } %>
-                                </td>
-                                <td><%= b.data_validade_br %></td>
-                                <td><%- rot.validade(b.dias_restantes) %></td>
-                                <td><%= rot.local(b) %></td>
-                                <td>
-                                    <form action="/compatibilidade/reservar" method="POST"
-                                          data-confirmar="Confirme que o código digitado corresponde à etiqueta da bolsa antes de reservar para <%= solicitacao.paciente_nome %>.">
-                                        <input type="hidden" name="solicitacao_id" value="<%= solicitacao.id %>">
-                                        <input type="hidden" name="hemocomponente_id" value="<%= b.id %>">
-                                        <label class="campo"><small>Digite o código interno da etiqueta para confirmar</small><input type="text" name="confirmacao_codigo" required autocomplete="off" placeholder="<%= b.codigo_interno %>"></label>
-                                        <button class="botao botao-pequeno" type="submit">Reservar</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <% }) } %>
-                    </tbody>
-                </table>
-            </div>
+        <section class="painel formulario">
+            <h3>1. Identificação da bolsa</h3>
+            <p class="descricao">Com a bolsa em mãos, digite o código interno CrioBlood ou o código original impresso na etiqueta.</p>
+            <form method="GET" action="/compatibilidade" class="grade-form" style="margin-top:18px">
+                <input type="hidden" name="solicitacao" value="<%= solicitacao.id %>">
+                <div class="campo largo">
+                    <label for="codigo-bolsa">Código da bolsa *</label>
+                    <input type="text" id="codigo-bolsa" name="codigo" value="<%= codigo || '' %>"
+                           maxlength="80" autocomplete="off" placeholder="Digite ou leia o código da etiqueta" required>
+                </div>
+                <div class="campo largo">
+                    <button class="botao" type="submit">Consultar bolsa e conferir</button>
+                </div>
+            </form>
+            <% if (erroBusca) { %><div class="alerta alerta-erro" style="margin-top:16px"><%= erroBusca %></div><% } %>
         </section>
+
+        <% if (bolsa) { %>
+            <section class="painel">
+                <h3>2. Resultado da conferência</h3>
+                <div class="detalhes">
+                    <div><span>Código CrioBlood</span><strong><%= bolsa.codigo_interno %></strong></div>
+                    <div><span>Código original</span><strong><%= bolsa.codigo_original %></strong></div>
+                    <div><span>Lote</span><strong><%= bolsa.codigo_lote || '—' %></strong></div>
+                    <div><span>Hemocomponente</span><strong><%= rot.tipo(bolsa.tipo) %></strong></div>
+                    <div><span>Tipagem cadastrada da bolsa</span><strong><%= rot.tipagem(bolsa.abo, bolsa.fator_rh) %></strong></div>
+                    <div><span>Validade</span><strong><%= bolsa.data_validade_br %></strong></div>
+                </div>
+
+                <% if (bolsa.status !== 'DISPONIVEL') { %>
+                    <div class="alerta alerta-erro" style="margin-top:16px">Esta bolsa não está disponível. Status atual: <%= rot.nomeStatusBolsa(bolsa.status) %>.</div>
+                <% } else if (!bolsa.na_validade) { %>
+                    <div class="alerta alerta-erro" style="margin-top:16px">Esta bolsa está vencida. A reserva foi bloqueada.</div>
+                <% } else if (!bolsa.tipagem_confirmada) { %>
+                    <div class="alerta alerta-erro" style="margin-top:16px">A tipagem da bolsa ainda não foi confirmada no cadastro do estoque.</div>
+                <% } else if (bolsa.tipo !== solicitacao.tipo) { %>
+                    <div class="alerta alerta-erro" style="margin-top:16px">O hemocomponente desta bolsa não corresponde ao produto solicitado.</div>
+                <% } else if (!bolsa.nivel) { %>
+                    <div class="alerta alerta-erro" style="margin-top:16px">
+                        <strong>Não compatível pela regra ABO/Rh cadastrada.</strong>
+                        A reserva está bloqueada. Não prossiga com esta bolsa.
+                    </div>
+                <% } else { %>
+                    <div class="alerta alerta-info" style="margin-top:16px">
+                        <strong>Resultado automático: <%= bolsa.nivel === 'IDENTICA' ? 'Tipagem idêntica' : 'Compatível pela regra ABO/Rh' %>.</strong>
+                        Receptor: <%= rot.tipagem(solicitacao.paciente_abo, solicitacao.paciente_rh) %>.
+                        Bolsa: <%= rot.tipagem(bolsa.abo, bolsa.fator_rh) %>.
+                    </div>
+
+                    <div class="painel" style="margin-top:18px;background:#f8fafc">
+                        <h3>3. Confirmações obrigatórias</h3>
+                        <p class="descricao">Confira fisicamente a bolsa e os dados antes de confirmar cada etapa.</p>
+                        <% if (colaboradorIdentificado) { %>
+                            <div class="alerta alerta-info" style="margin-top:14px">
+                                <strong>Colaborador identificado pelo login:</strong> <%= usuario.nome %><br>
+                                <span><%= funcaoLabel[usuario.funcao] %></span>
+                                <small style="display:block;margin-top:4px">O sistema registrará automaticamente seu usuário, função e horário. Não selecione outra pessoa nem compartilhe seu login.</small>
+                            </div>
+                            <form action="/compatibilidade/reservar" method="POST" style="margin-top:18px"
+                                  data-confirmar="Você conferiu a identificação, a tipagem e o resultado de compatibilidade desta bolsa? A reserva ficará registrada em seu usuário.">
+                                <input type="hidden" name="solicitacao_id" value="<%= solicitacao.id %>">
+                                <input type="hidden" name="hemocomponente_id" value="<%= bolsa.id %>">
+                                <input type="hidden" name="codigo_informado" value="<%= codigo %>">
+
+                                <label class="marca" style="display:flex;align-items:flex-start;gap:10px;margin:14px 0">
+                                    <input type="checkbox" name="confirmou_codigo" value="1" required>
+                                    <span><strong>Confirmo o código da bolsa.</strong><br><small>Conferi o código digitado com a etiqueta da bolsa que está em minhas mãos.</small></span>
+                                </label>
+                                <label class="marca" style="display:flex;align-items:flex-start;gap:10px;margin:14px 0">
+                                    <input type="checkbox" name="confirmou_tipagem" value="1" required>
+                                    <span><strong>Confirmo a conferência da tipagem.</strong><br><small>Conferi os dados ABO/Rh do receptor e da bolsa com os registros e a identificação física, seguindo o protocolo do serviço.</small></span>
+                                </label>
+                                <label class="marca" style="display:flex;align-items:flex-start;gap:10px;margin:14px 0">
+                                    <input type="checkbox" name="confirmou_compatibilidade" value="1" required>
+                                    <span><strong>Confirmo que verifiquei a compatibilidade.</strong><br><small>Verifiquei o resultado apresentado e realizei as conferências exigidas pelo protocolo do serviço.</small></span>
+                                </label>
+                                <div class="rodape-form">
+                                    <button class="botao" type="submit">Confirmar conferência e reservar bolsa</button>
+                                </div>
+                            </form>
+                        <% } else { %>
+                            <div class="alerta alerta-erro" style="margin-top:14px">
+                                Seu usuário ainda não possui uma função profissional cadastrada. Solicite ao administrador que atualize seu cadastro para realizar a conferência.
+                            </div>
+                        <% } %>
+                    </div>
+                <% } %>
+            </section>
+        <% } %>
     <% } %>
 <% } %>
 
