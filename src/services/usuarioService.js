@@ -5,7 +5,7 @@ const { gerarHashSenha, verificarSenha } = require('./authService');
 // Buscar usuário pelo login
 async function buscarPorLogin(login) {
     const resultado = await pool.query(
-        `SELECT id, nome, login, senha_hash, ativo, administrador
+        `SELECT id, nome, login, senha_hash, ativo, administrador, funcao
          FROM usuarios
          WHERE login = $1`,
         [login]
@@ -17,7 +17,7 @@ async function buscarPorLogin(login) {
 // Listar usuários cadastrados
 async function listarUsuarios() {
     const resultado = await pool.query(
-        `SELECT id, nome, login, ativo, administrador,
+        `SELECT id, nome, login, ativo, administrador, funcao,
                 criado_em, atualizado_em
          FROM usuarios
          ORDER BY nome ASC`
@@ -44,20 +44,22 @@ async function criarUsuario({
     nome,
     login,
     senha,
-    administrador = false
+    administrador = false,
+    funcao = 'NAO_INFORMADO'
 }) {
     const senhaHash = await gerarHashSenha(senha);
 
     const resultado = await pool.query(
         `INSERT INTO usuarios
-            (nome, login, senha_hash, administrador)
-         VALUES ($1, $2, $3, $4)
-         RETURNING id, nome, login, ativo, administrador`,
+            (nome, login, senha_hash, administrador, funcao)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, nome, login, ativo, administrador, funcao`,
         [
             nome.trim(),
             login.trim(),
             senhaHash,
-            administrador
+            administrador,
+            funcao
         ]
     );
 
@@ -65,15 +67,16 @@ async function criarUsuario({
 }
 
 // Atualizar nome e login
-async function atualizarUsuario(id, { nome, login }) {
+async function atualizarUsuario(id, { nome, login, funcao }) {
     const resultado = await pool.query(
         `UPDATE usuarios
          SET nome = $1,
              login = $2,
+             funcao = $3,
              atualizado_em = CURRENT_TIMESTAMP
-         WHERE id = $3
-         RETURNING id, nome, login, ativo, administrador`,
-        [nome.trim(), login.trim(), id]
+         WHERE id = $4
+         RETURNING id, nome, login, ativo, administrador, funcao`,
+        [nome.trim(), login.trim(), funcao, id]
     );
 
     return resultado.rows[0] || null;
