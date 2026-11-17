@@ -35,7 +35,8 @@ async function login(req, res) {
                 id: usuario.id,
                 nome: usuario.nome,
                 login: usuario.login,
-                administrador: usuario.administrador
+                administrador: usuario.administrador,
+                funcao: usuario.funcao
             };
 
             req.session.save((erroSalvar) => {
