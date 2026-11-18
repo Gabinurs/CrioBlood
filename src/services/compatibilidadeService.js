@@ -163,33 +163,57 @@ class CompatibilidadeService {
             if (!codigoInformado || !codigoConfere) {
                 throw new ErroNegocio('O código digitado não corresponde ao código interno ou original da bolsa.');
             }
-            if (confirmacoes?.confirmou_codigo !== '1') {
-                throw new ErroNegocio('Confirme a identificação física do código da bolsa.');
+            const tipagemAbo = String(confirmacoes?.tipagem_conferida_abo || '').trim().toUpperCase();
+            const tipagemRh = String(confirmacoes?.tipagem_conferida_rh || '').trim();
+            const resultadoConferencia = String(confirmacoes?.resultado_conferencia || '').trim().toUpperCase();
+            const responsavelTipagem = String(confirmacoes?.responsavel_tipagem || '').trim();
+
+            if (!['A', 'B', 'O'].includes(tipagemAbo) || !['+', '-'].includes(tipagemRh)) {
+                throw new ErroNegocio('Informe a tipagem ABO/Rh conferida.');
             }
-            if (confirmacoes?.confirmou_tipagem !== '1') {
-                throw new ErroNegocio('Confirme a conferência da tipagem ABO/Rh do receptor e da bolsa.');
+            if (!['COMPATIVEL', 'INCOMPATIVEL'].includes(resultadoConferencia)) {
+                throw new ErroNegocio('Selecione o resultado da compatibilidade.');
             }
-            if (confirmacoes?.confirmou_compatibilidade !== '1') {
-                throw new ErroNegocio('Confirme que verificou o resultado de compatibilidade.');
+            if (responsavelTipagem.length < 3 || responsavelTipagem.length > 120) {
+                throw new ErroNegocio('Informe o nome do profissional responsável pela tipagem.');
             }
             if (b.status !== 'DISPONIVEL') throw new ErroNegocio('Essa bolsa não está disponível.');
             if (!b.na_validade) throw new ErroNegocio('Essa bolsa está vencida.');
             if (!b.tipagem_confirmada) throw new ErroNegocio('A tipagem cadastrada da bolsa ainda não foi confirmada.');
             if (b.tipo !== s.tipo) throw new ErroNegocio('O tipo da bolsa não corresponde ao tipo solicitado.');
 
-            // Recalcula no servidor; a confirmação visual nunca substitui a regra técnica.
+            // Recalcula no servidor. A conferência informada não substitui as regras de segurança ABO/Rh.
             const nivel = avaliar({ abo: s.paciente_abo, fator_rh: s.paciente_rh }, b, s.tipo);
-            if (!nivel) throw new ErroNegocio('A bolsa não é compatível pela regra ABO/Rh cadastrada. Não é possível reservá-la.');
+            const tipagemConfereComCadastro = tipagemAbo === b.abo && tipagemRh === b.fator_rh;
+            if (!tipagemConfereComCadastro) {
+                throw new ErroNegocio('A tipagem informada na conferência diverge da tipagem cadastrada da bolsa. Não é possível reservar.');
+            }
 
             await cliente.query(
                 `INSERT INTO conferencias_compatibilidade
                     (solicitacao_id, hemocomponente_id, colaborador_id, funcao_colaborador,
                      codigo_informado, codigo_confirmado, tipagem_confirmada,
-                     compatibilidade_confirmada, tipagem_receptor, tipagem_bolsa, resultado_sistema)
-                 VALUES ($1,$2,$3,$4,$5,TRUE,TRUE,TRUE,$6,$7,$8)`,
+                     compatibilidade_confirmada, tipagem_receptor, tipagem_bolsa, resultado_sistema,
+                     tipagem_conferida_abo, tipagem_conferida_rh, resultado_conferencia, responsavel_tipagem)
+                 VALUES ($1,$2,$3,$4,$5,TRUE,TRUE,TRUE,$6,$7,$8,$9,$10,$11,$12)`,
                 [solicitacaoId, bolsaId, colaborador.id, colaborador.administrador && !colaborador.funcao ? 'SUPERVISOR_ADMINISTRADOR' : (colaborador.funcao || 'SUPERVISOR_ADMINISTRADOR'), codigoInformado,
-                 s.paciente_abo + s.paciente_rh, b.abo + b.fator_rh, nivel]
+                 s.paciente_abo + s.paciente_rh, b.abo + b.fator_rh, nivel || 'NAO_AVALIADO',
+                 tipagemAbo, tipagemRh, resultadoConferencia, responsavelTipagem]
             );
+
+            // Um resultado manual incompatível é registrado, mas nunca libera a reserva.
+            if (resultadoConferencia === 'INCOMPATIVEL' || !nivel) {
+                await cliente.query('COMMIT');
+                return {
+                    reservada: false,
+                    codigo: b.codigo_interno,
+                    nivel: nivel || 'INCOMPATIVEL',
+                    resultadoConferencia,
+                    colaborador: colaborador.nome,
+                    funcao: colaborador.funcao || (colaborador.administrador ? 'SUPERVISOR_ADMINISTRADOR' : 'NAO_INFORMADO'),
+                    responsavelTipagem
+                };
+            }
 
             await cliente.query(
                 `UPDATE hemocomponentes SET status = 'RESERVADA', atualizado_em = CURRENT_TIMESTAMP WHERE id = $1`,
@@ -200,7 +224,7 @@ class CompatibilidadeService {
                  WHERE id = $2`, [bolsaId, solicitacaoId]);
 
             await cliente.query('COMMIT');
-            return { codigo: b.codigo_interno, nivel, colaborador: colaborador.nome, funcao: colaborador.funcao || (colaborador.administrador ? 'SUPERVISOR_ADMINISTRADOR' : 'NAO_INFORMADO') };
+            return { reservada: true, codigo: b.codigo_interno, nivel, resultadoConferencia, colaborador: colaborador.nome, funcao: colaborador.funcao || (colaborador.administrador ? 'SUPERVISOR_ADMINISTRADOR' : 'NAO_INFORMADO'), responsavelTipagem };
         } catch (erro) {
             await cliente.query('ROLLBACK');
             throw erro;
