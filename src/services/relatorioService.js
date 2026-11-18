@@ -31,7 +31,8 @@ class RelatorioService {
                 (SELECT COUNT(*)::int FROM hemocomponentes
                    WHERE (criado_em AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS bolsas_cadastradas,
                 (SELECT COUNT(*)::int FROM transusoes_saidas
-                   WHERE status = 'FINALIZADA'\n                     AND (data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS transfusoes,
+                   WHERE status = 'FINALIZADA'
+                     AND (data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS transfusoes,
                 (SELECT COUNT(*)::int FROM solicitacoes_transfusionais
                    WHERE (criado_em AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS solicitacoes,
                 (SELECT COUNT(*)::int FROM hemocomponentes
@@ -45,15 +46,18 @@ class RelatorioService {
         const { rows } = await db.query(`
             SELECT t.id, t.paciente_nome, t.prontuario, t.medico_solicitante,
                    h.codigo_original AS bolsa_codigo, h.tipo, h.abo, h.fator_rh,
-                   to_char(t.data_saida AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS data_saida_br
+                   t.responsavel_transfusao,
+                   to_char(t.data_saida AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS data_saida_br,
+                   to_char(t.inicio_em AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS inicio_br,
+                   to_char(t.termino_em AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS termino_br
             FROM transusoes_saidas t
             JOIN hemocomponentes h ON h.id = t.hemocomponente_id
-            WHERE t.status = 'FINALIZADA'\n              AND (t.data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2
+            WHERE t.status = 'FINALIZADA'
+              AND (t.data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2
             ORDER BY t.data_saida DESC
         `, [inicio, fim]);
         return rows;
     }
-
     static async estoquePorStatus() {
         const { rows } = await db.query(`
             SELECT tipo, status, COUNT(*)::int AS total
@@ -82,10 +86,12 @@ class RelatorioService {
         const cabecalho = ['Data', 'Início', 'Término', 'Paciente', 'Prontuário', 'Bolsa', 'Tipo', 'ABO/Rh', 'Médico solicitante', 'Responsável pela transfusão'];
         const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
         const corpo = linhas.map(l => [
-            l.data_saida_br, l.paciente_nome, l.prontuario, l.bolsa_codigo, l.tipo,
-            (l.abo || '') + (l.fator_rh || ''), l.medico_solicitante
+            l.data_saida_br, l.inicio_br, l.termino_br, l.paciente_nome, l.prontuario,
+            l.bolsa_codigo, l.tipo, (l.abo || '') + (l.fator_rh || ''),
+            l.medico_solicitante, l.responsavel_transfusao
         ].map(esc).join(';'));
-        return '\uFEFF' + [cabecalho.map(esc).join(';'), ...corpo].join('\r\n');
+        return '\uFEFF' + [cabecalho.map(esc).join(';'), ...corpo].join('\r
+');
     }
 }
 
