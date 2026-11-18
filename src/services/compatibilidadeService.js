@@ -129,11 +129,11 @@ class CompatibilidadeService {
             await cliente.query('BEGIN');
 
             const colaborador = (await cliente.query(
-                `SELECT id, nome, funcao, ativo
+                `SELECT id, nome, funcao, ativo, administrador
                  FROM usuarios WHERE id = $1 FOR SHARE`, [usuarioId]
             )).rows[0];
             const funcoesPermitidas = ['TECNICO_ENFERMAGEM', 'TECNICO_LABORATORIO', 'TECNICO_TRANSFUSAO'];
-            if (!colaborador || !colaborador.ativo || !funcoesPermitidas.includes(colaborador.funcao)) {
+            if (!colaborador || !colaborador.ativo || (!colaborador.administrador && !funcoesPermitidas.includes(colaborador.funcao))) {
                 throw new ErroNegocio('Seu usuário precisa estar cadastrado com uma função profissional válida para realizar a conferência.');
             }
 
@@ -187,7 +187,7 @@ class CompatibilidadeService {
                      codigo_informado, codigo_confirmado, tipagem_confirmada,
                      compatibilidade_confirmada, tipagem_receptor, tipagem_bolsa, resultado_sistema)
                  VALUES ($1,$2,$3,$4,$5,TRUE,TRUE,TRUE,$6,$7,$8)`,
-                [solicitacaoId, bolsaId, colaborador.id, colaborador.funcao, codigoInformado,
+                [solicitacaoId, bolsaId, colaborador.id, colaborador.administrador && !colaborador.funcao ? 'SUPERVISOR_ADMINISTRADOR' : (colaborador.funcao || 'SUPERVISOR_ADMINISTRADOR'), codigoInformado,
                  s.paciente_abo + s.paciente_rh, b.abo + b.fator_rh, nivel]
             );
 
@@ -200,7 +200,7 @@ class CompatibilidadeService {
                  WHERE id = $2`, [bolsaId, solicitacaoId]);
 
             await cliente.query('COMMIT');
-            return { codigo: b.codigo_interno, nivel, colaborador: colaborador.nome, funcao: colaborador.funcao };
+            return { codigo: b.codigo_interno, nivel, colaborador: colaborador.nome, funcao: colaborador.funcao || (colaborador.administrador ? 'SUPERVISOR_ADMINISTRADOR' : 'NAO_INFORMADO') };
         } catch (erro) {
             await cliente.query('ROLLBACK');
             throw erro;
