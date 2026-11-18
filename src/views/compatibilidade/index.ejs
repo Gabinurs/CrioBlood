@@ -119,35 +119,37 @@
                                 <input type="hidden" name="hemocomponente_id" value="<%= bolsa.id %>">
                                 <input type="hidden" name="codigo_informado" value="<%= codigo %>">
 
-                                <div class="campo" style="margin:16px 0">
-                                    <label for="tipagem-abo">Conferência da tipagem ABO *</label>
-                                    <select id="tipagem-abo" name="tipagem_conferida_abo" required>
-                                        <option value="">Selecione A, B ou O</option>
-                                        <option value="A">A</option>
-                                        <option value="B">B</option>
-                                        <option value="O">O</option>
-                                    </select>
-                                </div>
-                                <div class="campo" style="margin:16px 0">
-                                    <label for="tipagem-rh">Fator Rh *</label>
-                                    <select id="tipagem-rh" name="tipagem_conferida_rh" required>
-                                        <option value="">Selecione o fator Rh</option>
-                                        <option value="+">Positivo (+)</option>
-                                        <option value="-">Negativo (-)</option>
-                                    </select>
-                                </div>
-                                <div class="campo" style="margin:16px 0">
-                                    <label for="resultado-compatibilidade">Resultado da compatibilidade *</label>
-                                    <select id="resultado-compatibilidade" name="resultado_conferencia" required>
-                                        <option value="">Selecione o resultado</option>
-                                        <option value="COMPATIVEL">Compatível</option>
-                                        <option value="INCOMPATIVEL">Incompatível</option>
-                                    </select>
-                                </div>
-                                <div class="campo" style="margin:16px 0">
-                                    <label for="responsavel-tipagem">Responsável pela tipagem *</label>
-                                    <input type="text" id="responsavel-tipagem" name="responsavel_tipagem"
-                                           maxlength="120" placeholder="Nome completo do profissional" required>
+                                <div class="grade-form" style="margin-top:18px">
+                                    <div class="campo">
+                                        <label for="tipagem-abo">Conferência da tipagem ABO *</label>
+                                        <select id="tipagem-abo" name="tipagem_conferida_abo" required>
+                                            <option value="">Selecione A, B ou O</option>
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="O">O</option>
+                                        </select>
+                                    </div>
+                                    <div class="campo">
+                                        <label for="tipagem-rh">Fator Rh *</label>
+                                        <select id="tipagem-rh" name="tipagem_conferida_rh" required>
+                                            <option value="">Selecione o fator Rh</option>
+                                            <option value="+">Positivo (+)</option>
+                                            <option value="-">Negativo (-)</option>
+                                        </select>
+                                    </div>
+                                    <div class="campo">
+                                        <label for="resultado-compatibilidade">Resultado da compatibilidade *</label>
+                                        <select id="resultado-compatibilidade" name="resultado_conferencia" required>
+                                            <option value="">Selecione o resultado</option>
+                                            <option value="COMPATIVEL">Compatível</option>
+                                            <option value="INCOMPATIVEL">Incompatível</option>
+                                        </select>
+                                    </div>
+                                    <div class="campo">
+                                        <label for="responsavel-tipagem">Responsável pela tipagem *</label>
+                                        <input type="text" id="responsavel-tipagem" name="responsavel_tipagem"
+                                               maxlength="120" placeholder="Nome completo do profissional" required>
+                                    </div>
                                 </div>
                                 <div class="rodape-form">
                                     <button class="botao" type="submit">Confirmar conferência e reservar bolsa</button>
