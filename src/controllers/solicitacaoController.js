@@ -27,7 +27,7 @@ class SolicitacaoController{
    avisar(req,'ok',ids.length===1?'Solicitação registrada.':'Registradas '+ids.length+' solicitações, uma para cada bolsa.');
    return res.redirect('/solicitacoes');
   }catch(e){if(e instanceof ErroNegocio){try{return await formulario(req,res,req.body,false,e.message);}catch(x){return tratar(req,res,x,'/solicitacoes','Erro ao abrir formulário');}}
-   return tratar(req,res,e,'/solicitacoes','Erro ao registrar solicitação');}
+   console.error('[SOLICITACAO] Falha ao registrar:',e);\n   avisar(req,'erro',process.env.NODE_ENV==='production'?'Erro ao registrar solicitação.':'Erro ao registrar solicitação: '+(e.code?e.code+' — ':'')+e.message);\n   return res.redirect('/solicitacoes');}
  }
  static async formEditar(req,res){try{
   const s=await SolicitacaoService.buscarPorId(Number(req.params.id));
