@@ -31,7 +31,7 @@ class RelatorioService {
                 (SELECT COUNT(*)::int FROM hemocomponentes
                    WHERE (criado_em AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS bolsas_cadastradas,
                 (SELECT COUNT(*)::int FROM transusoes_saidas
-                   WHERE (data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS transfusoes,
+                   WHERE status = 'FINALIZADA'\n                     AND (data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS transfusoes,
                 (SELECT COUNT(*)::int FROM solicitacoes_transfusionais
                    WHERE (criado_em AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS solicitacoes,
                 (SELECT COUNT(*)::int FROM hemocomponentes
@@ -48,7 +48,7 @@ class RelatorioService {
                    to_char(t.data_saida AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS data_saida_br
             FROM transusoes_saidas t
             JOIN hemocomponentes h ON h.id = t.hemocomponente_id
-            WHERE (t.data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2
+            WHERE t.status = 'FINALIZADA'\n              AND (t.data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2
             ORDER BY t.data_saida DESC
         `, [inicio, fim]);
         return rows;
@@ -79,7 +79,7 @@ class RelatorioService {
 
     // CSV compatível com Excel em português (separador ";" e BOM)
     static montarCsv(linhas) {
-        const cabecalho = ['Data', 'Paciente', 'Prontuário', 'Bolsa', 'Tipo', 'ABO/Rh', 'Médico solicitante'];
+        const cabecalho = ['Data', 'Início', 'Término', 'Paciente', 'Prontuário', 'Bolsa', 'Tipo', 'ABO/Rh', 'Médico solicitante', 'Responsável pela transfusão'];
         const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
         const corpo = linhas.map(l => [
             l.data_saida_br, l.paciente_nome, l.prontuario, l.bolsa_codigo, l.tipo,
