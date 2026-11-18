@@ -23,11 +23,11 @@
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>Data</th><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>ABO/Rh</th><th>Médico</th></tr>
+                <tr><th>Data</th><th>Início</th><th>Término</th><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>ABO/Rh</th><th>Médico</th><th>Responsável</th></tr>
             </thead>
             <tbody>
                 <% if (transfusoes.length === 0) { %>
-                    <tr><td colspan="7" class="vazio">Nenhuma transfusão no período.</td></tr>
+                    <tr><td colspan="10" class="vazio">Nenhuma transfusão finalizada no período.</td></tr>
                 <% } else { transfusoes.forEach(function (t) { %>
                     <tr>
                         <td><%= t.data_saida_br %></td>
@@ -36,7 +36,7 @@
                         <td><%= t.bolsa_codigo %></td>
                         <td><%= t.tipo %></td>
                         <td><%= rot.tipagem(t.abo, t.fator_rh) %></td>
-                        <td><%= t.medico_solicitante %></td>
+                        <td><%= t.medico_solicitante %></td>\n                        <td><%= t.responsavel_transfusao || '—' %></td>
                     </tr>
                 <% }) } %>
             </tbody>
