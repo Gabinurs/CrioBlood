@@ -6,14 +6,11 @@ function dataValida(texto) {
     return /^\d{4}-\d{2}-\d{2}$/.test(texto || '') && !isNaN(new Date(texto));
 }
 
-// Período padrão: últimos 30 dias (no horário de Brasília)
+// Período padrão: todo o histórico até hoje (no horário de Brasília)
 function normalizarPeriodo(inicio, fim) {
     const hoje = new Date(new Date().toLocaleString('en-US', { timeZone: FUSO }));
     const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const padraoFim = iso(hoje);
-    const inicioDate = new Date(hoje);
-    inicioDate.setDate(inicioDate.getDate() - 30);
-
     let i = dataValida(inicio) ? inicio : '2000-01-01';
     let f = dataValida(fim) ? fim : padraoFim;
     if (i > f) [i, f] = [f, i];
