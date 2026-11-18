@@ -1,0 +1,108 @@
+<%- include('../partials/inicio', { titulo: 'Relatórios', subtitulo: 'Histórico de transfusões e indicadores do hemocentro', ativo: 'relatorios' }) %>
+
+<section class="indicadores">
+    <div class="indicador destaque-azul"><strong><%= resumo.transfusoes %></strong><span>Transfusões no período</span></div>
+    <div class="indicador destaque-verde"><strong><%= resumo.bolsas_cadastradas %></strong><span>Bolsas cadastradas</span></div>
+    <div class="indicador destaque-amarelo"><strong><%= resumo.lotes %></strong><span>Lotes recebidos</span></div>
+    <div class="indicador destaque-vermelho"><strong><%= resumo.perdas %></strong><span>Perdas no período</span></div>
+</section>
+
+<section class="painel">
+    <h3>Histórico de transfusões finalizadas</h3>
+    <p class="descricao">Registro histórico das transfusões concluídas. Os dados permanecem salvos no banco de dados.</p>
+
+    <form class="filtros" method="GET" action="/relatorios">
+        <div class="campo">
+            <label for="inicio">Data inicial</label>
+            <input type="date" id="inicio" name="inicio" value="<%= periodo.inicio %>">
+        </div>
+        <div class="campo">
+            <label for="fim">Data final</label>
+            <input type="date" id="fim" name="fim" value="<%= periodo.fim %>">
+        </div>
+        <button class="botao botao-primario" type="submit">Filtrar período</button>
+        <a class="botao botao-claro" href="/relatorios">Últimos 30 dias</a>
+        <a class="botao botao-ok" href="/relatorios/transfusoes.csv?inicio=<%= encodeURIComponent(periodo.inicio) %>&fim=<%= encodeURIComponent(periodo.fim) %>">Exportar CSV</a>
+    </form>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data de término</th>
+                    <th>Paciente</th>
+                    <th>Prontuário</th>
+                    <th>Hemocomponente</th>
+                    <th>Código CrioBlood</th>
+                    <th>ABO/Rh</th>
+                    <th>Início</th>
+                    <th>Responsável</th>
+                    <th>Médico solicitante</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (!transfusoes || transfusoes.length === 0) { %>
+                    <tr><td colspan="9" class="vazio">Nenhuma transfusão finalizada encontrada neste período.</td></tr>
+                <% } else { transfusoes.forEach(function (t) { %>
+                    <tr>
+                        <td><strong><%= t.termino_br || t.data_saida_br || '—' %></strong></td>
+                        <td><%= t.paciente_nome || '—' %></td>
+                        <td><%= t.prontuario || '—' %></td>
+                        <td><%= rot.tipo(t.tipo) %></td>
+                        <td><strong><%= t.bolsa_codigo || '—' %></strong></td>
+                        <td><%= rot.tipagem(t.abo, t.fator_rh) %></td>
+                        <td><%= t.inicio_br || '—' %></td>
+                        <td><%= t.responsavel_transfusao || 'Não informado' %></td>
+                        <td><%= t.medico_solicitante || '—' %></td>
+                    </tr>
+                <% }) } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="painel">
+    <h3>Estoque por situação</h3>
+    <div class="tabela-container">
+        <table>
+            <thead><tr><th>Hemocomponente</th><th>Status</th><th class="centro">Quantidade</th></tr></thead>
+            <tbody>
+                <% if (!estoque || estoque.length === 0) { %>
+                    <tr><td colspan="3" class="vazio">Sem dados de estoque.</td></tr>
+                <% } else { estoque.forEach(function (item) { %>
+                    <tr>
+                        <td><%= rot.tipo(item.tipo) %></td>
+                        <td><%- rot.statusBolsa(item.status) %></td>
+                        <td class="centro"><strong><%= item.total %></strong></td>
+                    </tr>
+                <% }) } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="painel">
+    <h3>Bolsas próximas do vencimento</h3>
+    <p class="descricao">Bolsas com validade nos próximos 15 dias.</p>
+    <div class="tabela-container">
+        <table>
+            <thead><tr><th>Código CrioBlood</th><th>Hemocomponente</th><th>ABO/Rh</th><th>Validade</th><th>Status</th><th>Prazo</th></tr></thead>
+            <tbody>
+                <% if (!vencimentos || vencimentos.length === 0) { %>
+                    <tr><td colspan="6" class="vazio">Nenhuma bolsa próxima do vencimento.</td></tr>
+                <% } else { vencimentos.forEach(function (b) { %>
+                    <tr>
+                        <td><strong><%= b.codigo_interno || b.codigo_original %></strong></td>
+                        <td><%= rot.tipo(b.tipo) %></td>
+                        <td><%= rot.tipagem(b.abo, b.fator_rh) %></td>
+                        <td><%= b.validade_br %></td>
+                        <td><%- rot.statusBolsa(b.status) %></td>
+                        <td><%- rot.validade(b.dias_restantes) %></td>
+                    </tr>
+                <% }) } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>
