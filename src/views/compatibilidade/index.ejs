@@ -114,23 +114,41 @@
                                 <small style="display:block;margin-top:4px">O sistema registrará automaticamente seu usuário, função e horário. Não selecione outra pessoa nem compartilhe seu login.</small>
                             </div>
                             <form action="/compatibilidade/reservar" method="POST" style="margin-top:18px"
-                                  data-confirmar="Você conferiu a identificação, a tipagem e o resultado de compatibilidade desta bolsa? A reserva ficará registrada em seu usuário.">
+                                  data-confirmar="Registrar os dados da conferência. Se o resultado for incompatível, a bolsa não será reservada.">
                                 <input type="hidden" name="solicitacao_id" value="<%= solicitacao.id %>">
                                 <input type="hidden" name="hemocomponente_id" value="<%= bolsa.id %>">
                                 <input type="hidden" name="codigo_informado" value="<%= codigo %>">
 
-                                <label class="marca" style="display:flex;align-items:flex-start;gap:10px;margin:14px 0">
-                                    <input type="checkbox" name="confirmou_codigo" value="1" required>
-                                    <span><strong>Confirmo o código da bolsa.</strong><br><small>Conferi o código digitado com a etiqueta da bolsa que está em minhas mãos.</small></span>
-                                </label>
-                                <label class="marca" style="display:flex;align-items:flex-start;gap:10px;margin:14px 0">
-                                    <input type="checkbox" name="confirmou_tipagem" value="1" required>
-                                    <span><strong>Confirmo a conferência da tipagem.</strong><br><small>Conferi os dados ABO/Rh do receptor e da bolsa com os registros e a identificação física, seguindo o protocolo do serviço.</small></span>
-                                </label>
-                                <label class="marca" style="display:flex;align-items:flex-start;gap:10px;margin:14px 0">
-                                    <input type="checkbox" name="confirmou_compatibilidade" value="1" required>
-                                    <span><strong>Confirmo que verifiquei a compatibilidade.</strong><br><small>Verifiquei o resultado apresentado e realizei as conferências exigidas pelo protocolo do serviço.</small></span>
-                                </label>
+                                <div class="campo" style="margin:16px 0">
+                                    <label for="tipagem-abo">Conferência da tipagem ABO *</label>
+                                    <select id="tipagem-abo" name="tipagem_conferida_abo" required>
+                                        <option value="">Selecione A, B ou O</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="O">O</option>
+                                    </select>
+                                </div>
+                                <div class="campo" style="margin:16px 0">
+                                    <label for="tipagem-rh">Fator Rh *</label>
+                                    <select id="tipagem-rh" name="tipagem_conferida_rh" required>
+                                        <option value="">Selecione o fator Rh</option>
+                                        <option value="+">Positivo (+)</option>
+                                        <option value="-">Negativo (-)</option>
+                                    </select>
+                                </div>
+                                <div class="campo" style="margin:16px 0">
+                                    <label for="resultado-compatibilidade">Resultado da compatibilidade *</label>
+                                    <select id="resultado-compatibilidade" name="resultado_conferencia" required>
+                                        <option value="">Selecione o resultado</option>
+                                        <option value="COMPATIVEL">Compatível</option>
+                                        <option value="INCOMPATIVEL">Incompatível</option>
+                                    </select>
+                                </div>
+                                <div class="campo" style="margin:16px 0">
+                                    <label for="responsavel-tipagem">Responsável pela tipagem *</label>
+                                    <input type="text" id="responsavel-tipagem" name="responsavel_tipagem"
+                                           maxlength="120" placeholder="Nome completo do profissional" required>
+                                </div>
                                 <div class="rodape-form">
                                     <button class="botao" type="submit">Confirmar conferência e reservar bolsa</button>
                                 </div>
@@ -138,7 +156,7 @@
                         <% } else { %>
                             <div class="alerta alerta-erro" style="margin-top:14px">
                                 <strong>Seu acesso de Supervisor/Administrador está ativo.</strong><br>
-                                Seu perfil de Supervisor/Administrador permite registrar a conferência sem exigir o cadastro de uma função profissional. Seu usuário e horário serão identificados para manter a rastreabilidade.
+                                Seu perfil de Supervisor/Administrador permite registrar a conferência sem exigir o cadastro de uma função profissional. Seu usuário, horário e o profissional responsável pela tipagem serão registrados para manter a rastreabilidade.
                                 
                             </div>
                         <% } %>
