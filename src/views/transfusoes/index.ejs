@@ -1,35 +1,91 @@
-<%- include('../partials/inicio', { titulo: 'Transfusão', subtitulo: 'Registro da saída das bolsas reservadas', ativo: 'transfusoes' }) %>
+<%- include('../partials/inicio', { titulo: 'Transfusão', subtitulo: 'Acompanhamento do início ao término da transfusão', ativo: 'transfusoes' }) %>
+<%
+    const agoraLocal = new Date().toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' }).replace(' ', 'T').slice(0, 16);
+%>
 
 <section class="painel">
-    <h3>Aguardando transfusão</h3>
-    <p class="descricao">Bolsas já reservadas para pacientes. Ao registrar, a bolsa é baixada do estoque.</p>
-
+    <h3>Aguardando início da transfusão</h3>
+    <p class="descricao">Bolsas reservadas. Preencha a data e o horário de início e identifique o profissional responsável.</p>
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>Paciente</th><th>ABO/Rh</th><th>Produto</th><th>Bolsa</th><th>ABO/Rh da bolsa</th><th>Validade</th><th>Localização</th><th>Solicitação</th><th>Observações</th><th></th></tr>
+                <tr><th>Paciente</th><th>ABO/Rh</th><th>Produto</th><th>Código CrioBlood</th><th>Validade</th><th>Solicitação</th><th>Início e responsável</th></tr>
             </thead>
             <tbody>
                 <% if (prontas.length === 0) { %>
-                    <tr><td colspan="10" class="vazio">Nenhuma bolsa reservada no momento.<br>Reserve uma bolsa em <a href="/compatibilidade">Compatibilidade</a>.</td></tr>
-                <% } else { prontas.forEach(function (s) { %>
+                    <tr><td colspan="7" class="vazio">Nenhuma bolsa reservada aguardando início.</td></tr>
+                <% } else { prontas.forEach(function (s) { const formId = 'inicio-' + s.id; %>
                     <tr>
                         <td><strong><%= s.paciente_nome %></strong><br><small><%= s.prontuario %></small></td>
                         <td><%= rot.tipagem(s.paciente_abo, s.paciente_rh) %></td>
-                        <td><%= s.tipo %></td>
+                        <td><%= rot.tipo(s.tipo) %></td>
                         <td><strong><%= s.bolsa_codigo %></strong></td>
-                        <td><%= rot.tipagem(s.bolsa_abo, s.bolsa_rh) %></td>
                         <td><%= s.validade_br %> <%- rot.validade(s.dias_restantes) %></td>
-                        <td><%= rot.local(s) %></td>
                         <td><%- rot.urgencia(s.urgencia) %></td>
-                        <td>
-                            <form id="reg-<%= s.id %>" action="/transfusoes/registrar" method="POST"
-                                  data-confirmar="Confirmar a transfusão da bolsa <%= s.bolsa_codigo %> para <%= s.paciente_nome %>?"></form>
-                            <input type="hidden" name="solicitacao_id" value="<%= s.id %>" form="reg-<%= s.id %>">
-                            <input type="text" name="observacoes" maxlength="500" placeholder="Opcional" form="reg-<%= s.id %>"
-                                   style="padding: 8px; border: 1px solid #dce2eb; border-radius: 6px; width: 170px;">
+                        <td style="min-width:270px">
+                            <form id="<%= formId %>" action="/transfusoes/iniciar" method="POST"
+                                  data-confirmar="Registrar o início da transfusão para <%= s.paciente_nome %>?">
+                                <input type="hidden" name="solicitacao_id" value="<%= s.id %>">
+                                <div class="campo" style="margin-bottom:8px">
+                                    <label for="inicio-em-<%= s.id %>">Data e horário de início *</label>
+                                    <input type="datetime-local" id="inicio-em-<%= s.id %>" name="inicio_em"
+                                           value="<%= agoraLocal %>" required style="width:100%">
+                                </div>
+                                <div class="campo" style="margin-bottom:8px">
+                                    <label for="responsavel-<%= s.id %>">Responsável pela transfusão *</label>
+                                    <input type="text" id="responsavel-<%= s.id %>" name="responsavel_transfusao"
+                                           maxlength="150" value="<%= usuario.nome %>" required
+                                           style="width:100%" placeholder="Nome completo">
+                                </div>
+                                <div class="campo" style="margin-bottom:8px">
+                                    <label for="obs-<%= s.id %>">Observações</label>
+                                    <input type="text" id="obs-<%= s.id %>" name="observacoes" maxlength="500"
+                                           placeholder="Opcional" style="width:100%">
+                                </div>
+                                <button class="botao botao-ok botao-pequeno" type="submit">Iniciar transfusão</button>
+                            </form>
                         </td>
-                        <td><button class="botao botao-ok botao-pequeno" type="submit" form="reg-<%= s.id %>">Registrar transfusão</button></td>
+                    </tr>
+                <% }) } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="painel">
+    <h3>Transfusões em andamento</h3>
+    <p class="descricao">Ao terminar o procedimento, informe a data e o horário de término e finalize o registro.</p>
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Paciente</th><th>Bolsa</th><th>Início</th><th>Responsável</th><th>Finalização</th></tr>
+            </thead>
+            <tbody>
+                <% if (andamento.length === 0) { %>
+                    <tr><td colspan="5" class="vazio">Nenhuma transfusão em andamento.</td></tr>
+                <% } else { andamento.forEach(function (t) { %>
+                    <tr>
+                        <td><strong><%= t.paciente_nome %></strong><br><small>Prontuário: <%= t.prontuario %></small></td>
+                        <td><strong><%= t.bolsa_codigo %></strong><br><small><%= rot.tipagem(t.bolsa_abo, t.bolsa_rh) %> · <%= rot.tipo(t.tipo) %></small></td>
+                        <td><%= t.inicio_br %></td>
+                        <td><%= t.responsavel_transfusao %></td>
+                        <td style="min-width:260px">
+                            <form action="/transfusoes/<%= t.transfusao_id %>/finalizar" method="POST"
+                                  data-confirmar="Finalizar a transfusão de <%= t.paciente_nome %>? A bolsa será baixada do estoque.">
+                                <div class="campo" style="margin-bottom:8px">
+                                    <label for="termino-<%= t.transfusao_id %>">Data e horário de término *</label>
+                                    <input type="datetime-local" id="termino-<%= t.transfusao_id %>" name="termino_em"
+                                           value="<%= agoraLocal %>" min="<%= String(t.inicio_em).slice(0,16) %>"
+                                           required style="width:100%">
+                                </div>
+                                <div class="campo" style="margin-bottom:8px">
+                                    <label for="obs-final-<%= t.transfusao_id %>">Observações finais</label>
+                                    <input type="text" id="obs-final-<%= t.transfusao_id %>" name="observacoes_finais"
+                                           maxlength="500" placeholder="Opcional" style="width:100%">
+                                </div>
+                                <button class="botao botao-ok botao-pequeno" type="submit">Finalizar transfusão</button>
+                            </form>
+                        </td>
                     </tr>
                 <% }) } %>
             </tbody>
@@ -38,30 +94,28 @@
 </section>
 
 <section class="painel" data-filtravel>
-    <h3>Histórico de transfusões</h3>
-    <p class="descricao">As 50 transfusões mais recentes.</p>
-
+    <h3>Histórico de transfusões finalizadas</h3>
+    <p class="descricao">As 50 transfusões mais recentes, com horários e responsável registrados.</p>
     <div class="filtros">
         <input type="search" data-filtro-texto placeholder="Buscar por paciente, prontuário ou bolsa..." aria-label="Buscar transfusão">
     </div>
-
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>Data</th><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>ABO/Rh</th><th>Médico</th><th>Registrado por</th><th>Observações</th></tr>
+                <tr><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>Início</th><th>Término</th><th>Responsável</th><th>Registrado por</th><th>Observações</th></tr>
             </thead>
             <tbody>
                 <% if (historico.length === 0) { %>
-                    <tr><td colspan="9" class="vazio">Nenhuma transfusão registrada.</td></tr>
+                    <tr><td colspan="9" class="vazio">Nenhuma transfusão finalizada.</td></tr>
                 <% } else { historico.forEach(function (t) { %>
                     <tr data-busca="<%= (t.paciente_nome + ' ' + t.prontuario + ' ' + t.bolsa_codigo).toLowerCase() %>">
-                        <td><%= t.data_saida_br %></td>
                         <td><strong><%= t.paciente_nome %></strong></td>
                         <td><%= t.prontuario %></td>
                         <td><%= t.bolsa_codigo %></td>
-                        <td><%= t.tipo %></td>
-                        <td><%= rot.tipagem(t.abo, t.fator_rh) %></td>
-                        <td><%= t.medico_solicitante %></td>
+                        <td><%= rot.tipo(t.tipo) %> · <%= rot.tipagem(t.abo, t.fator_rh) %></td>
+                        <td><%= t.inicio_br || '—' %></td>
+                        <td><%= t.termino_br || '—' %></td>
+                        <td><%= t.responsavel_transfusao || '—' %></td>
                         <td><%= t.registrado_por_nome || '—' %></td>
                         <td><%= t.observacoes || '—' %></td>
                     </tr>
