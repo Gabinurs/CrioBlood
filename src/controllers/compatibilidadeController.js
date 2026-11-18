@@ -59,7 +59,7 @@ class CompatibilidadeController {
                 `Bolsa ${resultado.codigo}; colaborador logado: ${resultado.colaborador}; função: ${resultado.funcao}; resultado: ${resultado.resultadoConferencia}; tipagem: ${req.body.tipagem_conferida_abo}${req.body.tipagem_conferida_rh}; responsável pela tipagem: ${resultado.responsavelTipagem}`
             );
             if (!resultado.reservada) {
-                avisar(req, 'erro', `Conferência registrada como INCOMPATÍVEL. A bolsa ${resultado.codigo} NÃO foi reservada.`);
+                avisar(req, 'erro', `${resultado.motivo} A bolsa ${resultado.codigo} NÃO foi reservada.`);
                 return res.redirect(`/compatibilidade?solicitacao=${solicitacaoId || ''}&codigo=${encodeURIComponent(req.body.codigo_informado || '')}`);
             }
             avisar(req, 'ok', `Conferência registrada como COMPATÍVEL e bolsa ${resultado.codigo} reservada. Profissional responsável pela tipagem: ${resultado.responsavelTipagem}.`);
