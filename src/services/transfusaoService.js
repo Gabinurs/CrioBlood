@@ -4,7 +4,7 @@ const AmostraReceptorService = require('./amostraReceptorService');
 
 function lerDataHora(valor, rotulo) {
     const texto = String(valor || '').trim();
-    if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(texto)) {
+    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(texto)) {
         throw new ErroNegocio(`Informe a data e o horário de ${rotulo}.`);
     }
     const data = new Date(`${texto}:00-03:00`);
