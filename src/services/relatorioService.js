@@ -31,8 +31,8 @@ class RelatorioService {
                 (SELECT COUNT(*)::int FROM hemocomponentes
                    WHERE (criado_em AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS bolsas_cadastradas,
                 (SELECT COUNT(*)::int FROM transusoes_saidas
-                   WHERE status = 'FINALIZADA'
-                     AND (data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS transfusoes,
+                   WHERE (status = 'FINALIZADA' OR status IS NULL)
+                     AND (COALESCE(termino_em, data_saida) AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS transfusoes,
                 (SELECT COUNT(*)::int FROM solicitacoes_transfusionais
                    WHERE (criado_em AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2) AS solicitacoes,
                 (SELECT COUNT(*)::int FROM hemocomponentes
@@ -45,16 +45,16 @@ class RelatorioService {
     static async transfusoes({ inicio, fim }) {
         const { rows } = await db.query(`
             SELECT t.id, t.paciente_nome, t.prontuario, t.medico_solicitante,
-                   h.codigo_original AS bolsa_codigo, h.tipo, h.abo, h.fator_rh,
+                   h.codigo_interno AS bolsa_codigo, h.tipo, h.abo, h.fator_rh,
                    t.responsavel_transfusao,
-                   to_char(t.data_saida AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS data_saida_br,
+                   to_char(COALESCE(t.termino_em, t.data_saida) AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS data_saida_br,
                    to_char(t.inicio_em AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS inicio_br,
                    to_char(t.termino_em AT TIME ZONE '${FUSO}', 'DD/MM/YYYY HH24:MI') AS termino_br
             FROM transusoes_saidas t
             JOIN hemocomponentes h ON h.id = t.hemocomponente_id
-            WHERE t.status = 'FINALIZADA'
-              AND (t.data_saida AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2
-            ORDER BY t.data_saida DESC
+            WHERE (t.status = 'FINALIZADA' OR t.status IS NULL)
+              AND (COALESCE(t.termino_em, t.data_saida) AT TIME ZONE '${FUSO}')::date BETWEEN $1 AND $2
+            ORDER BY COALESCE(t.termino_em, t.data_saida) DESC
         `, [inicio, fim]);
         return rows;
     }
