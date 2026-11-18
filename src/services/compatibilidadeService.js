@@ -209,6 +209,9 @@ class CompatibilidadeService {
                     codigo: b.codigo_interno,
                     nivel: nivel || 'INCOMPATIVEL',
                     resultadoConferencia,
+                    motivo: resultadoConferencia === 'INCOMPATIVEL'
+                        ? 'O resultado informado na conferência foi incompatível.'
+                        : 'A validação ABO/Rh do sistema bloqueou a reserva.',
                     colaborador: colaborador.nome,
                     funcao: colaborador.funcao || (colaborador.administrador ? 'SUPERVISOR_ADMINISTRADOR' : 'NAO_INFORMADO'),
                     responsavelTipagem
