@@ -14,7 +14,7 @@ function normalizarPeriodo(inicio, fim) {
     const inicioDate = new Date(hoje);
     inicioDate.setDate(inicioDate.getDate() - 30);
 
-    let i = dataValida(inicio) ? inicio : iso(inicioDate);
+    let i = dataValida(inicio) ? inicio : '2000-01-01';
     let f = dataValida(fim) ? fim : padraoFim;
     if (i > f) [i, f] = [f, i];
     return { inicio: i, fim: f };
@@ -70,7 +70,7 @@ class RelatorioService {
 
     static async vencimentos(dias = 15) {
         const { rows } = await db.query(`
-            SELECT h.codigo_original, h.tipo, h.abo, h.fator_rh, h.status,
+            SELECT h.codigo_interno, h.codigo_original, h.tipo, h.abo, h.fator_rh, h.status,
                    to_char(h.data_validade, 'DD/MM/YYYY') AS validade_br,
                    (h.data_validade - CURRENT_DATE) AS dias_restantes
             FROM hemocomponentes h
