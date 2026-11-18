@@ -75,7 +75,7 @@
                                 <div class="campo" style="margin-bottom:8px">
                                     <label for="termino-<%= t.transfusao_id %>">Data e horário de término *</label>
                                     <input type="datetime-local" id="termino-<%= t.transfusao_id %>" name="termino_em"
-                                           value="<%= agoraLocal %>" min="<%= String(t.inicio_em).slice(0,16) %>"
+                                           value="<%= agoraLocal %>" min="<%= t.inicio_input %>"
                                            required style="width:100%">
                                 </div>
                                 <div class="campo" style="margin-bottom:8px">
