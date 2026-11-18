@@ -90,8 +90,7 @@ class RelatorioService {
             l.bolsa_codigo, l.tipo, (l.abo || '') + (l.fator_rh || ''),
             l.medico_solicitante, l.responsavel_transfusao
         ].map(esc).join(';'));
-        return '\uFEFF' + [cabecalho.map(esc).join(';'), ...corpo].join('\r
-');
+        return '\uFEFF' + [cabecalho.map(esc).join(';'), ...corpo].join('\\r\\n');
     }
 }
 
