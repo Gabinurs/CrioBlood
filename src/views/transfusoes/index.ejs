@@ -93,38 +93,8 @@
     </div>
 </section>
 
-<section class="painel" data-filtravel>
-    <h3>Histórico de transfusões finalizadas</h3>
-    <p class="descricao">As 50 transfusões mais recentes, com horários e responsável registrados.</p>
-    <div class="filtros">
-        <input type="search" data-filtro-texto placeholder="Buscar por paciente, prontuário ou bolsa..." aria-label="Buscar transfusão">
-    </div>
-    <div class="tabela-container">
-        <table>
-            <thead>
-                <tr><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>Início</th><th>Término</th><th>Responsável</th><th>Registrado por</th><th>Observações</th></tr>
-            </thead>
-            <tbody>
-                <% if (historico.length === 0) { %>
-                    <tr><td colspan="9" class="vazio">Nenhuma transfusão finalizada.</td></tr>
-                <% } else { historico.forEach(function (t) { %>
-                    <tr data-busca="<%= (t.paciente_nome + ' ' + t.prontuario + ' ' + t.bolsa_codigo).toLowerCase() %>">
-                        <td><strong><%= t.paciente_nome %></strong></td>
-                        <td><%= t.prontuario %></td>
-                        <td><%= t.bolsa_codigo %></td>
-                        <td><%= rot.tipo(t.tipo) %> · <%= rot.tipagem(t.abo, t.fator_rh) %></td>
-                        <td><%= t.inicio_br || '—' %></td>
-                        <td><%= t.termino_br || '—' %></td>
-                        <td><%= t.responsavel_transfusao || '—' %></td>
-                        <td><%= t.registrado_por_nome || '—' %></td>
-                        <td><%= t.observacoes || '—' %></td>
-                    </tr>
-                <% }) %>
-                    <tr data-sem-resultado hidden><td colspan="9" class="vazio">Nenhuma transfusão encontrada.</td></tr>
-                <% } %>
-            </tbody>
-        </table>
-    </div>
+<section class="painel">
+    <p class="descricao">As transfusões finalizadas ficam arquivadas em <a href="/relatorios">Relatórios</a>, com consulta por período e exportação.</p>
 </section>
 
 <%- include('../partials/fim') %>
