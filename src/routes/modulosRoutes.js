@@ -58,7 +58,8 @@ router.post('/compatibilidade/reservar', Compatibilidade.reservar);
 
 // Transfusão
 router.get('/transfusoes', Transfusao.index);
-router.post('/transfusoes/registrar', Transfusao.registrar);
+router.post('/transfusoes/iniciar', Transfusao.iniciar);
+router.post('/transfusoes/:id/finalizar', Transfusao.finalizar);
 
 // Relatórios
 router.get('/relatorios', Relatorio.index);
