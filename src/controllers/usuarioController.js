@@ -2,7 +2,7 @@
 const usuarioService = require('../services/usuarioService');
 const { avisar } = require('../utils/erros');
 
-const FUNCOES = ['TECNICO_ENFERMAGEM', 'TECNICO_LABORATORIO', 'TECNICO_TRANSFUSAO'];
+const FUNCOES = ['TECNICO_ENFERMAGEM', 'TECNICO_LABORATORIO', 'TECNICO_TRANSFUSAO', 'ENFERMEIRO', 'BIOMEDICO', 'MEDICO'];
 
 // Valida o ID recebido pela URL
 function lerId(req) {
