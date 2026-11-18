@@ -35,6 +35,7 @@ class SolicitacaoService{
    FROM solicitacoes_transfusionais s JOIN pacientes p ON p.id=s.paciente_id
    LEFT JOIN hemocomponentes h ON h.id=s.hemocomponente_id
    LEFT JOIN setores_solicitacao ss ON ss.id=s.setor_id
+   WHERE s.status <> 'ATENDIDA'
    ORDER BY CASE s.status WHEN 'PENDENTE' THEN 0 WHEN 'RESERVADA' THEN 1 ELSE 2 END,
    CASE s.urgencia WHEN 'EXTREMA_URGENCIA' THEN 0 WHEN 'SOLICITACAO_3H' THEN 1 WHEN 'SOLICITACAO_6H' THEN 2 WHEN 'URGENTE' THEN 1 WHEN 'EMERGENCIA' THEN 0 WHEN 'RESERVA_CIRURGICA' THEN 3 WHEN 'ROTINA_24H' THEN 4 ELSE 5 END,s.criado_em DESC`);
   return rows;
