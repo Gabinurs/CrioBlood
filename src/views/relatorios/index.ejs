@@ -21,7 +21,7 @@
             <input type="date" id="fim" name="fim" value="<%= periodo.fim %>">
         </div>
         <button class="botao botao-primario" type="submit">Filtrar período</button>
-        <a class="botao botao-claro" href="/relatorios">Últimos 30 dias</a>
+        <a class="botao botao-claro" href="/relatorios">Todo o histórico</a>
         <a class="botao botao-ok" href="/relatorios/transfusoes.csv?inicio=<%= encodeURIComponent(periodo.inicio) %>&fim=<%= encodeURIComponent(periodo.fim) %>">Exportar CSV</a>
     </form>
 
