@@ -56,7 +56,7 @@
 
             <div class="usuario">
                 <strong><%= usuarioLogado ? usuarioLogado.nome : '' %></strong>
-                <small><%= usuarioLogado && usuarioLogado.administrador ? 'Administrador' : ({TECNICO_ENFERMAGEM:'Técnico de enfermagem',TECNICO_LABORATORIO:'Técnico de laboratório',TECNICO_TRANSFUSAO:'Técnico de transfusão'})[usuarioLogado && usuarioLogado.funcao] || 'Função não definida' %></small>
+                <small><%= usuarioLogado && usuarioLogado.administrador ? 'Administrador' : ({TECNICO_ENFERMAGEM:'Técnico de enfermagem',TECNICO_LABORATORIO:'Técnico de laboratório',TECNICO_TRANSFUSAO:'Técnico de transfusão',ENFERMEIRO:'Enfermeiro(a)',BIOMEDICO:'Biomédico(a)',MEDICO:'Médico(a)'})[usuarioLogado && usuarioLogado.funcao] || 'Função não definida' %></small>
             </div>
         </header>
 
