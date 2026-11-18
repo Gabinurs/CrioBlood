@@ -5,13 +5,12 @@ const { avisar, tratar } = require('../utils/erros');
 class TransfusaoController {
     static async index(req, res) {
         try {
-            const [prontas, andamento, historico] = await Promise.all([
+            const [prontas, andamento] = await Promise.all([
                 TransfusaoService.listarProntas(),
-                TransfusaoService.listarEmAndamento(),
-                TransfusaoService.listarHistorico()
+                TransfusaoService.listarEmAndamento()
             ]);
             res.render('transfusoes/index', {
-                prontas, andamento, historico, usuario: req.session.usuario
+                prontas, andamento, usuario: req.session.usuario
             });
         } catch (erro) {
             tratar(req, res, erro, '/dashboard', 'Erro ao carregar transfusões');
