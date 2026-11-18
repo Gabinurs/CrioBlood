@@ -2,7 +2,10 @@
     const funcaoLabel = {
         TECNICO_ENFERMAGEM: 'Técnico de enfermagem',
         TECNICO_LABORATORIO: 'Técnico de laboratório',
-        TECNICO_TRANSFUSAO: 'Técnico de transfusão'
+        TECNICO_TRANSFUSAO: 'Técnico de transfusão',
+        ENFERMEIRO: 'Enfermeiro(a)',
+        BIOMEDICO: 'Biomédico(a)',
+        MEDICO: 'Médico(a)'
     };
     const colaboradorIdentificado = usuario && funcaoLabel[usuario.funcao];
 %>
@@ -134,7 +137,11 @@
                             </form>
                         <% } else { %>
                             <div class="alerta alerta-erro" style="margin-top:14px">
-                                Seu usuário ainda não possui uma função profissional cadastrada. Solicite ao administrador que atualize seu cadastro para realizar a conferência.
+                                <strong>Seu acesso de Supervisor/Administrador está ativo.</strong><br>
+                                Para registrar uma conferência transfusional, o sistema também exige que sua conta tenha uma função profissional habilitada e compatível com essa atividade. Isso mantém a identificação correta do responsável técnico e a rastreabilidade do procedimento.
+                                <% if (usuario && usuario.administrador) { %>
+                                    <div style="margin-top:12px"><a class="botao botao-claro" href="/usuarios/<%= usuario.id %>/editar">Atualizar minha função profissional</a></div>
+                                <% } %>
                             </div>
                         <% } %>
                     </div>
