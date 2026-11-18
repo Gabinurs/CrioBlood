@@ -54,11 +54,15 @@ class CompatibilidadeController {
                 req.body
             );
             await AuditoriaService.registrarLog(
-                req.session.usuario.id, 'CONFERENCIA_E_RESERVA_BOLSA',
+                req.session.usuario.id, 'CONFERENCIA_COMPATIBILIDADE',
                 'solicitacoes_transfusionais', solicitacaoId,
-                `Bolsa ${resultado.codigo}; colaborador: ${resultado.colaborador}; função: ${resultado.funcao}; compatibilidade: ${resultado.nivel}`
+                `Bolsa ${resultado.codigo}; colaborador logado: ${resultado.colaborador}; função: ${resultado.funcao}; resultado: ${resultado.resultadoConferencia}; tipagem: ${req.body.tipagem_conferida_abo}${req.body.tipagem_conferida_rh}; responsável pela tipagem: ${resultado.responsavelTipagem}`
             );
-            avisar(req, 'ok', `Conferência registrada e bolsa ${resultado.codigo} reservada por ${resultado.colaborador}.`);
+            if (!resultado.reservada) {
+                avisar(req, 'erro', `Conferência registrada como INCOMPATÍVEL. A bolsa ${resultado.codigo} NÃO foi reservada.`);
+                return res.redirect(`/compatibilidade?solicitacao=${solicitacaoId || ''}&codigo=${encodeURIComponent(req.body.codigo_informado || '')}`);
+            }
+            avisar(req, 'ok', `Conferência registrada como COMPATÍVEL e bolsa ${resultado.codigo} reservada. Profissional responsável pela tipagem: ${resultado.responsavelTipagem}.`);
             res.redirect('/transfusoes');
         } catch (erro) {
             tratar(req, res, erro, `/compatibilidade?solicitacao=${solicitacaoId || ''}&codigo=${encodeURIComponent(req.body.codigo_informado || '')}`, 'Erro ao confirmar compatibilidade');
