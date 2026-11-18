@@ -42,7 +42,8 @@ class TransfusaoService {
 
     static async listarEmAndamento() {
         const { rows } = await db.query(`
-            SELECT t.id AS transfusao_id, t.inicio_em, t.responsavel_transfusao, t.observacoes,\n                   to_char(t.inicio_em AT TIME ZONE 'America/Sao_Paulo','YYYY-MM-DD\"T\"HH24:MI') AS inicio_input,
+            SELECT t.id AS transfusao_id, t.inicio_em, t.responsavel_transfusao, t.observacoes,
+                   to_char(t.inicio_em AT TIME ZONE 'America/Sao_Paulo','YYYY-MM-DD\"T\"HH24:MI') AS inicio_input,
                    to_char(t.inicio_em AT TIME ZONE 'America/Sao_Paulo','DD/MM/YYYY HH24:MI') AS inicio_br,
                    s.id AS solicitacao_id, s.tipo, s.urgencia,
                    p.nome AS paciente_nome, p.prontuario,
