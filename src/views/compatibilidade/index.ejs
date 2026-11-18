@@ -7,7 +7,7 @@
         BIOMEDICO: 'Biomédico(a)',
         MEDICO: 'Médico(a)'
     };
-    const colaboradorIdentificado = usuario && funcaoLabel[usuario.funcao];
+    const colaboradorIdentificado = usuario && (usuario.administrador || funcaoLabel[usuario.funcao]);
 %>
 <%- include('../partials/inicio', { titulo: 'Compatibilidade', subtitulo: 'Conferência da bolsa antes da reserva', ativo: 'compatibilidade' }) %>
 
@@ -110,7 +110,7 @@
                         <% if (colaboradorIdentificado) { %>
                             <div class="alerta alerta-info" style="margin-top:14px">
                                 <strong>Colaborador identificado pelo login:</strong> <%= usuario.nome %><br>
-                                <span><%= funcaoLabel[usuario.funcao] %></span>
+                                <span><%= funcaoLabel[usuario.funcao] || 'Supervisor/Administrador' %></span>
                                 <small style="display:block;margin-top:4px">O sistema registrará automaticamente seu usuário, função e horário. Não selecione outra pessoa nem compartilhe seu login.</small>
                             </div>
                             <form action="/compatibilidade/reservar" method="POST" style="margin-top:18px"
@@ -138,10 +138,8 @@
                         <% } else { %>
                             <div class="alerta alerta-erro" style="margin-top:14px">
                                 <strong>Seu acesso de Supervisor/Administrador está ativo.</strong><br>
-                                Para registrar uma conferência transfusional, o sistema também exige que sua conta tenha uma função profissional habilitada e compatível com essa atividade. Isso mantém a identificação correta do responsável técnico e a rastreabilidade do procedimento.
-                                <% if (usuario && usuario.administrador) { %>
-                                    <div style="margin-top:12px"><a class="botao botao-claro" href="/usuarios/<%= usuario.id %>/editar">Atualizar minha função profissional</a></div>
-                                <% } %>
+                                Seu perfil de Supervisor/Administrador permite registrar a conferência sem exigir o cadastro de uma função profissional. Seu usuário e horário serão identificados para manter a rastreabilidade.
+                                
                             </div>
                         <% } %>
                     </div>
