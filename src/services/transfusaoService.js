@@ -172,7 +172,7 @@ class TransfusaoService {
                 [t.solicitacao_id]);
 
             await cliente.query('COMMIT');
-            return { codigo: b.id, paciente: t.paciente_nome, termino };
+            return { codigo: t.id, paciente: t.paciente_nome, termino };
         } catch (erro) {
             await cliente.query('ROLLBACK');
             throw erro;
