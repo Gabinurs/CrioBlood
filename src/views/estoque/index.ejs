@@ -66,8 +66,8 @@
                 <% if (bolsas.length === 0) { %>
                     <tr><td colspan="9" class="vazio">Nenhuma bolsa em estoque.</td></tr>
                 <% } else { bolsas.forEach(function (b) { %>
-                    <tr data-busca="<%= (b.codigo_original + ' ' + b.codigo_lote).toLowerCase() %>" data-status="<%= b.status %>" data-tipo="<%= b.tipo %>">
-                        <td><strong><%= b.codigo_original %></strong></td>
+                    <tr data-busca="<%= (b.codigo_interno + ' ' + b.codigo_original + ' ' + b.codigo_lote).toLowerCase() %>" data-status="<%= b.status %>" data-tipo="<%= b.tipo %>">
+                        <td><strong><%= b.codigo_interno %></strong><br><small>Original: <%= b.codigo_original %></small></td>
                         <td><%= b.codigo_lote %></td>
                         <td><%= b.tipo %></td>
                         <td><%= rot.tipagem(b.abo, b.fator_rh) %></td>
