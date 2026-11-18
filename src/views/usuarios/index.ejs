@@ -31,7 +31,7 @@
                         <td><%= item.id %></td>
                         <td><strong><%= item.nome %></strong></td>
                         <td><%= item.login %></td>
-                        <td><%= ({TECNICO_ENFERMAGEM:'Técnico de enfermagem',TECNICO_LABORATORIO:'Técnico de laboratório',TECNICO_TRANSFUSAO:'Técnico de transfusão',NAO_INFORMADO:'Função não definida'})[item.funcao] || '—' %></td>
+                        <td><%= ({TECNICO_ENFERMAGEM:'Técnico de enfermagem',TECNICO_LABORATORIO:'Técnico de laboratório',TECNICO_TRANSFUSAO:'Técnico de transfusão',ENFERMEIRO:'Enfermeiro(a)',BIOMEDICO:'Biomédico(a)',MEDICO:'Médico(a)',NAO_INFORMADO:'Função não definida'})[item.funcao] || '—' %></td>
                         <td><span class="status <%= item.administrador ? 's-azul' : 's-cinza' %>"><%= item.administrador ? 'Administrador' : 'Usuário' %></span></td>
                         <td><span class="status <%= item.ativo ? 's-verde' : 's-cinza' %>"><%= item.ativo ? 'Ativo' : 'Inativo' %></span></td>
                         <td class="acoes">
