@@ -1,0 +1,28 @@
+<%
+    var pag = locals.paginacao;
+    if (pag && pag.totalPaginas > 1) {
+        var q = locals.query || {};
+        var link = function (n) {
+            var p = new URLSearchParams();
+            Object.keys(q).forEach(function (k) {
+                if (k !== 'pagina' && typeof q[k] === 'string') p.set(k, q[k]);
+            });
+            p.set('pagina', n);
+            return (locals.rotaAtual || '') + '?' + p.toString();
+        };
+%>
+<nav class="paginacao" aria-label="Paginação">
+    <span class="paginacao-info">Mostrando <%= pag.de %>–<%= pag.ate %> de <%= pag.total %></span>
+    <span class="paginacao-links">
+        <% if (pag.pagina > 1) { %>
+            <a class="botao botao-claro botao-pequeno" href="<%= link(1) %>">« Primeira</a>
+            <a class="botao botao-claro botao-pequeno" href="<%= link(pag.pagina - 1) %>">‹ Anterior</a>
+        <% } %>
+        <span class="paginacao-atual">Página <%= pag.pagina %> de <%= pag.totalPaginas %></span>
+        <% if (pag.pagina < pag.totalPaginas) { %>
+            <a class="botao botao-claro botao-pequeno" href="<%= link(pag.pagina + 1) %>">Próxima ›</a>
+            <a class="botao botao-claro botao-pequeno" href="<%= link(pag.totalPaginas) %>">Última »</a>
+        <% } %>
+    </span>
+</nav>
+<% } %>

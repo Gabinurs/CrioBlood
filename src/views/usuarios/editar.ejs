@@ -1,0 +1,25 @@
+<%- include('../partials/inicio', { titulo: 'Editar usuário', subtitulo: 'Código do usuário: ' + usuarioAlvo.id, ativo: 'usuarios' }) %>
+
+<section class="painel formulario">
+    <form action="/usuarios/<%= usuarioAlvo.id %>/editar" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <div class="grade-form">
+            <div class="campo largo">
+                <label for="nome">Nome completo</label>
+                <input type="text" id="nome" name="nome" maxlength="<%= padroes.nomePessoa.max %>" pattern="<%= padroes.nomePessoa.fonte %>" title="<%= padroes.nomePessoa.mensagem %>" data-mascara="<%= padroes.nomePessoa.mascara %>" autocomplete="name" value="<%= usuarioAlvo.nome %>" required>
+            </div>
+
+            <div class="campo largo">
+                <label for="login">Login</label>
+                <input type="text" id="login" name="login" maxlength="<%= padroes.login.max %>" pattern="<%= padroes.login.fonte %>" title="<%= padroes.login.mensagem %>" data-mascara="<%= padroes.login.mascara %>" autocomplete="username" spellcheck="false" value="<%= usuarioAlvo.login %>" required>
+            </div>
+        </div>
+
+        <div class="rodape-form">
+            <button class="botao" type="submit">Salvar alterações</button>
+            <a class="botao botao-claro" href="/usuarios">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/fim') %>

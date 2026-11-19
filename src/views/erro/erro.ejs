@@ -1,0 +1,18 @@
+<%- include('../partials/inicio', { titulo: titulo, subtitulo: 'Erro ' + codigo, ativo: '' }) %>
+
+<section class="painel pagina-erro">
+    <p class="codigo-erro" aria-hidden="true"><%= codigo %></p>
+    <h3><%= titulo %></h3>
+    <p class="descricao"><%= mensagem %></p>
+    <% if (locals.detalhes && detalhes.length) { %>
+        <ul class="lista-erros">
+            <% detalhes.forEach(function (d) { %><li><%= d %></li><% }) %>
+        </ul>
+    <% } %>
+    <div class="rodape-form">
+        <button type="button" class="botao botao-claro" data-voltar>‹ Voltar</button>
+        <a class="botao" href="/dashboard">Ir para o início</a>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>

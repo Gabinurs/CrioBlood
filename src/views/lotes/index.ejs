@@ -1,0 +1,87 @@
+<%- include('../partials/inicio', { titulo: 'Lotes de recebimento', subtitulo: 'Abertura, conferência e fechamento dos lotes', ativo: 'lotes' }) %>
+
+<section class="cabecalho-pagina">
+    <div>
+        <h3>Controle de lotes</h3>
+        <p>
+            Abra um lote para cadastrar as bolsas recebidas. Para fechar, o lote precisa ter ao menos
+            uma bolsa e nenhuma bolsa em conferência. Lotes fechados não recebem novas bolsas.
+        </p>
+    </div>
+
+    <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <button class="botao" type="submit">+ Abrir novo lote</button>
+    </form>
+</section>
+
+<section class="indicadores">
+    <div class="indicador destaque-amarelo">
+        <strong><%= lotes.filter(function (l) { return l.status === 'ABERTO'; }).length %></strong>
+        <span>Lotes abertos</span>
+    </div>
+    <div class="indicador destaque-verde">
+        <strong><%= lotes.filter(function (l) { return l.status === 'FECHADO'; }).length %></strong>
+        <span>Lotes fechados</span>
+    </div>
+    <div class="indicador">
+        <strong><%= lotes.reduce(function (total, l) { return total + l.quantidade_bolsas; }, 0) %></strong>
+        <span>Bolsas recebidas</span>
+    </div>
+</section>
+
+<section class="painel" data-filtravel>
+    <h3>Histórico de lotes</h3>
+    <p class="descricao">Consulte os lotes já registrados no sistema.</p>
+
+    <div class="filtros">
+        <input type="search" data-filtro-texto placeholder="Buscar por código do lote..." aria-label="Buscar lote">
+        <select data-filtro-campo="status" aria-label="Filtrar por status">
+            <option value="">Todos os status</option>
+            <option value="ABERTO">Abertos</option>
+            <option value="FECHADO">Fechados</option>
+        </select>
+    </div>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Lote</th><th>Recebimento</th><th>Origem</th><th>Bolsas</th><th>Em conferência</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <% if (lotes.length === 0) { %>
+                    <tr><td colspan="7" class="vazio">Nenhum lote cadastrado.<br>Clique em "+ Abrir novo lote" para começar.</td></tr>
+                <% } else { lotes.forEach(function (lote) { %>
+                    <tr data-busca="<%= lote.codigo.toLowerCase() %>" data-status="<%= lote.status %>">
+                        <td><strong><%= lote.codigo %></strong></td>
+                        <td><%= new Date(lote.data_recebimento).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></td>
+                        <td><%= lote.origem %></td>
+                        <td><%= lote.quantidade_bolsas %></td>
+                        <td><%= lote.em_conferencia %></td>
+                        <td>
+                            <span class="status <%= lote.status === 'ABERTO' ? 'aberto' : 'fechado' %>">
+                                <%= lote.status === 'ABERTO' ? 'Aberto' : 'Fechado' %>
+                            </span>
+                        </td>
+                        <td class="acoes">
+                            <a class="botao botao-claro botao-pequeno" href="/hemocomponentes?lote_id=<%= lote.id %>">Ver bolsas</a>
+                            <% if (lote.status === 'ABERTO') { %>
+                                <a class="botao botao-claro botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">+ Adicionar bolsa</a>
+                                <form action="/lotes/<%= lote.id %>/fechar" method="POST"
+                                      data-confirmar="Fechar o lote <%= lote.codigo %>? Depois de fechado, ele não recebe novas bolsas.">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                                    <button class="botao botao-perigo botao-pequeno" type="submit">Fechar lote</button>
+                                </form>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+                    <tr data-sem-resultado hidden><td colspan="7" class="vazio">Nenhum lote encontrado com esse filtro.</td></tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+    <%- include('../partials/paginacao') %>
+</section>
+
+<%- include('../partials/fim') %>

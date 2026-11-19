@@ -1,0 +1,42 @@
+{
+  "name": "crioblood",
+  "version": "1.0.0",
+  "description": "Sistema de gerenciamento desenvolvido como projeto acadêmico.",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "supervisor": "node src/scripts/criar-supervisor.js",
+    "db:testar": "node src/scripts/testar-conexao.js",
+    "db:permissoes": "node src/scripts/corrigir-permissoes.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gabinurs/CrioBlood.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Gabinurs/CrioBlood/issues"
+  },
+  "homepage": "https://github.com/Gabinurs/CrioBlood#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^18.0.8",
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.3.0",
+    "node-cron": "^4.6.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

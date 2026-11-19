@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>Login | CrioBlood</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23d6203f'/%3E%3Cpath d='M16 6s6.5 7 6.5 11.6a6.5 6.5 0 0 1-13 0C9.5 13 16 6 16 6Z' fill='white'/%3E%3C/svg%3E">
+    <script src="/js/preferencias.js"></script>
+
+    <style>
+        :root {
+            color-scheme: light;
+            --rosa: #d6203f;
+            --rosa-escuro: #b3142f;
+            --rosa-claro: #ff5d7a;
+            --anel: rgba(214, 32, 63, 0.28);
+            --fundo: #f2f5f9;
+            --superficie: #ffffff;
+            --superficie-2: #f7f9fc;
+            --borda: #e3e8f0;
+            --borda-forte: #cfd7e3;
+            --texto: #1b2a3f;
+            --cinza: #64748b;
+            --erro-fundo: #fde4e9;
+            --erro-borda: #f4b8c4;
+            --erro-texto: #b01f3a;
+            --sombra: 0 30px 70px -28px rgba(8, 16, 30, 0.45), 0 4px 14px rgba(15, 27, 45, 0.06);
+            --curva: cubic-bezier(0.22, 0.8, 0.24, 1);
+            --fonte: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        html[data-tema="dark"] {
+            color-scheme: dark;
+            --rosa: #ff4d6d;
+            --rosa-escuro: #e0334f;
+            --anel: rgba(255, 77, 109, 0.35);
+            --fundo: #0a111d;
+            --superficie: #111b2c;
+            --superficie-2: #16233a;
+            --borda: #22324b;
+            --borda-forte: #2f4366;
+            --texto: #e6ecf5;
+            --cinza: #93a3bb;
+            --erro-fundo: rgba(255, 90, 110, 0.14);
+            --erro-borda: rgba(255, 90, 110, 0.38);
+            --erro-texto: #ff8aa0;
+            --sombra: 0 30px 70px -28px rgba(0, 0, 0, 0.85);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            font-family: var(--fonte);
+            color: var(--texto);
+            background: var(--fundo);
+            -webkit-font-smoothing: antialiased;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        }
+
+        /* Painel da marca */
+        .vitrine {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 48px 56px;
+            color: #fff;
+            background:
+                radial-gradient(700px 420px at 12% 8%, rgba(255, 77, 109, 0.5), transparent 65%),
+                radial-gradient(600px 500px at 100% 100%, rgba(13, 148, 136, 0.35), transparent 60%),
+                linear-gradient(160deg, #0f1f35 0%, #08111f 100%);
+        }
+        .vitrine::before, .vitrine::after {
+            content: ""; position: absolute; border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .vitrine::before { width: 520px; height: 520px; right: -180px; top: 22%; animation: flutuar 14s ease-in-out infinite; }
+        .vitrine::after { width: 340px; height: 340px; right: -60px; top: 36%; animation: flutuar 11s ease-in-out infinite reverse; }
+        .vitrine > * { position: relative; z-index: 1; }
+
+        .vitrine .logo { display: flex; align-items: center; gap: 14px; }
+        .logo-marca {
+            width: 48px; height: 48px; display: grid; place-items: center; border-radius: 15px;
+            background: linear-gradient(145deg, #ff5d7a, #c4163a);
+            box-shadow: 0 10px 26px -8px rgba(255, 77, 109, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+        }
+        .logo-marca svg { width: 26px; height: 26px; }
+        .vitrine .logo h1 { font-size: 24px; letter-spacing: -0.02em; }
+        .vitrine .logo h1 span { color: var(--rosa-claro); }
+
+        .vitrine h2 { font-size: clamp(30px, 3.4vw, 46px); line-height: 1.12; letter-spacing: -0.03em; max-width: 520px; }
+        .vitrine h2 em { font-style: normal; color: var(--rosa-claro); }
+        .vitrine .texto { margin-top: 18px; max-width: 460px; color: #aebcd2; font-size: 15px; line-height: 1.7; }
+        .vitrine .rodape-vitrine { font-size: 12px; color: #7f90ab; letter-spacing: 0.02em; }
+
+        /* Formulário */
+        .painel-login { display: grid; place-items: center; padding: 32px 24px; position: relative; }
+        .tema {
+            position: absolute; top: 20px; right: 20px;
+            width: 42px; height: 42px; display: grid; place-items: center;
+            border: 1px solid var(--borda); border-radius: 12px;
+            background: var(--superficie); color: var(--texto); cursor: pointer;
+            transition: transform 0.2s var(--curva), border-color 0.2s, color 0.2s;
+        }
+        .tema:hover { transform: translateY(-2px); border-color: var(--rosa); color: var(--rosa); }
+        .tema svg { width: 20px; height: 20px; }
+        .tema .sol { display: none; }
+        html[data-tema="dark"] .tema .sol { display: block; }
+        html[data-tema="dark"] .tema .lua { display: none; }
+
+        .login-container {
+            width: 100%; max-width: 430px;
+            padding: 40px 36px 32px;
+            border: 1px solid var(--borda); border-radius: 24px;
+            background: var(--superficie);
+            box-shadow: var(--sombra);
+            animation: subir 0.7s var(--curva) both;
+        }
+        .marca { text-align: center; margin-bottom: 26px; display: none; }
+        .marca h1 { font-size: 26px; letter-spacing: -0.02em; }
+        .marca h1 span { color: var(--rosa); }
+        .marca p { margin-top: 4px; font-size: 13px; color: var(--cinza); }
+
+        .titulo h2 { font-size: 26px; letter-spacing: -0.02em; }
+        .titulo p { margin: 8px 0 26px; font-size: 14px; color: var(--cinza); line-height: 1.6; }
+
+        .aviso-erro {
+            margin-bottom: 20px; padding: 12px 14px;
+            border: 1px solid var(--erro-borda); border-radius: 12px;
+            background: var(--erro-fundo); color: var(--erro-texto);
+            font-size: 14px; line-height: 1.5;
+            animation: tremer 0.45s ease both;
+        }
+
+        .campo { margin-bottom: 18px; }
+        .campo label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 600; }
+        .campo input {
+            width: 100%; padding: 13px 15px;
+            border: 1px solid var(--borda-forte); border-radius: 12px;
+            background: var(--superficie); color: var(--texto);
+            font-family: inherit; font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .campo input::placeholder { color: var(--cinza); opacity: 0.7; }
+        .campo input:hover { border-color: var(--cinza); }
+        .campo input:focus { outline: none; border-color: var(--rosa); box-shadow: 0 0 0 4px var(--anel); }
+
+        .botao-entrar {
+            width: 100%; margin-top: 6px; padding: 14px;
+            border: 0; border-radius: 12px;
+            background: linear-gradient(135deg, var(--rosa), var(--rosa-escuro));
+            color: #fff; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 14px 26px -12px rgba(214, 32, 63, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+            transition: transform 0.2s var(--curva), box-shadow 0.2s, filter 0.2s;
+        }
+        .botao-entrar:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 20px 30px -14px rgba(214, 32, 63, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+        .botao-entrar:active { transform: scale(0.985); }
+        .botao-entrar:focus-visible { outline: 3px solid var(--anel); outline-offset: 3px; }
+
+        .rodape { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--borda); text-align: center; font-size: 12px; color: var(--cinza); line-height: 1.7; }
+        .rodape strong { color: var(--rosa); }
+
+        @keyframes subir { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+        @keyframes tremer { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+        @keyframes flutuar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-22px); } }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+        }
+
+        @media (max-width: 900px) {
+            body { grid-template-columns: 1fr; }
+            .vitrine { display: none; }
+            .marca { display: block; }
+            .painel-login { padding: 24px 16px; }
+            .login-container { padding: 32px 24px 26px; }
+        }
+    </style>
+</head>
+
+<body>
+    <section class="vitrine" aria-hidden="true">
+        <div class="logo">
+            <span class="logo-marca"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5s6.5 6.9 6.5 11.6a6.5 6.5 0 0 1-13 0C5.5 9.4 12 2.5 12 2.5Z" fill="#fff"/><path d="M8.6 14.2a3.4 3.4 0 0 0 2.6 3.2" stroke="#d6203f" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+            <h1>Crio<span>Blood</span></h1>
+        </div>
+
+        <div>
+            <h2>Cada bolsa, <em>rastreada</em> do recebimento à transfusão.</h2>
+            <p class="texto">Controle de lotes, estoque, compatibilidade e transfusões em um só lugar, com segurança e auditoria.</p>
+        </div>
+
+        <div class="rodape-vitrine">Santa Casa de Misericórdia de Cruzeiro</div>
+    </section>
+
+    <main class="painel-login">
+        <button type="button" class="tema" data-tema-alternar aria-label="Mudar para o tema escuro" title="Tema escuro">
+            <svg class="lua" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+            <svg class="sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+
+        <div class="login-container">
+
+            <header class="marca">
+                <h1>Crio<span>Blood</span></h1>
+                <p>Sistema de Gestão Transfusional</p>
+            </header>
+
+            <section class="titulo">
+                <h2>Bem-vindo(a)!</h2>
+                <p>Entre com suas credenciais para acessar o sistema.</p>
+            </section>
+
+            <% if (locals.erro) { %>
+                <div role="alert" class="aviso-erro"><%= erro %></div>
+            <% } %>
+
+            <form action="/login" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+
+                <div class="campo">
+                    <label for="login">Usuário</label>
+
+                    <input
+                        type="text"
+                        id="login"
+                        name="login"
+                        placeholder="Digite seu usuário"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="senha">Senha</label>
+
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Digite sua senha"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button class="botao-entrar" type="submit">
+                    Entrar no sistema
+                </button>
+
+            </form>
+
+            <footer class="rodape">
+                Acesso restrito a usuários autorizados.<br>
+                <strong>CrioBlood</strong> &copy; 2026
+            </footer>
+
+        </div>
+    </main>
+
+    <script src="/js/app.js" defer></script>
+</body>
+</html>

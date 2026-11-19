@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title><%= codigo %> · <%= titulo %> | CrioBlood</title>
+    <script src="/js/preferencias.js"></script>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="erro-publico">
+    <main class="painel pagina-erro">
+        <p class="codigo-erro" aria-hidden="true"><%= codigo %></p>
+        <h1>Crio<span>Blood</span></h1>
+        <h3><%= titulo %></h3>
+        <p class="descricao"><%= mensagem %></p>
+        <% if (locals.detalhes && detalhes.length) { %>
+            <ul class="lista-erros">
+                <% detalhes.forEach(function (d) { %><li><%= d %></li><% }) %>
+            </ul>
+        <% } %>
+        <div class="rodape-form">
+            <a class="botao" href="/login">Ir para o login</a>
+        </div>
+    </main>
+</body>
+</html>

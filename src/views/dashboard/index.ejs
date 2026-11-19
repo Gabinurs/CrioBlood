@@ -1,0 +1,134 @@
+<%- include('../partials/inicio', { titulo: 'Início', subtitulo: 'Visão geral do hemocentro', ativo: 'inicio' }) %>
+<%
+    // Cada usuário só vê links e dados dos módulos que pode acessar
+    var pode = locals.pode || function () { return true; };
+    function cartao(href, permissao, classe, valor, rotulo) {
+        var interno = '<strong>' + Number(valor) + '</strong><span>' + rotulo + '</span>';
+        return pode(permissao)
+            ? '<a class="indicador ' + classe + '" href="' + href + '">' + interno + '</a>'
+            : '<div class="indicador ' + classe + '">' + interno + '</div>';
+    }
+    var veSolicitacoes = pode('solicitacoes.gerenciar') || pode('compatibilidade.reservar');
+%>
+
+<% if (resumo.vencendo > 0) { %>
+    <div class="alerta alerta-aviso">
+        <strong><%= resumo.vencendo %></strong> bolsa(s) vencem nos próximos 7 dias.
+        <% if (pode('estoque.visualizar')) { %><a href="/estoque">Ver no estoque</a>.<% } %>
+    </div>
+<% } %>
+
+<section class="indicadores">
+    <%- cartao('/estoque', 'estoque.visualizar', 'destaque-verde', resumo.disponiveis, 'Bolsas disponíveis') %>
+    <%- cartao('/transfusoes', 'transfusoes.registrar', 'destaque-azul', resumo.reservadas, 'Bolsas reservadas') %>
+    <%- cartao('/hemocomponentes?status=EM_CONFERENCIA', 'bolsas.gerenciar', 'destaque-amarelo', resumo.em_conferencia, 'Em conferência') %>
+    <%- cartao('/estoque', 'estoque.visualizar', 'destaque-vermelho', resumo.vencendo, 'Vencem em 7 dias') %>
+    <%- cartao('/solicitacoes', 'solicitacoes.gerenciar', '', contagens.pendentes, 'Solicitações pendentes') %>
+    <%- cartao('/transfusoes', 'transfusoes.registrar', '', contagens.aguardando, 'Aguardando transfusão') %>
+    <%- cartao('/lotes', 'lotes.gerenciar', '', contagens.lotes_abertos, 'Lotes abertos') %>
+    <%- cartao('/relatorios', 'relatorios.visualizar', '', contagens.transfusoes_mes, 'Transfusões no mês') %>
+</section>
+
+<section class="grade-2">
+    <div class="painel">
+        <h3>Estoque disponível por tipo</h3>
+        <p class="descricao">Bolsas disponíveis e dentro da validade.</p>
+        <% porTipo.forEach(function (t) { %>
+            <div class="barra-linha">
+                <span><%= rot.tipo(t.tipo) %></span>
+                <div class="barra-trilho">
+                    <div class="barra-preenchimento" style="width: <%= Math.round((t.total / maiorTipo) * 100) %>%"></div>
+                </div>
+                <span class="barra-valor"><%= t.total %></span>
+            </div>
+        <% }) %>
+    </div>
+
+    <div class="painel">
+        <h3>Disponíveis por tipagem</h3>
+        <p class="descricao">Em vermelho: tipagem sem nenhuma bolsa disponível.</p>
+        <div class="mapa-tipagem">
+            <% porTipagem.forEach(function (t) { %>
+                <div class="tipagem <%= t.total === 0 ? 'baixo' : '' %>">
+                    <strong><%= t.rotulo %></strong>
+                    <span><%= t.total %> bolsa(s)</span>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</section>
+
+<section class="grade-2">
+    <div class="painel">
+        <h3>Próximos vencimentos</h3>
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr><th>Código</th><th>Tipo</th><th>ABO/Rh</th><th>Validade</th><th>Prazo</th></tr>
+                </thead>
+                <tbody>
+                    <% if (vencimentos.length === 0) { %>
+                        <tr><td colspan="5" class="vazio">Nenhuma bolsa em estoque.</td></tr>
+                    <% } else { vencimentos.forEach(function (b) { %>
+                        <tr>
+                            <td><strong><%= b.codigo_original %></strong></td>
+                            <td><%= b.tipo %></td>
+                            <td><%= rot.tipagem(b.abo, b.fator_rh) %></td>
+                            <td><%= b.validade_br %></td>
+                            <td><%- rot.validade(b.dias_restantes) %></td>
+                        </tr>
+                    <% }) } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<% if (veSolicitacoes) { %>
+    <div class="painel">
+        <h3>Solicitações pendentes</h3>
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr><th>Paciente</th><th>Produto</th><th>Urgência</th><th></th></tr>
+                </thead>
+                <tbody>
+                    <% if (urgentes.length === 0) { %>
+                        <tr><td colspan="4" class="vazio">Nenhuma solicitação pendente.</td></tr>
+                    <% } else { urgentes.forEach(function (s) { %>
+                        <tr>
+                            <td>
+                                <strong><%= s.paciente_nome %></strong>
+                                <br><small><%= rot.tipagem(s.paciente_abo, s.paciente_rh) %></small>
+                            </td>
+                            <td><%= s.tipo %></td>
+                            <td><%- rot.urgencia(s.urgencia) %></td>
+                            <td><a class="botao botao-pequeno" href="/compatibilidade?solicitacao=<%= s.id %>">Buscar bolsa</a></td>
+                        </tr>
+                    <% }) } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+<% } %>
+</section>
+
+<% if (['lotes.gerenciar','bolsas.gerenciar','pacientes.gerenciar','solicitacoes.gerenciar','transfusoes.registrar','relatorios.visualizar'].some(pode)) { %>
+<section class="painel">
+    <h3>Ações rápidas</h3>
+    <div class="atalhos">
+        <% if (pode('lotes.gerenciar')) { %>
+        <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+            <button class="botao" type="submit">+ Abrir lote</button>
+        </form>
+        <% } %>
+        <% if (pode('bolsas.gerenciar')) { %><a class="botao botao-claro" href="/hemocomponentes/novo">+ Cadastrar bolsa</a><% } %>
+        <% if (pode('pacientes.gerenciar')) { %><a class="botao botao-claro" href="/pacientes/novo">+ Novo paciente</a><% } %>
+        <% if (pode('solicitacoes.gerenciar')) { %><a class="botao botao-claro" href="/solicitacoes/nova">+ Nova solicitação</a><% } %>
+        <% if (pode('transfusoes.registrar')) { %><a class="botao botao-claro" href="/transfusoes">Registrar transfusão</a><% } %>
+        <% if (pode('relatorios.visualizar')) { %><a class="botao botao-claro" href="/relatorios">Ver relatórios</a><% } %>
+    </div>
+</section>
+<% } %>
+
+<%- include('../partials/fim') %>

@@ -1,0 +1,31 @@
+<%- include('../partials/inicio', { titulo: 'Permissões', subtitulo: usuarioAlvo.nome + ' (' + usuarioAlvo.login + ')', ativo: 'usuarios' }) %>
+
+<section class="painel formulario">
+    <h3>Gerenciar permissões</h3>
+    <p class="descricao">Selecione as permissões que esta conta poderá receber.</p>
+
+    <form action="/usuarios/<%= usuarioAlvo.id %>/permissoes" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <div class="marcas" style="margin-top: 18px;">
+            <% if (permissoes.length === 0) { %>
+                <p class="descricao">Nenhuma permissão cadastrada no sistema.</p>
+            <% } else { permissoes.forEach(function (permissao) { %>
+                <label class="marca">
+                    <input type="checkbox" name="permissoes" value="<%= permissao.id %>"
+                           <%= idsSelecionados.includes(permissao.id) ? 'checked' : '' %>>
+                    <span>
+                        <strong><%= permissao.descricao %></strong>
+                        <small style="color: var(--cinza); margin-left: 6px;"><%= permissao.codigo %></small>
+                    </span>
+                </label>
+            <% }) } %>
+        </div>
+
+        <div class="rodape-form">
+            <button class="botao" type="submit">Salvar permissões</button>
+            <a class="botao botao-claro" href="/usuarios">Voltar</a>
+        </div>
+    </form>
+</section>
+
+<%- include('../partials/fim') %>

@@ -1,0 +1,36 @@
+
+# Dependências
+node_modules/
+
+# Configurações e segredos
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Arquivos temporários
+.tmp/
+temp/
+.cache/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+
+# Cobertura de testes
+coverage/
+
+# Arquivos de compilação
+dist/
+build/
+
+.env

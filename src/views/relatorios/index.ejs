@@ -1,0 +1,87 @@
+<%- include('../partials/inicio', { titulo: 'Relatórios', subtitulo: 'Resumo do período, transfusões e vencimentos', ativo: 'relatorios' }) %>
+
+<section class="painel">
+    <h3>Período</h3>
+    <form method="GET" action="/relatorios" class="filtros">
+        <label>De <input type="date" name="inicio" value="<%= periodo.inicio %>" required></label>
+        <label>Até <input type="date" name="fim" value="<%= periodo.fim %>" required></label>
+        <button class="botao" type="submit">Atualizar</button>
+        <a class="botao botao-claro" href="/relatorios/transfusoes.csv?inicio=<%= periodo.inicio %>&fim=<%= periodo.fim %>">Exportar transfusões (CSV)</a>
+    </form>
+</section>
+
+<section class="indicadores">
+    <div class="indicador"><strong><%= resumo.lotes %></strong><span>Lotes recebidos</span></div>
+    <div class="indicador"><strong><%= resumo.bolsas_cadastradas %></strong><span>Bolsas cadastradas</span></div>
+    <div class="indicador"><strong><%= resumo.solicitacoes %></strong><span>Solicitações</span></div>
+    <div class="indicador destaque-verde"><strong><%= resumo.transfusoes %></strong><span>Transfusões</span></div>
+    <div class="indicador destaque-vermelho"><strong><%= resumo.perdas %></strong><span>Descartadas ou vencidas</span></div>
+</section>
+
+<section class="painel">
+    <h3>Transfusões no período</h3>
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Data</th><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>ABO/Rh</th><th>Médico</th></tr>
+            </thead>
+            <tbody>
+                <% if (transfusoes.length === 0) { %>
+                    <tr><td colspan="7" class="vazio">Nenhuma transfusão no período.</td></tr>
+                <% } else { transfusoes.forEach(function (t) { %>
+                    <tr>
+                        <td><%= t.data_saida_br %></td>
+                        <td><strong><%= t.paciente_nome %></strong></td>
+                        <td><%= t.prontuario %></td>
+                        <td><%= t.bolsa_codigo %></td>
+                        <td><%= t.tipo %></td>
+                        <td><%= rot.tipagem(t.abo, t.fator_rh) %></td>
+                        <td><%= t.medico_solicitante %></td>
+                    </tr>
+                <% }) } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="grade-2">
+    <div class="painel">
+        <h3>Estoque atual por produto e status</h3>
+        <div class="tabela-container">
+            <table>
+                <thead><tr><th>Produto</th><th>Status</th><th>Bolsas</th></tr></thead>
+                <tbody>
+                    <% if (estoque.length === 0) { %>
+                        <tr><td colspan="3" class="vazio">Nenhuma bolsa cadastrada.</td></tr>
+                    <% } else { estoque.forEach(function (e) { %>
+                        <tr><td><%= e.tipo %></td><td><%- rot.statusBolsa(e.status) %></td><td><%= e.total %></td></tr>
+                    <% }) } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="painel">
+        <h3>Vencimentos nos próximos 15 dias</h3>
+        <div class="tabela-container">
+            <table>
+                <thead><tr><th>Código</th><th>Produto</th><th>ABO/Rh</th><th>Validade</th><th>Prazo</th></tr></thead>
+                <tbody>
+                    <% if (vencimentos.length === 0) { %>
+                        <tr><td colspan="5" class="vazio">Nenhuma bolsa vence nesse prazo.</td></tr>
+                    <% } else { vencimentos.forEach(function (b) { %>
+                        <tr>
+                            <td><strong><%= b.codigo_original %></strong></td>
+                            <td><%= b.tipo %></td>
+                            <td><%= rot.tipagem(b.abo, b.fator_rh) %></td>
+                            <td><%= b.validade_br %></td>
+                            <td><%- rot.validade(b.dias_restantes) %></td>
+                        </tr>
+                    <% }) } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/fim') %>

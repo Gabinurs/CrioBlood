@@ -1,0 +1,219 @@
+const db = require('../config/database');
+const { ErroValidacao, ErroConflito } = require('../utils/erros');
+const { PADROES, LIMITE_TEXTO_LIVRE, textoLivreValido, normalizarEspacos } = require('../utils/padroes');
+const { sqlLimite } = require('../utils/paginacao');
+
+// Colunas de data já formatadas (evita problemas de fuso horário nas telas)
+const COLUNAS_DATAS = `
+    to_char(h.data_coleta, 'DD/MM/YYYY')   AS data_coleta_br,
+    to_char(h.data_validade, 'DD/MM/YYYY') AS data_validade_br,
+    to_char(h.data_coleta, 'YYYY-MM-DD')   AS data_coleta_iso,
+    to_char(h.data_validade, 'YYYY-MM-DD') AS data_validade_iso
+`;
+
+// Status que só mudam pelos fluxos próprios (reserva, transfusão, descarte e validade).
+const STATUS_FINAIS = ['RESERVADA', 'TRANSFUNDIDA', 'DESCARTADA', 'VENCIDA'];
+// Únicos status que a tela de edição pode escolher.
+const STATUS_EDITAVEIS = ['EM_CONFERENCIA', 'DISPONIVEL'];
+
+// Decide qual status vale numa edição: bolsa em status final nunca "volta" pela tela
+// de edição, e a tela nunca coloca a bolsa em descartada, vencida, reservada ou transfundida.
+function resolverStatusEdicao(statusAtual, statusSolicitado) {
+    if (STATUS_FINAIS.includes(statusAtual)) return statusAtual;
+    if (!STATUS_EDITAVEIS.includes(statusSolicitado)) return statusAtual;
+    return statusSolicitado;
+}
+
+// Traduz erros do PostgreSQL em erros com mensagem e status HTTP adequados
+function traduzirErroBanco(erro) {
+    if (erro.code === '23505') return new ErroConflito('Já existe uma bolsa cadastrada com esse código original.');
+    if (erro.code === '23503') return new ErroValidacao('O lote informado não existe. Confira o lote selecionado.');
+    if (erro.code === '23514') {
+        return new ErroValidacao(
+            'Para marcar a bolsa como DISPONÍVEL é preciso confirmar a inspeção visual, ' +
+            'a integridade e a tipagem, e informar ABO e Rh. A validade também não pode ' +
+            'ser anterior à coleta.');
+    }
+    return erro;
+}
+
+class HemocomponenteModel {
+    static resolverStatusEdicao = resolverStatusEdicao;
+    static STATUS_FINAIS = STATUS_FINAIS;
+
+    // Lotes que ainda aceitam bolsas (para o formulário de cadastro)
+    static async listarLotesAbertos() {
+        const { rows } = await db.query(`
+            SELECT id, codigo,
+                   to_char(data_recebimento AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY') AS data_br
+            FROM lotes_recebimento
+            WHERE status = 'ABERTO'
+            ORDER BY id DESC
+        `);
+        return rows;
+    }
+
+    // Lista os hemocomponentes, com filtro opcional por lote ou status
+    static async listarTodos(filtros = {}, pag = {}) {
+        let query = `
+            SELECT h.*, l.codigo AS codigo_lote, ${COLUNAS_DATAS}
+            FROM hemocomponentes h
+            LEFT JOIN lotes_recebimento l ON h.lote_id = l.id
+            WHERE 1=1
+        `;
+        const params = [];
+
+        if (filtros.lote_id) {
+            params.push(filtros.lote_id);
+            query += ` AND h.lote_id = $${params.length}`;
+        }
+
+        if (filtros.status) {
+            params.push(filtros.status);
+            query += ` AND h.status = $${params.length}`;
+        }
+
+        query += ` ORDER BY h.data_validade ASC, h.id DESC ${sqlLimite(pag)}`;
+
+        const { rows } = await db.query(query, params);
+        return rows;
+    }
+
+    static async contarTodos(filtros = {}) {
+        let query = 'SELECT COUNT(*)::int AS total FROM hemocomponentes h WHERE 1=1';
+        const params = [];
+
+        if (filtros.lote_id) {
+            params.push(filtros.lote_id);
+            query += ` AND h.lote_id = $${params.length}`;
+        }
+
+        if (filtros.status) {
+            params.push(filtros.status);
+            query += ` AND h.status = $${params.length}`;
+        }
+
+        const { rows } = await db.query(query, params);
+        return rows[0].total;
+    }
+
+    static async buscarPorId(id) {
+        const { rows } = await db.query(
+            `SELECT h.*, ${COLUNAS_DATAS} FROM hemocomponentes h WHERE h.id = $1`,
+            [id]
+        );
+        return rows[0];
+    }
+
+    static async criar(dados, usuarioId) {
+        const codigo = normalizarEspacos(dados.codigo_original).toUpperCase();
+        if (!PADROES.codigoBolsa.regex.test(codigo)) {
+            throw new ErroValidacao(`Código da bolsa inválido. ${PADROES.codigoBolsa.mensagem}`);
+        }
+        if (!textoLivreValido((dados.observacoes || '').trim())) {
+            throw new ErroValidacao(`Observações: use até ${LIMITE_TEXTO_LIVRE} caracteres, sem caracteres de controle.`);
+        }
+
+        // Não aceita bolsas em lote inexistente ou já fechado
+        const lote = (await db.query(
+            'SELECT status FROM lotes_recebimento WHERE id = $1', [dados.lote_id])).rows[0];
+        if (!lote) {
+            throw new ErroValidacao('O lote informado não existe. Confira o lote selecionado.');
+        }
+        if (lote.status !== 'ABERTO') {
+            throw new ErroConflito('Esse lote já está fechado e não recebe novas bolsas.');
+        }
+
+        const query = `
+            INSERT INTO hemocomponentes
+                (lote_id, codigo_original, tipo, abo, fator_rh,
+                 data_coleta, data_validade,
+                 inspecao_visual, integridade_confirmada, tipagem_confirmada,
+                 status, observacoes, cadastrado_por)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            RETURNING id
+        `;
+        let rows;
+        try {
+            ({ rows } = await db.query(query, [
+            dados.lote_id,
+            codigo,
+            dados.tipo,
+            dados.abo || null,
+            dados.fator_rh || null,
+            dados.data_coleta,
+            dados.data_validade,
+            dados.inspecao_visual === 'on',
+            dados.integridade_confirmada === 'on',
+            dados.tipagem_confirmada === 'on',
+            dados.status || 'EM_CONFERENCIA',
+            (dados.observacoes || '').trim() || null,
+            usuarioId
+        ]));
+        } catch (erro) {
+            throw traduzirErroBanco(erro);
+        }
+        return rows[0].id;
+    }
+
+    static async atualizar(id, dados) {
+        const atual = await HemocomponenteModel.buscarPorId(id);
+        if (!atual) return false;
+
+        const status = resolverStatusEdicao(atual.status, dados.status);
+
+        let resultado;
+        try {
+            resultado = await db.query(`
+            UPDATE hemocomponentes
+            SET tipo = $1,
+                abo = $2,
+                fator_rh = $3,
+                data_validade = $4,
+                inspecao_visual = $5,
+                integridade_confirmada = $6,
+                tipagem_confirmada = $7,
+                status = $8,
+                observacoes = $9,
+                atualizado_em = CURRENT_TIMESTAMP
+            WHERE id = $10
+        `, [
+            dados.tipo,
+            dados.abo || null,
+            dados.fator_rh || null,
+            dados.data_validade,
+            dados.inspecao_visual === 'on',
+            dados.integridade_confirmada === 'on',
+            dados.tipagem_confirmada === 'on',
+            status,
+            dados.observacoes || null,
+            id
+        ]);
+        } catch (erro) {
+            throw traduzirErroBanco(erro);
+        }
+        return resultado.rowCount > 0;
+    }
+
+    // Descarte lógico: a bolsa continua registrada, com status DESCARTADA
+    static async deletar(id) {
+        const atual = await HemocomponenteModel.buscarPorId(id);
+        if (!atual) return false;
+        if (atual.status === 'RESERVADA') {
+            throw new ErroConflito('Essa bolsa está reservada para um paciente. Cancele a solicitação antes de descartá-la.');
+        }
+        if (['TRANSFUNDIDA', 'DESCARTADA'].includes(atual.status)) {
+            throw new ErroConflito('Essa bolsa já foi transfundida ou descartada.');
+        }
+        const resultado = await db.query(
+            `UPDATE hemocomponentes
+             SET status = 'DESCARTADA', atualizado_em = CURRENT_TIMESTAMP
+             WHERE id = $1`,
+            [id]
+        );
+        await db.query('DELETE FROM armazenamento WHERE hemocomponente_id = $1', [id]);
+        return resultado.rowCount > 0;
+    }
+}
+
+module.exports = HemocomponenteModel;

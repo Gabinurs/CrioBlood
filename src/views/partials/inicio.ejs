@@ -1,0 +1,132 @@
+<%
+    var paginaAtiva = locals.ativo || '';
+    var usuarioLogado = locals.usuario || null;
+
+    // Ícones (traçado simples, herdam a cor do texto)
+    var ICONES = {
+        inicio: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',
+        pacientes: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18 14.3c2 .7 3.5 2.6 3.5 5.7"/>',
+        lotes: '<path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/>',
+        hemocomponentes: '<path d="M12 3s6 6.2 6 10.5A6 6 0 0 1 6 13.5C6 9.2 12 3 12 3Z"/><path d="M12 11v5M9.5 13.5h5"/>',
+        estoque: '<rect x="3" y="4" width="18" height="5" rx="1.2"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/>',
+        equipamentos: '<path d="M12 2v20"/><path d="m4.2 7 15.6 10"/><path d="M19.8 7 4.2 17"/><path d="m9.5 3.5 2.5 2.5 2.5-2.5"/><path d="m9.5 20.5 2.5-2.5 2.5 2.5"/>',
+        solicitacoes: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 11h6M9 15h6"/>',
+        compatibilidade: '<path d="M9 3h6M10 3v6.2L4.8 18a2 2 0 0 0 1.7 3h11a2 2 0 0 0 1.7-3L14 9.2V3"/><path d="M7.5 15h9"/>',
+        transfusoes: '<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>',
+        relatorios: '<path d="M4 20V11"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M3 20h18"/>',
+        usuarios: '<path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
+        senha: '<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9"/><path d="m16 7 3 3"/><path d="m14 9 2 2"/>',
+        sair: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+        fixar: '<path d="M12 17v5"/><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3-1-6Z"/>',
+        sol: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+        lua: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',
+        hamburguer: '<path d="M4 6h16M4 12h16M4 18h16"/>'
+    };
+    function icone(nome) {
+        return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONES[nome] + '</svg>';
+    }
+
+    // [chave, endereço, rótulo, permissão exigida, ícone]
+    var itensMenu = [
+        ['inicio',         '/dashboard',       'Início',                    null,                       'inicio'],
+        ['pacientes',      '/pacientes',       'Pacientes',                 'pacientes.gerenciar',      'pacientes'],
+        ['lotes',          '/lotes',           'Lotes de recebimento',      'lotes.gerenciar',          'lotes'],
+        ['hemocomponentes','/hemocomponentes', 'Cadastro de bolsas',        'bolsas.gerenciar',         'hemocomponentes'],
+        ['estoque',        '/estoque',         'Bolsas (Estoque)',          'estoque.visualizar',       'estoque'],
+        ['equipamentos',   '/equipamentos',    'Equipamentos',              'estoque.gerenciar',        'equipamentos'],
+        ['solicitacoes',   '/solicitacoes',    'Solicitação transfusional', 'solicitacoes.gerenciar',   'solicitacoes'],
+        ['compatibilidade','/compatibilidade', 'Compatibilidade',           'compatibilidade.reservar', 'compatibilidade'],
+        ['transfusoes',    '/transfusoes',     'Transfusão',                'transfusoes.registrar',    'transfusoes'],
+        ['relatorios',     '/relatorios',      'Relatórios',                'relatorios.visualizar',    'relatorios']
+    ];
+    // Mostra só os módulos que o usuário pode abrir
+    itensMenu = itensMenu.filter(function (item) {
+        return !item[3] || !locals.pode || locals.pode(item[3]);
+    });
+    if (usuarioLogado && usuarioLogado.administrador) {
+        itensMenu.push(['usuarios', '/usuarios', 'Usuários', null, 'usuarios']);
+    }
+
+    // Iniciais para o avatar
+    var iniciais = '';
+    if (usuarioLogado && usuarioLogado.nome) {
+        var partes = String(usuarioLogado.nome).trim().split(/\s+/);
+        iniciais = (partes[0].charAt(0) + (partes.length > 1 ? partes[partes.length - 1].charAt(0) : '')).toUpperCase();
+    }
+%>
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="light" data-menu="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title><%= locals.titulo || 'CrioBlood' %> | CrioBlood</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23d6203f'/%3E%3Cpath d='M16 6s6.5 7 6.5 11.6a6.5 6.5 0 0 1-13 0C9.5 13 16 6 16 6Z' fill='white'/%3E%3C/svg%3E">
+    <script src="/js/preferencias.js"></script>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+
+<div class="layout">
+
+    <aside class="sidebar" id="menu-lateral" aria-label="Menu principal">
+        <div class="logo">
+            <span class="logo-marca" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5s6.5 6.9 6.5 11.6a6.5 6.5 0 0 1-13 0C5.5 9.4 12 2.5 12 2.5Z" fill="#fff"/><path d="M8.6 14.2a3.4 3.4 0 0 0 2.6 3.2" stroke="#d6203f" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+            <div class="logo-texto">
+                <h1>Crio<span>Blood</span></h1>
+                <p>GESTÃO DE HEMOCENTROS</p>
+            </div>
+            <button type="button" class="menu-fixar" data-menu-fixar aria-pressed="false" title="Fixar menu aberto" aria-label="Fixar menu aberto"><%- icone('fixar') %></button>
+        </div>
+
+        <nav class="menu" aria-label="Módulos">
+            <% itensMenu.forEach(function (item) { %>
+                <a href="<%= item[1] %>" title="<%= item[2] %>" class="<%= paginaAtiva === item[0] ? 'ativo' : '' %>"<%- paginaAtiva === item[0] ? ' aria-current="page"' : '' %>><%- icone(item[4]) %><span class="rotulo"><%= item[2] %></span></a>
+            <% }) %>
+        </nav>
+
+        <nav class="menu menu-inferior" aria-label="Conta">
+            <a href="/conta/senha" title="Alterar minha senha"><%- icone('senha') %><span class="rotulo">Alterar minha senha</span></a>
+            <form action="/logout" method="POST">
+<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                <button type="submit" title="Sair do sistema"><%- icone('sair') %><span class="rotulo">Sair do sistema</span></button>
+            </form>
+        </nav>
+    </aside>
+    <div class="menu-fundo" data-menu-fechar></div>
+
+    <div class="principal">
+        <header class="topo">
+            <div class="topo-esq">
+                <button type="button" class="botao-icone botao-menu" data-menu-abrir aria-label="Abrir menu" aria-controls="menu-lateral"><%- icone('hamburguer') %></button>
+                <div>
+                    <h2><%= locals.titulo || 'CrioBlood' %></h2>
+                    <% if (locals.subtitulo) { %><p><%= subtitulo %></p><% } %>
+                </div>
+            </div>
+
+            <div class="topo-dir">
+                <button type="button" class="botao-icone" data-tema-alternar aria-label="Mudar para o tema escuro" title="Tema escuro">
+                    <span class="icone-lua"><%- icone('lua') %></span>
+                    <span class="icone-sol"><%- icone('sol') %></span>
+                </button>
+                <div class="usuario">
+                    <div>
+                        <strong><%= usuarioLogado ? usuarioLogado.nome : '' %></strong>
+                        <small><%= usuarioLogado && usuarioLogado.administrador ? 'Administrador' : 'Usuário do sistema' %></small>
+                    </div>
+                    <% if (iniciais) { %><span class="avatar" aria-hidden="true"><%= iniciais %></span><% } %>
+                </div>
+            </div>
+        </header>
+
+        <main id="conteudo">
+            <% if (locals.flash) { %>
+                <div class="alerta alerta-<%= flash.tipo %>"><%= flash.texto %></div>
+            <% } %>
+            <% if (locals.erro) { %>
+                <div class="alerta alerta-erro"><%= erro %></div>
+            <% } %>
