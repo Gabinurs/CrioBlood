@@ -22,15 +22,15 @@
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>ID</th><th>Código</th><th>Lote</th><th>Produto</th><th>ABO/Rh</th><th>Validade</th><th>Status</th><th>Ações</th></tr>
+                <tr><th>ID</th><th>Código original</th><th>Código CrioBlood</th><th>Volume</th><th>Lote</th><th>Produto</th><th>ABO/Rh</th><th>Validade</th><th>Status</th><th>Ações</th></tr>
             </thead>
             <tbody>
                 <% if (!hemocomponentes || hemocomponentes.length === 0) { %>
-                    <tr><td colspan="8" class="vazio">Nenhum registro encontrado.</td></tr>
+                    <tr><td colspan="10" class="vazio">Nenhum registro encontrado.</td></tr>
                 <% } else { hemocomponentes.forEach(function (item) { %>
                     <tr data-busca="<%= ((item.codigo_original || '') + ' ' + (item.codigo_lote || '')).toLowerCase() %>" data-status="<%= item.status %>">
                         <td><%= item.id %></td>
-                        <td><strong><%= item.codigo_original %></strong></td>
+                        <td><strong><%= item.codigo_original %></strong></td><td><strong><%= item.codigo_interno || "—" %></strong></td><td><%= item.volume_ml ? item.volume_ml + " mL" : "—" %></td>
                         <td><%= item.codigo_lote || item.lote_id %></td>
                         <td><%= item.tipo %></td>
                         <td><%= rot.tipagem(item.abo, item.fator_rh) %></td>
@@ -48,7 +48,7 @@
                         </td>
                     </tr>
                 <% }) %>
-                    <tr data-sem-resultado hidden><td colspan="8" class="vazio">Nenhum registro encontrado com esse filtro.</td></tr>
+                    <tr data-sem-resultado hidden><td colspan="10" class="vazio">Nenhum registro encontrado com esse filtro.</td></tr>
                 <% } %>
             </tbody>
         </table>

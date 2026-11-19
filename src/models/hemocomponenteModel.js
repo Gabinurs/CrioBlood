@@ -107,53 +107,46 @@ class HemocomponenteModel {
 
     static async criar(dados, usuarioId) {
         const codigo = normalizarEspacos(dados.codigo_original).toUpperCase();
-        if (!PADROES.codigoBolsa.regex.test(codigo)) {
-            throw new ErroValidacao(`Código da bolsa inválido. ${PADROES.codigoBolsa.mensagem}`);
-        }
-        if (!textoLivreValido((dados.observacoes || '').trim())) {
-            throw new ErroValidacao(`Observações: use até ${LIMITE_TEXTO_LIVRE} caracteres, sem caracteres de controle.`);
-        }
-
-        // Não aceita bolsas em lote inexistente ou já fechado
-        const lote = (await db.query(
-            'SELECT status FROM lotes_recebimento WHERE id = $1', [dados.lote_id])).rows[0];
-        if (!lote) {
-            throw new ErroValidacao('O lote informado não existe. Confira o lote selecionado.');
-        }
-        if (lote.status !== 'ABERTO') {
-            throw new ErroConflito('Esse lote já está fechado e não recebe novas bolsas.');
-        }
-
+        if (!PADROES.codigoBolsa.regex.test(codigo)) throw new ErroValidacao(`Código da bolsa inválido. ${PADROES.codigoBolsa.mensagem}`);
+        if (!textoLivreValido((dados.observacoes || '').trim())) throw new ErroValidacao(`Observações: use até ${LIMITE_TEXTO_LIVRE} caracteres, sem caracteres de controle.`);
+        const volume = Number(dados.volume_ml);
+        if (!Number.isInteger(volume) || volume < 1 || volume > 5000) throw new ErroValidacao('Informe um volume válido em mL.');
+        if (!['A','B','AB','O'].includes(dados.abo) || !['+','-'].includes(dados.fator_rh)) throw new ErroValidacao('Informe o grupo ABO e o fator Rh da bolsa.');
+        const lote = (await db.query('SELECT status FROM lotes_recebimento WHERE id = $1', [dados.lote_id])).rows[0];
+        if (!lote) throw new ErroValidacao('O lote informado não existe. Confira o lote selecionado.');
+        if (lote.status !== 'ABERTO') throw new ErroConflito('Esse lote já está fechado e não recebe novas bolsas.');
+        const prazos = { CH: {dias:42}, PLAQUETAS: {dias:7}, PLASMA: {anos:1}, CRIO: {anos:1} };
+        const prazo = prazos[dados.tipo];
+        if (!prazo) throw new ErroValidacao('Tipo de hemocomponente inválido.');
+        const partes = String(dados.data_coleta || '').split('-').map(Number);
+        if (partes.length !== 3 || partes.some(Number.isNaN)) throw new ErroValidacao('Informe uma data de coleta válida.');
+        const data = new Date(Date.UTC(partes[0], partes[1]-1, partes[2]));
+        if (data.getUTCFullYear()!==partes[0] || data.getUTCMonth()!==partes[1]-1 || data.getUTCDate()!==partes[2]) throw new ErroValidacao('A data de coleta informada não é válida.');
+        if (prazo.dias) data.setUTCDate(data.getUTCDate()+prazo.dias);
+        if (prazo.anos) data.setUTCFullYear(data.getUTCFullYear()+prazo.anos);
+        const dataValidade = data.toISOString().slice(0,10);
+        const exames = ['anti_hbc','anti_hcv','anti_hiv_1_2','anti_htlv_i_ii','chagas','hbsag','nat_hbv','nat_hcv','nat_hiv','nat_malaria','sifilis','pesquisa_hbs','pai_negativo'];
+        const codigoInterno = (await db.query(
+            `SELECT 'CB-' || to_char(CURRENT_DATE,'YY') || '-' || lpad(nextval('hemocomponentes_codigo_interno_seq')::text,7,'0') AS codigo`
+        )).rows[0].codigo;
+        const colunasExames = exames.join(', ');
+        const placeholdersExames = exames.map((_,i)=>`$${16+i}`).join(', ');
         const query = `
             INSERT INTO hemocomponentes
-                (lote_id, codigo_original, tipo, abo, fator_rh,
-                 data_coleta, data_validade,
-                 inspecao_visual, integridade_confirmada, tipagem_confirmada,
-                 status, observacoes, cadastrado_por)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-            RETURNING id
+                (lote_id,codigo_original,codigo_interno,tipo,abo,fator_rh,data_coleta,data_validade,volume_ml,
+                 inspecao_visual,integridade_confirmada,tipagem_confirmada,status,observacoes,cadastrado_por,${colunasExames})
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,${placeholdersExames})
+            RETURNING id,codigo_interno
         `;
-        let rows;
         try {
-            ({ rows } = await db.query(query, [
-            dados.lote_id,
-            codigo,
-            dados.tipo,
-            dados.abo || null,
-            dados.fator_rh || null,
-            dados.data_coleta,
-            dados.data_validade,
-            dados.inspecao_visual === 'on',
-            dados.integridade_confirmada === 'on',
-            dados.tipagem_confirmada === 'on',
-            dados.status || 'EM_CONFERENCIA',
-            (dados.observacoes || '').trim() || null,
-            usuarioId
-        ]));
-        } catch (erro) {
-            throw traduzirErroBanco(erro);
-        }
-        return rows[0].id;
+            const { rows } = await db.query(query, [
+                dados.lote_id,codigo,codigoInterno,dados.tipo,dados.abo,dados.fator_rh,dados.data_coleta,
+                dataValidade,volume,dados.inspecao_visual==='on',dados.integridade_confirmada==='on',
+                dados.tipagem_confirmada==='on',dados.status||'EM_CONFERENCIA',
+                (dados.observacoes||'').trim()||null,usuarioId,...exames.map(k=>dados[k]==='on')
+            ]);
+            return rows[0];
+        } catch (erro) { throw traduzirErroBanco(erro); }
     }
 
     static async atualizar(id, dados) {

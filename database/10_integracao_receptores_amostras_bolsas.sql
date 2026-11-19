@@ -57,5 +57,3 @@ SET codigo_interno = 'CB-LEGADO-' || id::text
 WHERE codigo_interno IS NULL OR codigo_interno = '';
 ALTER TABLE hemocomponentes ALTER COLUMN codigo_interno SET NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_hemocomponentes_codigo_interno ON hemocomponentes(codigo_interno);
-ALTER TABLE hemocomponentes DROP CONSTRAINT IF EXISTS ck_hemocomponentes_volume_ml;
-ALTER TABLE hemocomponentes ADD CONSTRAINT ck_hemocomponentes_volume_ml CHECK (volume_ml IS NULL OR volume_ml > 0);
