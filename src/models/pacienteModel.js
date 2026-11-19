@@ -12,14 +12,15 @@ const COLUNAS = `
 
 function validar(dados) {
     const nome = normalizarEspacos(dados.nome);
-    const prontuario = normalizarEspacos(dados.prontuario).toUpperCase();
+    const prontuario = normalizarEspacos(dados.prontuario || '').toUpperCase();
+    const nomeMae = normalizarEspacos(dados.nome_mae || '');
     const observacoes = (dados.observacoes || '').trim();
 
     if (!PADROES.nomePessoa.regex.test(nome)) {
         throw new ErroValidacao(`Nome inválido. ${PADROES.nomePessoa.mensagem}`);
     }
-    if (!prontuario) throw new ErroValidacao('O número do prontuário é obrigatório.');
-    if (!PADROES.prontuario.regex.test(prontuario)) {
+    if (nomeMae.length < 3 || !PADROES.nomePessoa.regex.test(nomeMae)) throw new ErroValidacao('Informe o nome completo da mãe.');
+    if (prontuario && !PADROES.prontuario.regex.test(prontuario)) {
         throw new ErroValidacao(`Prontuário inválido. ${PADROES.prontuario.mensagem}`);
     }
     if (!ehDataValida(dados.data_nascimento)) {
@@ -42,7 +43,15 @@ function validar(dados) {
 
     return {
         nome,
-        prontuario,
+        nome_mae: nomeMae,
+        prontuario: prontuario || null,
+        cns: (dados.cns || '').trim() || null,
+        cpf: (dados.cpf || '').trim() || null,
+        rg: (dados.rg || '').trim() || null,
+        sexo: (dados.sexo || '').trim() || null,
+        telefone: (dados.telefone || '').trim() || null,
+        convenio: (dados.convenio || '').trim() || null,
+        plano: (dados.plano || '').trim() || null,
         data_nascimento: dados.data_nascimento,
         abo: dados.abo || null,
         fator_rh: dados.fator_rh || null,
@@ -88,9 +97,9 @@ class PacienteModel {
         try {
             const { rows } = await db.query(
                 `INSERT INTO pacientes
-                    (nome, prontuario, data_nascimento, abo, fator_rh, observacoes, cadastrado_por)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-                [d.nome, d.prontuario, d.data_nascimento, d.abo, d.fator_rh, d.observacoes, usuarioId]
+                    (nome, nome_mae, prontuario, data_nascimento, abo, fator_rh, cns, cpf, rg, sexo, telefone, convenio, plano, observacoes, cadastrado_por)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING id`,
+                [d.nome, d.nome_mae, d.prontuario, d.data_nascimento, d.abo, d.fator_rh, d.cns, d.cpf, d.rg, d.sexo, d.telefone, d.convenio, d.plano, d.observacoes, usuarioId]
             );
             return rows[0].id;
         } catch (erro) {
@@ -103,11 +112,12 @@ class PacienteModel {
         try {
             await db.query(
                 `UPDATE pacientes
-                 SET nome = $1, prontuario = $2, data_nascimento = $3, abo = $4, fator_rh = $5,
-                     observacoes = $6, ativo = $7, atualizado_em = CURRENT_TIMESTAMP
-                 WHERE id = $8`,
-                [d.nome, d.prontuario, d.data_nascimento, d.abo, d.fator_rh, d.observacoes,
-                 dados.ativo === 'on', id]
+                 SET nome = $1, nome_mae = $2, prontuario = $3, data_nascimento = $4, abo = $5, fator_rh = $6,
+                     cns = $7, cpf = $8, rg = $9, sexo = $10, telefone = $11, convenio = $12, plano = $13,
+                     observacoes = $14, ativo = $15, atualizado_em = CURRENT_TIMESTAMP
+                 WHERE id = $16`,
+                [d.nome, d.nome_mae, d.prontuario, d.data_nascimento, d.abo, d.fator_rh, d.cns, d.cpf, d.rg,
+                 d.sexo, d.telefone, d.convenio, d.plano, d.observacoes, dados.ativo === 'on', id]
             );
         } catch (erro) {
             throw traduzirErro(erro);
