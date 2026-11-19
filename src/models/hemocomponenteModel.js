@@ -145,7 +145,7 @@ class HemocomponenteModel {
                 dados.tipagem_confirmada==='on',dados.status||'EM_CONFERENCIA',
                 (dados.observacoes||'').trim()||null,usuarioId,...exames.map(k=>dados[k]==='on')
             ]);
-            return rows[0];
+            return rows[0].id;
         } catch (erro) { throw traduzirErroBanco(erro); }
     }
 
