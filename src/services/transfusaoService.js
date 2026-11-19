@@ -52,7 +52,7 @@ class TransfusaoService {
         const nomeTransfundiu = String(dados.transfundido_por_nome || '').trim();
         if (nomeTransfundiu.length < 3 || nomeTransfundiu.length > 160) throw new ErroConflito('Informe o nome do profissional que realizou a transfusão.');
         const converterDataHora = valor => {
-            if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(String(valor || ''))) return null;
+            if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(valor || ''))) return null;
             const d = new Date(valor + ':00-03:00');
             return Number.isNaN(d.getTime()) ? null : d;
         };
