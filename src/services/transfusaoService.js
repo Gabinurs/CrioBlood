@@ -29,7 +29,9 @@ class TransfusaoService {
         const { rows } = await db.query(`
             SELECT t.id, t.paciente_nome, t.prontuario, t.medico_solicitante, t.observacoes,
                    h.codigo_original AS bolsa_codigo, h.tipo, h.abo, h.fator_rh,
-                   u.nome AS registrado_por_nome,
+                   u.nome AS registrado_por_nome, t.transfundido_por_nome,
+                   to_char(t.inicio_transfusao AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS inicio_transfusao_br,
+                   to_char(t.fim_transfusao AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS fim_transfusao_br,
                    to_char(t.data_saida AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS data_saida_br
             FROM transusoes_saidas t
             JOIN hemocomponentes h ON h.id = t.hemocomponente_id
@@ -46,7 +48,20 @@ class TransfusaoService {
     }
 
     // Registra a saída e baixa a bolsa (tudo ou nada)
-    static async registrar(solicitacaoId, observacoes, usuarioId) {
+    static async registrar(solicitacaoId, dados, usuarioId) {
+        const nomeTransfundiu = String(dados.transfundido_por_nome || '').trim();
+        if (nomeTransfundiu.length < 3 || nomeTransfundiu.length > 160) throw new ErroConflito('Informe o nome do profissional que realizou a transfusão.');
+        const converterDataHora = valor => {
+            if (!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/.test(String(valor || ''))) return null;
+            const d = new Date(valor + ':00-03:00');
+            return Number.isNaN(d.getTime()) ? null : d;
+        };
+        const inicio = converterDataHora(dados.inicio_transfusao);
+        const fim = converterDataHora(dados.fim_transfusao);
+        const agora = new Date();
+        if (!inicio || !fim) throw new ErroConflito('Informe a data e hora de início e término da transfusão.');
+        if (fim < inicio) throw new ErroConflito('O término da transfusão não pode ser anterior ao início.');
+        if (inicio > agora || fim > agora) throw new ErroConflito('Os horários da transfusão não podem estar no futuro.');
         const cliente = await db.connect();
         try {
             await cliente.query('BEGIN');
@@ -75,10 +90,10 @@ class TransfusaoService {
             await cliente.query(
                 `INSERT INTO transusoes_saidas
                     (hemocomponente_id, paciente_nome, prontuario, medico_solicitante,
-                     observacoes, solicitacao_id, registrado_por)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                     observacoes, solicitacao_id, registrado_por, inicio_transfusao, fim_transfusao, transfundido_por_nome)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
                 [b.id, s.paciente_nome, s.prontuario, s.medico_solicitante,
-                 (observacoes || '').trim() || null, s.id, usuarioId]);
+                 (dados.observacoes || '').trim() || null, s.id, usuarioId, inicio.toISOString(), fim.toISOString(), nomeTransfundiu]);
 
             await cliente.query(
                 `UPDATE hemocomponentes SET status = 'TRANSFUNDIDA', atualizado_em = CURRENT_TIMESTAMP WHERE id = $1`,

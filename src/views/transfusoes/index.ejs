@@ -27,8 +27,10 @@
                                   data-confirmar="Confirmar a transfusão da bolsa <%= s.bolsa_codigo %> para <%= s.paciente_nome %>?">
 <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>"></form>
                             <input type="hidden" name="solicitacao_id" value="<%= s.id %>" form="reg-<%= s.id %>">
-                            <input type="text" name="observacoes" maxlength="500" placeholder="Opcional" form="reg-<%= s.id %>"
-                                   class="input-compacto">
+                            <label class="campo-transfusao">Início *<input type="datetime-local" name="inicio_transfusao" required form="reg-<%= s.id %>" class="input-compacto"></label>
+                            <label class="campo-transfusao">Fim *<input type="datetime-local" name="fim_transfusao" required form="reg-<%= s.id %>" class="input-compacto"></label>
+                            <label class="campo-transfusao">Quem transfundiu *<input type="text" name="transfundido_por_nome" maxlength="160" minlength="3" required placeholder="Nome do profissional" form="reg-<%= s.id %>" class="input-compacto"></label>
+                            <input type="text" name="observacoes" maxlength="500" placeholder="Observações (opcional)" form="reg-<%= s.id %>" class="input-compacto">
                         </td>
                         <td><button class="botao botao-ok botao-pequeno" type="submit" form="reg-<%= s.id %>">Registrar transfusão</button></td>
                     </tr>
@@ -49,14 +51,17 @@
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>Data</th><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>ABO/Rh</th><th>Médico</th><th>Registrado por</th><th>Observações</th></tr>
+                <tr><th>Registro</th><th>Início</th><th>Fim</th><th>Quem transfundiu</th><th>Paciente</th><th>Prontuário</th><th>Bolsa</th><th>Produto</th><th>ABO/Rh</th><th>Médico</th><th>Registrado por</th><th>Observações</th></tr>
             </thead>
             <tbody>
                 <% if (historico.length === 0) { %>
-                    <tr><td colspan="9" class="vazio">Nenhuma transfusão registrada.</td></tr>
+                    <tr><td colspan="12" class="vazio">Nenhuma transfusão registrada.</td></tr>
                 <% } else { historico.forEach(function (t) { %>
                     <tr data-busca="<%= (t.paciente_nome + ' ' + t.prontuario + ' ' + t.bolsa_codigo).toLowerCase() %>">
                         <td><%= t.data_saida_br %></td>
+                        <td><%= t.inicio_transfusao_br || '—' %></td>
+                        <td><%= t.fim_transfusao_br || '—' %></td>
+                        <td><strong><%= t.transfundido_por_nome || '—' %></strong></td>
                         <td><strong><%= t.paciente_nome %></strong></td>
                         <td><%= t.prontuario %></td>
                         <td><%= t.bolsa_codigo %></td>
@@ -67,7 +72,7 @@
                         <td><%= t.observacoes || '—' %></td>
                     </tr>
                 <% }) %>
-                    <tr data-sem-resultado hidden><td colspan="9" class="vazio">Nenhuma transfusão encontrada.</td></tr>
+                    <tr data-sem-resultado hidden><td colspan="12" class="vazio">Nenhuma transfusão encontrada.</td></tr>
                 <% } %>
             </tbody>
         </table>

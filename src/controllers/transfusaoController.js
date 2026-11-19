@@ -20,7 +20,7 @@ class TransfusaoController {
     static async registrar(req, res) {
         const solicitacaoId = parseInt(req.body.solicitacao_id, 10);
         try {
-            const r = await TransfusaoService.registrar(solicitacaoId, req.body.observacoes, req.session.usuario.id);
+            const r = await TransfusaoService.registrar(solicitacaoId, req.body, req.session.usuario.id);
             await AuditoriaModel.registrarLog(
                 req.session.usuario.id, 'TRANSFUSAO', 'solicitacoes_transfusionais', solicitacaoId,
                 `Bolsa ${r.codigo}`);
