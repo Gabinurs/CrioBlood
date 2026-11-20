@@ -25,17 +25,17 @@
         },
         // CNS: 000 0000 0000 0000 (15 dígitos)
         'cns': function (v) {
-            var d = v.replace(/\\D/g, '').slice(0, 15);
-            return d.replace(/^(\\d{3})(\\d)/, '$1 $2').replace(/^(\\d{3} \\d{4})(\\d)/, '$1 $2').replace(/^(\\d{3} \\d{4} \\d{4})(\\d)/, '$1 $2');
+            var d = v.replace(/\D/g, '').slice(0, 15);
+            return d.replace(/^(\d{3})(\d)/, '$1 $2').replace(/^(\d{3} \d{4})(\d)/, '$1 $2').replace(/^(\d{3} \d{4} \d{4})(\d)/, '$1 $2');
         },
         // CPF: 000.000.000-00
         'cpf': function (v) {
-            var d = v.replace(/\\D/g, '').slice(0, 11);
-            return d.replace(/^(\\d{3})(\\d)/, '$1.$2').replace(/^(\\d{3}\\.\\d{3})(\\d)/, '$1.$2').replace(/(\\d{3})(\\d{1,2})$/, '$1-$2');
+            var d = v.replace(/\D/g, '').slice(0, 11);
+            return d.replace(/^(\d{3})(\d)/, '$1.$2').replace(/^(\d{3}\.\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
         },
         // Telefone: (00) 0000-0000 ou (00) 00000-0000
         'telefone': function (v) {
-            var d = v.replace(/\\D/g, '').slice(0, 11);
+            var d = v.replace(/\D/g, '').slice(0, 11);
             if (d.length <= 2) return d ? '(' + d : '';
             var ddd = d.slice(0, 2), numero = d.slice(2);
             if (numero.length <= 4) return '(' + ddd + ') ' + numero;
