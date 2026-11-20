@@ -15,6 +15,10 @@ function validar(dados) {
     const prontuario = normalizarEspacos(dados.prontuario || '').toUpperCase();
     const nomeMae = normalizarEspacos(dados.nome_mae || '');
     const observacoes = (dados.observacoes || '').trim();
+    const cns = normalizarEspacos(dados.cns || '');
+    const cpf = normalizarEspacos(dados.cpf || '');
+    const rg = normalizarEspacos(dados.rg || '');
+    const telefone = normalizarEspacos(dados.telefone || '');
 
     if (!PADROES.nomePessoa.regex.test(nome)) {
         throw new ErroValidacao(`Nome inválido. ${PADROES.nomePessoa.mensagem}`);
@@ -32,6 +36,10 @@ function validar(dados) {
     if (new Date(`${dados.data_nascimento}T00:00:00`) > new Date()) {
         throw new ErroValidacao('A data de nascimento não pode estar no futuro.');
     }
+    if (cns && !PADROES.cns.regex.test(cns)) throw new ErroValidacao(`CNS inválido. ${PADROES.cns.mensagem}`);
+    if (cpf && !PADROES.cpf.regex.test(cpf)) throw new ErroValidacao(`CPF inválido. ${PADROES.cpf.mensagem}`);
+    if (rg && !PADROES.rg.regex.test(rg)) throw new ErroValidacao(`RG inválido. ${PADROES.rg.mensagem}`);
+    if (telefone && !PADROES.telefone.regex.test(telefone)) throw new ErroValidacao(`Telefone inválido. ${PADROES.telefone.mensagem}`);
     if (dados.abo && !['A', 'B', 'AB', 'O'].includes(dados.abo)) throw new ErroValidacao('Grupo ABO inválido.');
     if (dados.fator_rh && !['+', '-'].includes(dados.fator_rh)) throw new ErroValidacao('Fator Rh inválido.');
     if ((dados.abo && !dados.fator_rh) || (!dados.abo && dados.fator_rh)) {
@@ -45,11 +53,11 @@ function validar(dados) {
         nome,
         nome_mae: nomeMae,
         prontuario: prontuario || null,
-        cns: (dados.cns || '').trim() || null,
-        cpf: (dados.cpf || '').trim() || null,
-        rg: (dados.rg || '').trim() || null,
+        cns: cns || null,
+        cpf: cpf || null,
+        rg: rg || null,
         sexo: (dados.sexo || '').trim() || null,
-        telefone: (dados.telefone || '').trim() || null,
+        telefone: telefone || null,
         convenio: (dados.convenio || '').trim() || null,
         plano: (dados.plano || '').trim() || null,
         data_nascimento: dados.data_nascimento,

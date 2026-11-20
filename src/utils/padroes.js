@@ -67,6 +67,34 @@ const PADROES = {
         mascara: 'posicao',
         mensagem: 'Use até 10 caracteres: letras, números e hífen (ex.: A1, B12).'
     },
+    // Cartão Nacional de Saúde: 15 dígitos, com ou sem separadores visuais.
+    cns: {
+        fonte: '(?:\\\\d{15}|\\\\d{3} \\\\d{4} \\\\d{4} \\\\d{4})',
+        max: 18,
+        mascara: 'cns',
+        mensagem: 'Informe os 15 dígitos do CNS.'
+    },
+    // CPF: 11 dígitos, com ou sem pontuação.
+    cpf: {
+        fonte: '(?:\\\\d{11}|\\\\d{3}\\\\.\\\\d{3}\\\\.\\\\d{3}-\\\\d{2})',
+        max: 14,
+        mascara: 'cpf',
+        mensagem: 'Informe um CPF com 11 dígitos.'
+    },
+    // RG varia conforme o estado; valida estrutura sem impor uma máscara nacional.
+    rg: {
+        fonte: '[\\\\p{L}\\\\p{N}][\\\\p{L}\\\\p{N} .\\\\/-]{3,19}',
+        max: 20,
+        mascara: null,
+        mensagem: 'Use de 4 a 20 caracteres: letras, números, ponto, barra, espaço ou hífen.'
+    },
+    // Telefone brasileiro: DDD + número, com ou sem formatação.
+    telefone: {
+        fonte: '(?:\\\\d{10,11}|\\\\(\\\\d{2}\\\\) \\\\d{4,5}-\\\\d{4})',
+        max: 15,
+        mascara: 'telefone',
+        mensagem: 'Informe DDD e telefone com 10 ou 11 dígitos.'
+    },
     // Data no formato AAAA-MM-DD (campo type="date")
     dataIso: {
         fonte: '\\d{4}-\\d{2}-\\d{2}',

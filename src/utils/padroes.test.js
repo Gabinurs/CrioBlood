@@ -125,3 +125,19 @@ test('paraViews: fontes servem para o atributo HTML pattern (modos u e v)', () =
         assert.ok(p.mensagem.length > 5, `${nome} precisa de mensagem`);
     }
 });
+
+test('CNS, CPF, RG e telefone: formatos aceitos e recusados', () => {
+    ok('cns', '123456789012345');
+    ok('cns', '123 4567 8901 2345');
+    nao('cns', '12345678901234');
+    ok('cpf', '12345678901');
+    ok('cpf', '123.456.789-01');
+    nao('cpf', '123.456.789-0');
+    ok('rg', '12.345.678-X');
+    ok('rg', 'MG 1234567');
+    nao('rg', '@@@@');
+    ok('telefone', '11987654321');
+    ok('telefone', '(11) 98765-4321');
+    ok('telefone', '(11) 3333-4444');
+    nao('telefone', '119876543');
+});
