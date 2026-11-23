@@ -83,7 +83,7 @@
                                     </option>
                                 <% }) %>
                             </select>
-                            <% if (!item.bolsas.length) { %><small>Não há bolsas disponíveis deste componente no estoque no momento.</small><% } else { %><small>A triagem ABO/Rh é apenas apoio. A prova cruzada deve ser realizada e registrada pelo profissional responsável.</small><% } %>
+                            <% if (!item.bolsas.length) { %><small>Não há bolsas disponíveis deste componente no estoque no momento.</small><% } else { %><small>Confira a tipagem da bolsa física e registre o resultado efetivamente obtido na prova cruzada.</small><% } %>
                         </div>
                         <button type="button" class="botao" data-abrir-prova data-item-id="<%= item.id %>" <%= item.bolsas.length ? '' : 'disabled' %>>Registrar prova cruzada</button>
                     </div>
