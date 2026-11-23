@@ -80,11 +80,17 @@
                                 <a class="botao botao-claro botao-pequeno" href="/lotes/<%= lote.id %>/relatorio">Comprovante PDF</a>
                             <% } %>
                             <% if (lote.status === 'ABERTO' && locals.pode && locals.pode('lotes.gerenciar')) { %>
-                                <form action="/lotes/<%= lote.id %>/fechar" method="POST"
-                                      data-confirmar="Finalizar o lote <%= lote.codigo %>? É necessário concluir a conferência de todas as bolsas.">
-                                    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
-                                    <button class="botao botao-perigo botao-pequeno" type="submit">Finalizar lote</button>
-                                </form>
+                                <% if (Number(lote.quantidade_bolsas) > 0 && Number(lote.em_conferencia) === 0) { %>
+                                    <form action="/lotes/<%= lote.id %>/fechar" method="POST"
+                                          data-confirmar="Finalizar o lote <%= lote.codigo %>? Depois de finalizado, ele não aceitará novas bolsas.">
+                                        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                                        <button class="botao botao-perigo botao-pequeno" type="submit">Finalizar lote</button>
+                                    </form>
+                                <% } else { %>
+                                    <span class="status s-amarelo recebimento-aviso-finalizacao">
+                                        <%= Number(lote.quantidade_bolsas) === 0 ? 'Adicione bolsas' : lote.em_conferencia + ' em conferência' %>
+                                    </span>
+                                <% } %>
                             <% } %>
                         </td>
                     </tr>
