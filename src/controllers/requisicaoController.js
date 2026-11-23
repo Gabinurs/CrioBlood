@@ -5,9 +5,13 @@ const { ErroNegocio, avisar, tratar, enviarErro } = require('../utils/erros');
 const STATUS = require('../utils/status');
 
 function dataHoraAtualLocal() {
-    const agora = new Date();
-    const local = new Date(agora.getTime() - agora.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 16);
+    const partes = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Sao_Paulo',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date());
+    const valores = Object.fromEntries(partes.map(p => [p.type, p.value]));
+    return valores.year + '-' + valores.month + '-' + valores.day + 'T' + valores.hour + ':' + valores.minute;
 }
 
 class RequisicaoController {
