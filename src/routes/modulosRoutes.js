@@ -25,7 +25,7 @@ router.param('id', (req, res, next, valor) => {
 });
 
 router.param('amostraId', (req, res, next, valor) => {
-    if (!/^\\d+$/.test(valor)) return enviarErro(req, res, STATUS.REQUISICAO_INVALIDA, 'ID de amostra inválido.');
+    if (!/^\d+$/.test(valor)) return enviarErro(req, res, STATUS.REQUISICAO_INVALIDA, 'ID de amostra inválido.');
     next();
 });
 
