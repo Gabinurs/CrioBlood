@@ -284,8 +284,7 @@ class RequisicaoModel {
             throw new ErroValidacao('Informe o código individual original da bolsa ou o código CrioBlood.');
         }
         if (codigo.startsWith('LOT-')) {
-            const lote = (await db.query('SELECT codigo FROM lotes_recebimento WHERE UPPER(BTRIM(codigo)) = $1 LIMIT 1', [codigo])).rows[0];
-            if (lote) throw new ErroValidacao('Esse é o código do lote, não da bolsa. Leia o código de barras individual da unidade ou informe o código CB- do CrioBlood.');
+            throw new ErroValidacao('Esse é um código de lote, não o código individual da bolsa. Leia o código de barras impresso na unidade ou informe o código CB- do CrioBlood.');
         }
         const cliente = await db.connect();
         try {
