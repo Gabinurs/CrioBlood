@@ -158,6 +158,7 @@
     }
 
     function mostrarEtapa(numero) {
+        root.setAttribute('data-etapa-atual', String(numero));
         etapa1.hidden = numero !== 1;
         etapa2.hidden = numero !== 2;
         root.querySelectorAll('[data-etapa-aba]').forEach(function (aba) {
@@ -217,7 +218,7 @@
             mostrarEtapa(1);
             return;
         }
-        if (!etapa2.checkVisibility || !etapa2.checkVisibility()) {
+        if (root.getAttribute('data-etapa-atual') !== '2') {
             evento.preventDefault();
             mostrarEtapa(2);
             return;
@@ -225,5 +226,6 @@
     });
 
     renderizarItens();
+    mostrarEtapa(root.getAttribute('data-etapa-inicial') === '2' ? 2 : 1);
     if (pacienteSelect.value) carregarContexto(pacienteSelect.value);
 })();
