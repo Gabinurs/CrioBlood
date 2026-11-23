@@ -1332,3 +1332,66 @@ button.requisicao-aba { font:inherit; cursor:pointer; }
 .opcao-paciente-tipagem { display:grid; place-items:center; min-width:42px; min-height:30px; padding:4px 7px; border:1px solid var(--borda); border-radius:8px; background:var(--superficie-2); color:var(--texto); font-size:11px; font-weight:800; }
 .pacientes-sem-resultado { padding:16px 12px; color:var(--cinza); font-size:11px; text-align:center; }
 .ajuda-busca-paciente { display:block; margin-top:6px; color:var(--cinza); font-size:10px; }
+
+
+/* Campo de paciente com o mesmo acabamento dos demais controles */
+.campo-busca-paciente .busca-paciente-controle input[type="text"] {
+    appearance:none;
+    -webkit-appearance:none;
+    min-height:46px;
+    padding:12px 44px 12px 14px;
+    border:1px solid var(--borda-forte);
+    border-radius:var(--raio-menor);
+    background:var(--superficie);
+    color:var(--texto);
+    font:inherit;
+    font-size:14px;
+    box-shadow:none;
+}
+.campo-busca-paciente .busca-paciente-controle input[type="text"]:focus {
+    outline:none;
+    border-color:var(--rosa);
+    box-shadow:0 0 0 4px var(--anel);
+}
+
+/* Leitura por código da bolsa — sem catálogo/lista suspensa */
+.selecionar-bolsa-requisicao { align-items:flex-end; }
+.campo-codigo-bolsa { flex:1; min-width:0; }
+.controle-codigo-bolsa { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:stretch; gap:9px; }
+.controle-codigo-bolsa input[type="text"] {
+    width:100%;
+    min-height:44px;
+    padding:11px 14px;
+    border:1px solid var(--borda-forte);
+    border-radius:var(--raio-menor);
+    background:var(--superficie);
+    color:var(--texto);
+    font:inherit;
+    font-size:14px;
+    letter-spacing:.02em;
+}
+.controle-codigo-bolsa input[type="text"]:focus {
+    outline:none;
+    border-color:var(--rosa);
+    box-shadow:0 0 0 4px var(--anel);
+}
+.controle-codigo-bolsa button { white-space:nowrap; }
+.resultado-validacao-codigo { margin-top:10px; padding:12px 13px; border:1px solid var(--borda); border-radius:10px; background:var(--superficie-2); }
+.resultado-validacao-codigo strong,.resultado-validacao-codigo p,.resultado-validacao-codigo small { display:block; }
+.resultado-validacao-codigo strong { font-size:11.5px; }
+.resultado-validacao-codigo p { margin-top:4px; font-size:11px; line-height:1.5; }
+.resultado-validacao-codigo small { margin-top:5px; color:var(--cinza); font-size:10px; }
+.resultado-codigo-ok { border-color:var(--verde-borda); background:var(--verde-fundo); color:var(--verde); }
+.resultado-codigo-erro { border-color:var(--vermelho-borda); background:var(--vermelho-fundo); color:var(--vermelho); }
+.resultado-codigo-alerta { border-color:var(--amarelo-borda); background:var(--amarelo-fundo); color:var(--amarelo); }
+.excecao-rhd-bloco { display:grid; gap:11px; margin-top:16px; padding:15px; border:1px solid var(--amarelo-borda); border-radius:12px; background:var(--amarelo-fundo); color:var(--amarelo); }
+.excecao-rhd-bloco > p { font-size:11px; line-height:1.55; }
+.excecao-rhd-bloco .campo label { color:var(--texto); }
+.excecao-rhd-bloco .campo input,.excecao-rhd-bloco .campo textarea {
+    width:100%; min-height:42px; padding:10px 12px; border:1px solid var(--borda-forte);
+    border-radius:var(--raio-menor); background:var(--superficie); color:var(--texto); font:inherit; font-size:13px;
+}
+@media(max-width:760px) {
+    .controle-codigo-bolsa { grid-template-columns:1fr; }
+    .controle-codigo-bolsa button { width:100%; }
+}
