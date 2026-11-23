@@ -4,7 +4,10 @@
     var modal = document.querySelector('[data-modal-prova]');
     if (!modal) return;
 
-    var requisicaoId = modal.querySelector('form').getAttribute('action').match(/solicitacoes\/(\d+)\/provas-cruzadas/)[1];
+    var action = modal.querySelector('form').getAttribute('action') || '';
+    var match = action.match(/solicitacoes\/(\d+)\/provas-cruzadas/);
+    if (!match) return;
+
     var form = modal.querySelector('[data-form-prova]');
     var campoItem = modal.querySelector('[data-prova-item]');
     var campoBolsa = modal.querySelector('[data-prova-bolsa]');
@@ -23,101 +26,6 @@
 
     var etiquetaModal = document.querySelector('[data-etiqueta-prova-modal]');
     var etiquetaFrame = etiquetaModal && etiquetaModal.querySelector('[data-etiqueta-prova-frame]');
-    var bolsasVerificadas = new Map();
-
-    function definirResultadoVisual(elemento, tipo, tituloTexto, mensagem, detalhesTexto) {
-        elemento.hidden = false;
-        elemento.classList.remove('resultado-codigo-ok', 'resultado-codigo-erro', 'resultado-codigo-alerta');
-        elemento.classList.add(tipo);
-        elemento.querySelector('[data-resultado-titulo]').textContent = tituloTexto;
-        elemento.querySelector('[data-resultado-mensagem]').textContent = mensagem;
-        elemento.querySelector('[data-resultado-detalhes]').textContent = detalhesTexto || '';
-    }
-
-    function limparVerificacao(cartao) {
-        var itemId = cartao.querySelector('[data-verificar-bolsa]').getAttribute('data-item-id');
-        bolsasVerificadas.delete(itemId);
-        var resultadoVisual = cartao.querySelector('[data-resultado-codigo]');
-        resultadoVisual.hidden = true;
-        resultadoVisual.classList.remove('resultado-codigo-ok', 'resultado-codigo-erro', 'resultado-codigo-alerta');
-        cartao.querySelector('[data-abrir-prova]').disabled = true;
-    }
-
-    async function verificarCodigo(botao) {
-        var itemId = botao.getAttribute('data-item-id');
-        var cartao = botao.closest('.unidade-requisicao');
-        var input = cartao && cartao.querySelector('[data-codigo-bolsa]');
-        var visual = cartao && cartao.querySelector('[data-resultado-codigo]');
-        var abrir = cartao && cartao.querySelector('[data-abrir-prova]');
-        if (!input || !visual || !abrir) return;
-
-        var codigoDigitado = input.value.trim();
-        limparVerificacao(cartao);
-        if (!codigoDigitado) {
-            definirResultadoVisual(visual, 'resultado-codigo-erro', 'Informe o código da bolsa', 'Digite ou leia o código original ou o código local CrioBlood.', '');
-            input.focus();
-            return;
-        }
-
-        botao.disabled = true;
-        botao.textContent = 'Verificando…';
-        try {
-            var url = '/solicitacoes/' + encodeURIComponent(requisicaoId) +
-                '/itens/' + encodeURIComponent(itemId) +
-                '/verificar-bolsa?codigo=' + encodeURIComponent(codigoDigitado);
-            var resposta = await fetch(url, {
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
-            });
-            var dados = await resposta.json();
-            if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível validar esta bolsa.');
-
-            bolsasVerificadas.set(itemId, dados);
-            var b = dados.bolsa;
-            var comp = dados.compatibilidade;
-            var detalhesTexto = b.codigoInterno + ' · ' + b.tipo + ' · ' +
-                b.abo + b.fatorRh + ' · ' + (b.volumeMl || '—') + ' mL · Validade ' + b.validade;
-
-            if (comp.excecaoPossivel) {
-                definirResultadoVisual(
-                    visual, 'resultado-codigo-alerta', 'Exceção RhD exige autorização',
-                    comp.mensagem,
-                    detalhesTexto
-                );
-            } else {
-                definirResultadoVisual(
-                    visual, 'resultado-codigo-ok', 'Bolsa localizada e compatível',
-                    comp.mensagem,
-                    detalhesTexto
-                );
-            }
-            abrir.disabled = false;
-            abrir.textContent = comp.excecaoPossivel
-                ? 'Registrar autorização e prova cruzada'
-                : (comp.tipoVerificacao === 'PROVA_CRUZADA' ? 'Registrar prova cruzada' : 'Registrar conferência');
-        } catch (erro) {
-            definirResultadoVisual(visual, 'resultado-codigo-erro', 'Bolsa não liberada', erro.message, '');
-            abrir.disabled = true;
-        } finally {
-            botao.disabled = false;
-            botao.textContent = 'Verificar código';
-        }
-    }
-
-    document.querySelectorAll('[data-verificar-bolsa]').forEach(function (botao) {
-        botao.addEventListener('click', function () { verificarCodigo(botao); });
-        var card = botao.closest('.unidade-requisicao');
-        var input = card && card.querySelector('[data-codigo-bolsa]');
-        if (input) {
-            input.addEventListener('input', function () { limparVerificacao(card); });
-            input.addEventListener('keydown', function (evento) {
-                if (evento.key === 'Enter') {
-                    evento.preventDefault();
-                    verificarCodigo(botao);
-                }
-            });
-        }
-    });
 
     function definirExcecaoVisivel(visivel) {
         blocoExcecao.hidden = !visivel;
@@ -128,15 +36,31 @@
     }
 
     function abrirModalProva(botao) {
-        var itemId = botao.getAttribute('data-item-id');
-        var dados = bolsasVerificadas.get(itemId);
-        if (!dados || !dados.bolsa || !dados.compatibilidade) {
-            window.alert('Primeiro informe e verifique o código da bolsa.');
+        // Os dados da bolsa foram carregados no servidor e a análise só é apresentada
+        // depois que o usuário entra no módulo Compatibilidade.
+        var d = botao.dataset;
+        var b = {
+            id: d.bolsaId,
+            codigoOriginal: d.codigoOriginal || '',
+            codigoInterno: d.codigoInterno || '',
+            tipo: d.tipo || '',
+            abo: d.abo || '',
+            fatorRh: d.rh || '',
+            volumeMl: d.volume || '',
+            validade: d.validade || ''
+        };
+        var comp = {
+            permitido: d.permitido === 'true',
+            excecaoPossivel: d.excecaoPossivel === 'true',
+            tipoVerificacao: d.tipoVerificacao || (b.tipo === 'CH' ? 'PROVA_CRUZADA' : 'CONFERENCIA_COMPATIBILIDADE')
+        };
+
+        if (!b.id || !comp.permitido && !comp.excecaoPossivel) {
+            window.alert('Esta bolsa ainda não está liberada para registrar prova/conferência. Consulte o resultado no módulo Compatibilidade.');
             return;
         }
 
-        var b = dados.bolsa;
-        var comp = dados.compatibilidade;
+        var itemId = botao.getAttribute('data-item-id');
         campoItem.value = itemId;
         campoBolsa.value = b.id;
         codigo.textContent = b.codigoOriginal;
@@ -152,20 +76,21 @@
         rotuloResponsavel.textContent = isProvaCruzada
             ? 'Colaborador que realizou a prova *'
             : 'Colaborador que realizou a conferência *';
+
         var opcaoCompat = resultado.querySelector('option[value="COMPATIVEL"]');
         var opcaoIncomp = resultado.querySelector('option[value="INCOMPATIVEL"]');
         opcaoCompat.textContent = isProvaCruzada ? 'Compatível' : 'Conferência conforme';
         opcaoIncomp.textContent = isProvaCruzada ? 'Incompatível' : 'Conferência não conforme';
         avisoTipo.textContent = isProvaCruzada
-            ? 'A prova cruzada é realizada pelo serviço de hemoterapia. O CrioBlood apenas registra o resultado informado pelo profissional executor.'
-            : 'Este registro documenta a conferência aplicável ao componente. Para plasma e crioprecipitado, a norma não exige prova de compatibilidade; siga o protocolo institucional.';
-        definirExcecaoVisivel(Boolean(comp.excecaoPossivel));
+            ? 'A prova cruzada laboratorial deve ser realizada pelo profissional habilitado. O CrioBlood registra o resultado informado.'
+            : 'Registre a conferência aplicável ao componente, conforme o protocolo do serviço de hemoterapia.';
+
         form.reset();
         campoItem.value = itemId;
         campoBolsa.value = b.id;
-        definirExcecaoVisivel(Boolean(comp.excecaoPossivel));
-
+        definirExcecaoVisivel(comp.excecaoPossivel);
         modal.showModal();
+
         var dataHora = modal.querySelector('[data-datahora-display]');
         if (dataHora) dataHora.focus();
     }
@@ -214,7 +139,7 @@
     form.addEventListener('submit', function (evento) {
         if (!campoItem.value || !campoBolsa.value) {
             evento.preventDefault();
-            window.alert('Verifique o código da bolsa antes de registrar.');
+            window.alert('A bolsa selecionada não foi encontrada. Volte à etapa da requisição e associe uma bolsa.');
             return;
         }
         if (blocoExcecao && !blocoExcecao.hidden) {
@@ -226,7 +151,7 @@
             }
         }
         if (resultado.value === 'INCOMPATIVEL') {
-            var mensagem = 'Registrar o resultado INCOMPATÍVEL? A bolsa não será reservada nem vinculada ao receptor.';
+            var mensagem = 'Registrar o resultado INCOMPATÍVEL? A bolsa será liberada de volta ao estoque e deixará de ficar vinculada a esta unidade.';
             if (!window.confirm(mensagem)) evento.preventDefault();
         }
     });
