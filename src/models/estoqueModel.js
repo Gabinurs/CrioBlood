@@ -59,7 +59,7 @@ class EstoqueModel {
 
     static async listarBolsas(pag = {}) {
         const { rows } = await db.query(`
-            SELECT h.id, h.codigo_original, h.tipo, h.abo, h.fator_rh, h.status,
+            SELECT h.id, h.codigo_interno, h.codigo_original, h.tipo, h.abo, h.fator_rh, h.status,
                    l.codigo AS codigo_lote,
                    to_char(h.data_validade, 'DD/MM/YYYY') AS validade_br,
                    (h.data_validade - CURRENT_DATE) AS dias_restantes,
