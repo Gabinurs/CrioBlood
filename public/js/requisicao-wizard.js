@@ -51,7 +51,9 @@
         definirTexto('[data-receptor-nascimento]', dados.nascimento_br);
         definirTexto('[data-receptor-mae]', dados.nome_mae || 'Não informado');
         definirTexto('[data-receptor-prontuario]', dados.prontuario || '—');
-        definirTexto('[data-receptor-tipagem]', dados.abo && dados.fator_rh ? dados.abo + dados.fator_rh : 'ABO/Rh pendente');
+        var aboAmostra = dados.amostra_abo || dados.abo;
+        var rhAmostra = dados.amostra_rh || dados.fator_rh;
+        definirTexto('[data-receptor-tipagem]', aboAmostra && rhAmostra ? aboAmostra + rhAmostra : 'ABO/Rh pendente');
 
         var temAmostra = Boolean(dados.amostra_id);
         definirTexto('[data-amostra-titulo]', temAmostra ? 'Amostra mais recente' : 'Amostra não localizada');
