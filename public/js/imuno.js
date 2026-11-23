@@ -1,5 +1,10 @@
 // Interação da tela Imuno: exige justificativa em modal quando PAI ou Controle é positivo.
 (function () {
+    var imprimirEtiqueta = document.querySelector('[data-imprimir-etiqueta]');
+    if (imprimirEtiqueta) imprimirEtiqueta.addEventListener('click', function () { window.print(); });
+    var fecharEtiqueta = document.querySelector('[data-fechar-etiqueta]');
+    if (fecharEtiqueta) fecharEtiqueta.addEventListener('click', function () { window.close(); });
+
     var form = document.querySelector('[data-form-imuno]');
     var modal = document.querySelector('[data-modal-justificativa]');
     if (!form || !modal || typeof modal.showModal !== 'function') return;
@@ -48,11 +53,6 @@
         if (hiddenAtual) hiddenAtual.value = '';
         modal.close();
     });
-
-    var imprimirEtiqueta = document.querySelector('[data-imprimir-etiqueta]');
-    if (imprimirEtiqueta) imprimirEtiqueta.addEventListener('click', function () { window.print(); });
-    var fecharEtiqueta = document.querySelector('[data-fechar-etiqueta]');
-    if (fecharEtiqueta) fecharEtiqueta.addEventListener('click', function () { window.close(); });
 
     form.addEventListener('submit', function (evento) {
         ['pai', 'controle'].forEach(function (tipo) {
