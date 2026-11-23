@@ -1,22 +1,37 @@
-<%- include('../partials/inicio',{titulo:'Dossiê do receptor',subtitulo:'Histórico cadastral, amostras e resultados',ativo:'pacientes'}) %>
-<section class="painel">
-<div class="cabecalho-pagina"><div><h3><%= paciente.nome %></h3><p>Nascimento: <%= paciente.data_nascimento_br %> · Mãe: <%= paciente.nome_mae || 'Não informado' %></p>
-<div class="detalhes">
-<div><span>Prontuário</span><strong><%= paciente.prontuario || 'Não informado' %></strong></div>
-<div><span>CNS</span><strong><%= paciente.cns || 'Não informado' %></strong></div>
-<div><span>CPF</span><strong><%= paciente.cpf || 'Não informado' %></strong></div>
-<div><span>RG</span><strong><%= paciente.rg || 'Não informado' %></strong></div>
-<div><span>Sexo</span><strong><%= paciente.sexo === 'F' ? 'Feminino' : paciente.sexo === 'M' ? 'Masculino' : 'Não informado' %></strong></div>
-<div><span>Telefone</span><strong><%= paciente.telefone || 'Não informado' %></strong></div>
-<div><span>Convênio</span><strong><%= paciente.convenio || 'Não informado' %></strong></div>
-<div><span>Plano</span><strong><%= paciente.plano || 'Não informado' %></strong></div>
-<div><span>ABO/Rh do último exame</span><strong><%= paciente.abo || 'Pendente' %><%= paciente.fator_rh || '' %></strong></div>
-<div><span>Situação cadastral</span><strong><%= paciente.ativo ? 'Ativo' : 'Inativo' %></strong></div>
-</div>
-<p><strong>Observações:</strong> <%= paciente.observacoes || 'Nenhuma observação cadastrada.' %></p></div>
-<div class="acoes"><a class="botao botao-claro" href="/pacientes">Voltar</a><a class="botao botao-claro" href="/pacientes/<%= paciente.id %>/editar">Editar cadastro</a><a class="botao" href="/pacientes/<%= paciente.id %>/amostras/nova">+ Nova amostra</a></div></div>
-<h3>Histórico de amostras</h3><div class="tabela-container"><table><thead><tr><th>Código</th><th>Coleta</th><th>Recebimento</th><th>ABO/Rh</th><th>Controle Rh</th><th>PAI</th><th>Validade</th><th>Status</th></tr></thead><tbody>
-<% if(!amostras.length){ %><tr><td colspan="8" class="vazio">Nenhuma amostra registrada.</td></tr><% } else { amostras.forEach(a=>{ %>
-<tr><td><%= a.codigo %></td><td><%= a.coleta_br %></td><td><%= a.recebimento_br %></td><td><strong><%= a.abo %><%= a.fator_rh %></strong></td><td><%= a.controle_rh %><% if(a.controle_rh==='POSITIVO'){ %><br><small><%= a.controle_rh_justificativa %></small><% } %></td><td><strong><%= a.pai %></strong><% if(a.pai==='POSITIVO'){ %><br><small><%= a.pai_justificativa %></small><% } %></td><td><%= a.validade_br %></td><td><span class="status <%= a.valida && a.pai==='NEGATIVO'?'s-verde':'s-vermelho' %>"><%= !a.valida?'Vencida':a.pai==='POSITIVO'?'PAI positivo':'Válida' %></span></td></tr>
-<% }) } %></tbody></table></div>
-</section><%- include('../partials/fim') %>
+<%- include('../partials/inicio',{titulo:'Dossiê do receptor',subtitulo:'Identificação, histórico de amostras e resultados',ativo:'pacientes'}) %>
+<section class="painel dossie-receptor">
+    <div class="cabecalho-pagina">
+        <div><span class="rotulo-dossie">RECEPTOR</span><h3><%= paciente.nome %></h3><p>Nascimento: <%= paciente.data_nascimento_br %> · Mãe: <%= paciente.nome_mae || 'Não informado' %></p></div>
+        <div class="tipagem-dossie"><small>ABO / Rh registrado</small><strong><%= paciente.abo ? paciente.abo + paciente.fator_rh : 'Pendente' %></strong></div>
+    </div>
+    <div class="detalhes">
+        <div><span>Prontuário</span><strong><%= paciente.prontuario || 'Não informado' %></strong></div>
+        <div><span>CNS</span><strong><%= paciente.cns || 'Não informado' %></strong></div>
+        <div><span>CPF</span><strong><%= paciente.cpf || 'Não informado' %></strong></div>
+        <div><span>Telefone</span><strong><%= paciente.telefone || 'Não informado' %></strong></div>
+    </div>
+    <% if (amostras.some(a=>a.valida)) { var vigente=amostras.find(a=>a.valida); %>
+        <div class="alerta alerta-info alerta-amostra-vigente"><strong>Amostra dentro da validade:</strong> <%= vigente.codigo %> · coletada em <%= vigente.coleta_br %> · válida até <%= vigente.validade_br %>.</div>
+    <% } %>
+    <% if (liberacao && !liberacao.permitido) { %><div class="alerta alerta-aviso"><strong>Solicitação transfusional indisponível:</strong> <%= liberacao.motivo %></div><% } %>
+    <div class="acoes acoes-dossie">
+        <a class="botao botao-claro" href="/pacientes">Voltar</a>
+        <a class="botao botao-claro" href="/pacientes/<%= paciente.id %>/editar">Edição</a>
+        <a class="botao" href="/pacientes/<%= paciente.id %>/amostras/nova">Nova amostra</a>
+        <% if (liberacao && liberacao.permitido) { %><a class="botao botao-ok" href="/solicitacoes/nova?paciente_id=<%= paciente.id %>">Transfusão / Reserva</a><% } %>
+    </div>
+    <h3 class="titulo-secao-amostra">Histórico de amostras</h3>
+    <div class="tabela-container"><table class="tabela-amostras"><thead><tr><th>Código</th><th>Coleta</th><th>Recebimento</th><th>Validade</th><th>Imuno</th><th>PAI</th><th>Controle</th><th>Transfusão / Reserva</th><th>Ações</th></tr></thead><tbody>
+    <% if (!amostras.length) { %><tr><td colspan="9" class="vazio">Nenhuma amostra registrada.</td></tr><% } else { amostras.forEach(a=>{ %>
+        <tr>
+            <td><strong><%= a.codigo %></strong></td><td><%= a.coleta_br %><br><small>Por: <%= a.responsavel_coleta || '—' %></small></td><td><%= a.recebimento_br %></td><td><span class="status <%= a.valida?'s-verde':'s-vermelho' %>"><%= a.valida?'Válida':'Vencida' %></span><br><small><%= a.validade_br %></small></td>
+            <td><span class="status <%= a.status_imuno==='CONCLUIDO'?'s-verde':a.status_imuno==='BLOQUEADO'?'s-vermelho':'s-amarelo' %>"><%= a.status_imuno==='CONCLUIDO'?'Concluído':a.status_imuno==='BLOQUEADO'?'Bloqueado':'Pendente' %></span></td>
+            <td><%= a.pai || 'Pendente' %></td><td><%= a.controle_rh || 'Pendente' %></td><td><%= a.solicitacao_transfusao?'Sim':'Não' %></td>
+            <td class="acoes">
+                <a class="botao botao-claro botao-pequeno" href="/pacientes/<%= paciente.id %>/amostras/<%= a.id %>/imuno">Imuno</a>
+                <a class="botao botao-claro botao-pequeno" href="/pacientes/<%= paciente.id %>/amostras/<%= a.id %>/etiqueta" target="_blank" rel="noopener">Etiqueta</a>
+            </td>
+        </tr>
+    <% }) } %></tbody></table></div>
+</section>
+<%- include('../partials/fim') %>
