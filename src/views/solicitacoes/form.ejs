@@ -37,16 +37,45 @@
                 <div><span class="numero-secao">01</span><div><h3>Identificação do receptor</h3><p>Selecione o paciente para carregar a tipagem e a amostra mais recente.</p></div></div>
             </div>
 
-            <div class="campo">
-                <label for="paciente_id">Paciente / receptor *</label>
-                <select id="paciente_id" name="paciente_id" required data-paciente-select>
-                    <option value="">Selecione um receptor...</option>
+            <div class="campo campo-busca-paciente">
+                <label for="busca-paciente">Paciente / receptor *</label>
+                <div class="busca-paciente-controle">
+                    <input
+                        type="search"
+                        id="busca-paciente"
+                        data-busca-paciente
+                        placeholder="Digite o nome do paciente..."
+                        value="<%= pacienteSelecionado ? pacienteSelecionado.nome : '' %>"
+                        autocomplete="off"
+                        role="combobox"
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-controls="lista-pacientes"
+                        aria-describedby="ajuda-busca-paciente"
+                        required>
+                    <button type="button" data-limpar-paciente aria-label="Limpar paciente selecionado" <%= pacienteSelecionado ? '' : 'hidden' %>>×</button>
+                </div>
+                <input type="hidden" name="paciente_id" data-paciente-select value="<%= pacienteSelecionado ? pacienteSelecionado.id : '' %>">
+                <div class="lista-pacientes-sugestoes" id="lista-pacientes" data-lista-pacientes role="listbox" hidden>
                     <% pacientes.forEach(function (p) { %>
-                        <option value="<%= p.id %>" <%= String(val.paciente_id || '') === String(p.id) ? 'selected' : '' %>>
-                            <%= p.nome %> · <%= rot.tipagem(p.abo, p.fator_rh) %><%= p.prontuario ? ' · Prontuário ' + p.prontuario : '' %>
-                        </option>
+                        <button type="button" class="opcao-paciente" role="option"
+                            data-paciente-opcao
+                            data-paciente-id="<%= p.id %>"
+                            data-nome="<%= p.nome %>"
+                            data-prontuario="<%= p.prontuario || '' %>"
+                            data-tipagem="<%= rot.tipagem(p.abo, p.fator_rh) %>">
+                            <span class="opcao-paciente-principal">
+                                <strong><%= p.nome %></strong>
+                                <small><%= p.prontuario ? 'Prontuário ' + p.prontuario : 'Sem prontuário' %></small>
+                            </span>
+                            <span class="opcao-paciente-tipagem"><%= rot.tipagem(p.abo, p.fator_rh) %></span>
+                        </button>
                     <% }) %>
-                </select>
+                    <div class="pacientes-sem-resultado" data-pacientes-sem-resultado hidden>
+                        Nenhum paciente encontrado com esse nome ou prontuário.
+                    </div>
+                </div>
+                <small id="ajuda-busca-paciente" class="ajuda-busca-paciente">Digite para pesquisar e selecione um paciente da lista.</small>
             </div>
             </div>
 
