@@ -101,10 +101,9 @@ class AmostraReceptorService {
                 (dados.pai_justificativa||'').trim()||null,bloqueada?'BLOQUEADO':'CONCLUIDO',
                 usuarioId,amostraId,pacienteId]);
 
-            if (!bloqueada) {
-                await cliente.query('UPDATE pacientes SET abo=$1,fator_rh=$2,atualizado_em=CURRENT_TIMESTAMP WHERE id=$3',
-                    [dados.abo,dados.fator_rh,pacienteId]);
-            }
+            // A tipagem fica registrada no cadastro mesmo quando PAI/Controle exigem bloqueio transfusional.
+            await cliente.query('UPDATE pacientes SET abo=$1,fator_rh=$2,atualizado_em=CURRENT_TIMESTAMP WHERE id=$3',
+                [dados.abo,dados.fator_rh,pacienteId]);
             await cliente.query('COMMIT');
             return { bloqueada };
         } catch(e) { await cliente.query('ROLLBACK'); throw e; }
