@@ -405,6 +405,7 @@ class RequisicaoModel {
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY') AS data_prova_br,
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI') AS hora_prova_br,
                    p.nome AS paciente_nome, p.nome_mae,
+                   p.abo AS paciente_abo, p.fator_rh AS paciente_rh,
                    to_char(p.data_nascimento, 'DD/MM/YYYY') AS nascimento_br,
                    r.id AS requisicao_id
             FROM provas_cruzadas pc
