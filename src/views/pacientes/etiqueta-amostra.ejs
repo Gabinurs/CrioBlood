@@ -1,7 +1,18 @@
+<% if (locals.modal) { %>
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="dark">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Etiqueta de identificação | CrioBlood</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="modal-frame-body">
+<% } else { %>
 <%- include('../partials/inicio',{titulo:'Etiqueta de identificação',subtitulo:'Impressão da identificação da amostra',ativo:'pacientes'}) %>
+<% } %>
 <section class="painel etiqueta-painel">
     <div class="acoes etiqueta-acoes">
-        <a class="botao botao-claro" href="/pacientes/<%= amostra.paciente_id %>/dossie">Voltar ao dossiê</a>
+        <% if (!locals.modal) { %><a class="botao botao-claro" href="/pacientes/<%= amostra.paciente_id %>/dossie">Voltar ao dossiê</a><% } %>
         <button type="button" class="botao" data-imprimir>Imprimir etiqueta</button>
     </div>
     <article class="etiqueta-tubo">
@@ -14,4 +25,9 @@
     </article>
 </section>
 
+<script src="/js/modal-frame.js" defer></script>
+<% if (locals.modal) { %>
+</body></html>
+<% } else { %>
 <%- include('../partials/fim') %>
+<% } %>
