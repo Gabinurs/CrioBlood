@@ -85,15 +85,6 @@ class RequisicaoController {
             const requisicao = await RequisicaoModel.buscarPorId(Number(req.params.id));
             if (!requisicao) return enviarErro(req, res, STATUS.NAO_ENCONTRADO, 'Requisição transfusional não encontrada.');
             const itens = await RequisicaoModel.listarItens(requisicao.id);
-            for (const item of itens) {
-                item.bolsas = item.status === 'PENDENTE'
-                    ? await RequisicaoModel.listarBolsasDisponiveis({
-                        ...item,
-                        paciente_abo: requisicao.paciente_abo,
-                        paciente_rh: requisicao.paciente_rh
-                    })
-                    : [];
-            }
             const provas = await RequisicaoModel.listarProvas(requisicao.id);
             return res.render('solicitacoes/bolsas', {
                 requisicao, itens, provas, usuario: req.session.usuario
@@ -103,6 +94,21 @@ class RequisicaoController {
         }
     }
 
+
+    static async verificarBolsa(req, res) {
+        try {
+            const resultado = await RequisicaoModel.verificarBolsa(
+                Number(req.params.id), Number(req.params.solicitacaoId), req.query.codigo
+            );
+            return res.status(STATUS.OK).json(resultado);
+        } catch (erro) {
+            if (erro instanceof ErroNegocio) {
+                return res.status(erro.statusCode || STATUS.ENTIDADE_INVALIDA).json({ erro: erro.message });
+            }
+            console.error('Erro ao verificar código da bolsa:', erro);
+            return res.status(STATUS.ERRO_INTERNO).json({ erro: 'Não foi possível verificar a bolsa informada.' });
+        }
+    }
     static async registrarProva(req, res) {
         try {
             const resultado = await RequisicaoModel.registrarProva(
