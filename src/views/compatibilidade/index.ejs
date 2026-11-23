@@ -6,6 +6,51 @@
 </div>
 
 <section class="painel">
+    <div class="painel-titulo-com-acoes">
+        <div>
+            <h3>Requisições com bolsas aguardando compatibilidade</h3>
+            <p class="descricao">As bolsas foram associadas na etapa da requisição, mas ainda não estão reservadas. A avaliação é feita aqui.</p>
+        </div>
+        <span class="status s-azul"><%= aguardandoCompatibilidade.length %> unidade(s)</span>
+    </div>
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr><th>Receptor</th><th>Requisição / unidade</th><th>Componente</th><th>Bolsa</th><th>ABO/Rh</th><th>Avaliação inicial</th><th>Ação</th></tr>
+            </thead>
+            <tbody>
+                <% if (!aguardandoCompatibilidade.length) { %>
+                    <tr><td colspan="7" class="vazio">Nenhuma bolsa está aguardando avaliação de compatibilidade.</td></tr>
+                <% } else { aguardandoCompatibilidade.forEach(function(item) { %>
+                    <tr>
+                        <td><strong><%= item.paciente_nome %></strong><br><small><%= item.prontuario || 'Sem prontuário' %></small></td>
+                        <td>#<%= item.requisicao_id %> · Unidade <%= item.item_numero %></td>
+                        <td><%= rot.tipo(item.tipo) %></td>
+                        <td><strong><%= item.codigo_original %></strong><br><small><%= item.codigo_interno || 'Código local pendente' %></small></td>
+                        <td>Receptor: <%= rot.tipagem(item.paciente_abo,item.paciente_rh) %><br>Bolsa: <%= rot.tipagem(item.bolsa_abo,item.bolsa_rh) %></td>
+                        <td>
+                            <% if (item.compatibilidade && item.compatibilidade.permitido) { %>
+                                <span class="status s-verde">Regra ABO/Rh compatível</span>
+                            <% } else if (item.compatibilidade && item.compatibilidade.excecaoPossivel) { %>
+                                <span class="status s-amarelo">Exceção com autorização</span>
+                            <% } else { %>
+                                <span class="status s-vermelho">Não liberada</span><br>
+                                <small><%= item.compatibilidade ? item.compatibilidade.mensagem : 'Não foi possível avaliar.' %></small>
+                            <% } %>
+                        </td>
+                        <td><a class="botao botao-pequeno" href="/solicitacoes/<%= item.requisicao_id %>/bolsas?compatibilidade=1">Abrir avaliação</a></td>
+                    </tr>
+                <% }) } %>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<% if (aguardandoCompatibilidade.length) { %>
+    <div class="alerta alerta-info">A indicação ABO/Rh é uma verificação inicial. A bolsa só será reservada após a conferência/prova registrada pelo profissional habilitado.</div>
+<% } %>
+
+<section class="painel">
     <h3>Escolha a solicitação</h3>
     <form method="GET" action="/compatibilidade" class="filtros">
         <select name="solicitacao" aria-label="Solicitação pendente" required>
