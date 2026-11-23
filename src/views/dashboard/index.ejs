@@ -116,13 +116,9 @@
 <section class="painel">
     <h3>Ações rápidas</h3>
     <div class="atalhos">
-        <% if (pode('lotes.gerenciar')) { %>
-        <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
-<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
-            <button class="botao" type="submit">+ Abrir lote</button>
-        </form>
+        <% if (pode('lotes.gerenciar') || pode('bolsas.gerenciar')) { %>
+            <a class="botao botao-claro" href="/lotes">Recebimento de bolsas</a>
         <% } %>
-        <% if (pode('bolsas.gerenciar')) { %><a class="botao botao-claro" href="/hemocomponentes/novo">+ Cadastrar bolsa</a><% } %>
         <% if (pode('pacientes.gerenciar')) { %><a class="botao botao-claro" href="/pacientes/novo">+ Novo paciente</a><% } %>
         <% if (pode('solicitacoes.gerenciar')) { %><a class="botao botao-claro" href="/solicitacoes/nova">+ Nova solicitação</a><% } %>
         <% if (pode('transfusoes.registrar')) { %><a class="botao botao-claro" href="/transfusoes">Registrar transfusão</a><% } %>
