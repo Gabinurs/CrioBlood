@@ -25,8 +25,8 @@
     <article class="etiqueta-prova-cruzada">
         <header class="etiqueta-prova-topo">
             <div class="etiqueta-prova-logo"><span>Crio</span>Blood</div>
-            <div><span class="etiqueta-prova-supra">BANCO DE SANGUE · CRIOBLOOD</span><h1>Prova cruzada</h1></div>
-            <span class="etiqueta-prova-selo">✓ COMPATÍVEL</span>
+            <div><span class="etiqueta-prova-supra">BANCO DE SANGUE · CRIOBLOOD</span><h1><%= prova.tipo_verificacao === 'PROVA_CRUZADA' ? 'Prova cruzada' : 'Conferência do componente' %></h1></div>
+            <span class="etiqueta-prova-selo">✓ <%= prova.tipo_verificacao === 'PROVA_CRUZADA' ? 'COMPATÍVEL' : 'CONFERÊNCIA CONFORME' %></span>
         </header>
 
         <section class="etiqueta-prova-bloco">
@@ -43,8 +43,8 @@
         </section>
 
         <section class="etiqueta-prova-bloco etiqueta-prova-resultado">
-            <span class="etiqueta-prova-legenda">RESULTADO DA PROVA DE COMPATIBILIDADE</span>
-            <div class="etiqueta-prova-resultado-texto">COMPATÍVEL</div>
+            <span class="etiqueta-prova-legenda"><%= prova.tipo_verificacao === 'PROVA_CRUZADA' ? 'RESULTADO DA PROVA DE COMPATIBILIDADE' : 'RESULTADO DA CONFERÊNCIA DO COMPONENTE' %></span>
+            <div class="etiqueta-prova-resultado-texto"><%= prova.tipo_verificacao === 'PROVA_CRUZADA' ? 'COMPATÍVEL' : 'CONFERÊNCIA CONFORME' %></div>
             <div class="etiqueta-prova-grade">
                 <div><span>Tipagem da bolsa</span><strong class="etiqueta-prova-tipagem"><%= prova.abo_bolsa %><%= prova.fator_rh_bolsa %></strong></div>
                 <div><span>Volume da bolsa</span><strong><%= prova.volume_ml || 'Não informado' %> <%= prova.volume_ml ? 'mL' : '' %></strong></div>
@@ -58,8 +58,13 @@
         </section>
 
         <footer class="etiqueta-prova-rodape">
-            <div><span>Data e hora da prova</span><strong><%= prova.data_prova_br %> · <%= prova.hora_prova_br %></strong></div>
+            <div><span>Data e hora da <%= prova.tipo_verificacao === 'PROVA_CRUZADA' ? 'prova' : 'conferência' %></span><strong><%= prova.data_prova_br %> · <%= prova.hora_prova_br %></strong></div>
             <div><span>Colaborador que realizou</span><strong><%= prova.responsavel_nome %></strong></div>
+            <% if (prova.excecao_rhd_protocolo) { %>
+                <div><span>Exceção RhD / autorizador</span><strong><%= prova.autorizador_nome %></strong></div>
+                <div><span>Justificativa registrada</span><strong><%= prova.justificativa_excecao %></strong></div>
+                <div><span>Histórico anti-D</span><strong><%= prova.sem_historico_anti_d ? 'Ausência confirmada e documentada' : 'Não informado' %></strong></div>
+            <% } %>
             <p>Resultado registrado no sistema por profissional responsável. Conferir identificação física da bolsa e seguir o protocolo institucional antes de qualquer administração.</p>
         </footer>
     </article>
