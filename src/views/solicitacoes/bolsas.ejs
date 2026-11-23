@@ -16,7 +16,7 @@
     </header>
 
     <nav class="requisicao-abas" aria-label="Etapas da solicitação">
-        <a class="requisicao-aba concluida" href="/solicitacoes/nova?paciente_id=<%= requisicao.paciente_id %>"><span>1</span><span><strong>Requisição</strong><small>Registrada</small></span></a>
+        <div class="requisicao-aba concluida"><span>1</span><span><strong>Requisição</strong><small>Registrada</small></span></div>
         <div class="requisicao-aba concluida"><span>2</span><span><strong>Complementar</strong><small>Dados salvos</small></span></div>
         <div class="requisicao-aba ativa" aria-current="step"><span>3</span><span><strong>Bolsas / Transfusão</strong><small>Prova cruzada</small></span></div>
     </nav>
@@ -42,7 +42,7 @@
     </section>
 
     <section class="painel lista-unidades-requisicao">
-        <div class="painel-titulo-com-acoes"><div><h3>Unidades solicitadas</h3><p class="descricao">Cada linha representa uma unidade individual e recebe seu próprio registro de prova cruzada.</p></div><span class="status <%= requisicao.status === 'RESERVADA' ? 's-verde' : requisicao.status === 'PARCIAL' ? 's-amarelo' : 's-azul' %>"><%= requisicao.status === 'RESERVADA' ? 'Todas reservadas' : requisicao.status === 'PARCIAL' ? 'Parcialmente atendida' : 'Aguardando bolsas' %></span></div>
+        <div class="painel-titulo-com-acoes"><div><h3>Unidades solicitadas</h3><p class="descricao">Cada linha representa uma unidade individual e recebe seu próprio registro de prova cruzada.</p></div><span class="status <%= requisicao.status === 'RESERVADA' || requisicao.status === 'ATENDIDA' ? 's-verde' : requisicao.status === 'PARCIAL' ? 's-amarelo' : requisicao.status === 'CANCELADA' ? 's-cinza' : 's-azul' %>"><%= requisicao.status === 'RESERVADA' ? 'Todas reservadas' : requisicao.status === 'ATENDIDA' ? 'Todas transfundidas' : requisicao.status === 'CANCELADA' ? 'Requisição cancelada' : requisicao.status === 'PARCIAL' ? 'Atendimento parcial' : 'Aguardando bolsas' %></span></div>
 
         <% if (!itens.length) { %>
             <div class="vazio">Nenhuma unidade foi vinculada a esta requisição.</div>
@@ -110,7 +110,7 @@
         </div>
     </section>
 
-    <div class="alerta alerta-info alerta-seguranca-prova">O CrioBlood registra o resultado informado e verifica regras gerais cadastradas de ABO/Rh. Ele não executa a prova cruzada nem substitui a conferência, a interpretação do exame ou o protocolo institucional.</div>
+    <div class="alerta alerta-info alerta-seguranca-prova">O CrioBlood registra o resultado informado pelo profissional executor. O sistema não executa nem interpreta a prova cruzada e não substitui a avaliação dos profissionais habilitados ou o protocolo institucional de hemoterapia.</div>
 </section>
 
 <dialog class="modal-prova-cruzada" data-modal-prova aria-labelledby="titulo-modal-prova">
