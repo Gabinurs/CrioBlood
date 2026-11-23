@@ -54,8 +54,6 @@
                         aria-describedby="ajuda-busca-paciente"
                         required>
                     <button type="button" data-limpar-paciente aria-label="Limpar paciente selecionado" <%= pacienteSelecionado ? '' : 'hidden' %>>×</button>
-                </div>
-                <input type="hidden" name="paciente_id" data-paciente-select value="<%= pacienteSelecionado ? pacienteSelecionado.id : '' %>">
                 <div class="lista-pacientes-sugestoes" id="lista-pacientes" data-lista-pacientes role="listbox" hidden>
                     <% pacientes.forEach(function (p) { %>
                         <button type="button" class="opcao-paciente" role="option"
@@ -75,6 +73,8 @@
                         Nenhum paciente encontrado com esse nome ou prontuário.
                     </div>
                 </div>
+                </div>
+                <input type="hidden" name="paciente_id" data-paciente-select value="<%= pacienteSelecionado ? pacienteSelecionado.id : '' %>">
                 <small id="ajuda-busca-paciente" class="ajuda-busca-paciente">Digite para pesquisar e selecione um paciente da lista.</small>
             </div>
             </div>
