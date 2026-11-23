@@ -85,9 +85,10 @@ class AmostraReceptorService {
         try {
             await cliente.query('BEGIN');
             const amostra = (await cliente.query(
-                'SELECT id FROM amostras_receptor WHERE id=$1 AND paciente_id=$2 FOR UPDATE',
+                'SELECT id, status_imuno FROM amostras_receptor WHERE id=$1 AND paciente_id=$2 FOR UPDATE',
                 [amostraId,pacienteId])).rows[0];
             if (!amostra) throw new ErroNegocio('Amostra não encontrada para este receptor.');
+            if (amostra.status_imuno !== 'PENDENTE') throw new ErroNegocio('Os testes desta amostra já foram registrados. Para repetir ou corrigir a análise, cadastre uma nova amostra e registre novos resultados.');
 
             const bloqueada = dados.pai === 'POSITIVO' || dados.controle_rh === 'POSITIVO';
             await cliente.query(`
