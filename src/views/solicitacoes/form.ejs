@@ -58,6 +58,7 @@
                     <% pacientes.forEach(function (p) { %>
                         <button type="button" class="opcao-paciente" role="option"
                             data-paciente-opcao
+                            id="opcao-paciente-<%= p.id %>"
                             data-paciente-id="<%= p.id %>"
                             data-nome="<%= p.nome %>"
                             data-prontuario="<%= p.prontuario || '' %>"
