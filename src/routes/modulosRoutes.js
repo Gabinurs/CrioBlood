@@ -25,6 +25,9 @@ router.post('/pacientes/novo', Paciente.criar);
 router.get('/pacientes/:id/dossie', AmostraReceptor.dossie);
 router.get('/pacientes/:id/amostras/nova', AmostraReceptor.nova);
 router.post('/pacientes/:id/amostras', AmostraReceptor.criar);
+router.get('/pacientes/:id/amostras/:amostraId/imuno', AmostraReceptor.imuno);
+router.post('/pacientes/:id/amostras/:amostraId/imuno', AmostraReceptor.salvarImuno);
+router.get('/pacientes/:id/amostras/:amostraId/etiqueta', AmostraReceptor.etiqueta);
 router.get('/pacientes/:id/editar', Paciente.formEditar);
 router.post('/pacientes/:id/editar', Paciente.atualizar);
 
