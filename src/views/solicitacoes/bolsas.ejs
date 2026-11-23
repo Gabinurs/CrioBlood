@@ -80,6 +80,7 @@
                                         data-volume="<%= item.volume_ml || '' %>"
                                         data-validade="<%= item.bolsa_validade_br || '' %>"
                                         data-tipo-verificacao="<%= item.compatibilidade.tipoVerificacao || (item.tipo === 'CH' ? 'PROVA_CRUZADA' : 'CONFERENCIA_COMPATIBILIDADE') %>"
+                                        data-permitido="<%= item.compatibilidade.permitido ? 'true' : 'false' %>"
                                         data-excecao-possivel="<%= item.compatibilidade.excecaoPossivel ? 'true' : 'false' %>">
                                         Registrar prova / conferência
                                     </button>
@@ -97,6 +98,7 @@
                                         data-volume="<%= item.volume_ml || '' %>"
                                         data-validade="<%= item.bolsa_validade_br || '' %>"
                                         data-tipo-verificacao="<%= item.compatibilidade.tipoVerificacao || 'PROVA_CRUZADA' %>"
+                                        data-permitido="false"
                                         data-excecao-possivel="true">
                                         Registrar autorização e prova
                                     </button>
