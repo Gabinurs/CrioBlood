@@ -1,0 +1,39 @@
+<%- include('../partials/inicio',{titulo:'Etiqueta de identificação',subtitulo:'Impressão da identificação da amostra',ativo:'pacientes'}) %>
+<section class="painel etiqueta-painel">
+    <div class="acoes etiqueta-acoes">
+        <a class="botao botao-claro" href="/pacientes/<%= amostra.paciente_id %>/dossie">Voltar ao dossiê</a>
+        <button type="button" class="botao" onclick="window.print()">Imprimir etiqueta</button>
+    </div>
+    <article class="etiqueta-tubo">
+        <header><strong>CRIOBLOOD</strong><span>IDENTIFICAÇÃO DE AMOSTRA</span></header>
+        <div class="etiqueta-nome"><small>Nome completo</small><strong><%= amostra.paciente_nome %></strong></div>
+        <div class="etiqueta-linha"><div><small>Data de nascimento</small><strong><%= amostra.nascimento_br %></strong></div><div><small>Código da amostra</small><strong><%= amostra.codigo %></strong></div></div>
+        <div class="etiqueta-nome"><small>Nome da mãe</small><strong><%= amostra.nome_mae || 'Não informado' %></strong></div>
+        <div class="etiqueta-linha"><div><small>Data e hora da coleta</small><strong><%= amostra.coleta_br %></strong></div><div><small>Responsável pela coleta</small><strong><%= amostra.responsavel_coleta %></strong></div></div>
+        <footer>Conferir os identificadores com o cadastro do receptor antes de utilizar a amostra.</footer>
+    </article>
+</section>
+<style>
+.etiqueta-painel { max-width:800px; margin:0 auto; }
+.etiqueta-acoes { display:flex; justify-content:flex-end; gap:10px; margin-bottom:22px; }
+.etiqueta-tubo { width:min(100%,600px); margin:20px auto; padding:18px; border:1.5px solid #27364a; border-radius:10px; color:#172033; background:#fff; font-family:Arial,sans-serif; }
+.etiqueta-tubo header { display:flex; justify-content:space-between; gap:8px; padding-bottom:9px; border-bottom:2px solid #27364a; }
+.etiqueta-tubo header strong { color:#c51f3a; font-size:16px; }
+.etiqueta-tubo header span { font-size:10px; font-weight:700; align-self:center; }
+.etiqueta-tubo small { display:block; margin-bottom:3px; color:#4b5563; font-size:9px; text-transform:uppercase; letter-spacing:.05em; }
+.etiqueta-tubo strong { display:block; font-size:12px; overflow-wrap:anywhere; }
+.etiqueta-nome { padding:10px 0 7px; }
+.etiqueta-nome > strong { font-size:15px; }
+.etiqueta-linha { display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:7px 0; border-top:1px solid #d5dbe4; }
+.etiqueta-tubo footer { margin-top:8px; padding-top:7px; border-top:1px solid #d5dbe4; font-size:8px; color:#4b5563; }
+@page { size:100mm 60mm; margin:3mm; }
+@media print {
+    body { background:#fff !important; }
+    .sidebar,.topo,body > .layout footer,.etiqueta-acoes { display:none !important; }
+    .principal { margin:0 !important; }
+    main { padding:0 !important; max-width:none !important; }
+    .etiqueta-painel { margin:0; padding:0; border:0; box-shadow:none; }
+    .etiqueta-tubo { width:100%; margin:0; border:1px solid #111; border-radius:0; break-inside:avoid; }
+}
+</style>
+<%- include('../partials/fim') %>
