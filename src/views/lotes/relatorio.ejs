@@ -6,7 +6,7 @@
         <% if (lote.status === 'ABERTO') { %>
             <a class="botao botao-claro" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">+ Adicionar outra bolsa</a>
         <% } %>
-        <button class="botao" type="button" onclick="window.print()">Imprimir / Salvar PDF</button>
+        <button class="botao" type="button" data-imprimir>Imprimir / Salvar PDF</button>
     </div>
 
     <header class="relatorio-topo">
@@ -82,45 +82,6 @@
     </footer>
 </section>
 
-<style>
-.relatorio-recebimento { max-width: 1200px; }
-.acoes-relatorio { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-bottom:24px; }
-.relatorio-topo { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; padding-bottom:22px; border-bottom:2px solid var(--borda); }
-.relatorio-marca { color:var(--rosa); font-size:11px; font-weight:800; letter-spacing:.12em; margin-bottom:8px; }
-.relatorio-topo h1 { font-size:24px; margin-bottom:7px; }
-.relatorio-selo { min-width:190px; padding:15px; border:1px solid var(--borda); border-radius:12px; background:var(--superficie-2); text-align:center; }
-.relatorio-selo strong, .relatorio-selo span { display:block; }
-.relatorio-selo strong { font-size:16px; }
-.relatorio-selo span { margin-top:5px; color:var(--cinza); font-size:11px; }
-.relatorio-dados { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:22px 0; }
-.relatorio-dados div, .relatorio-resumo div { padding:13px; border:1px solid var(--borda); border-radius:10px; }
-.relatorio-dados span, .relatorio-dados strong, .relatorio-resumo span, .relatorio-resumo strong { display:block; }
-.relatorio-dados span, .relatorio-resumo span { color:var(--cinza); font-size:11px; margin-bottom:6px; }
-.relatorio-dados strong { font-size:13px; }
-.relatorio-resumo { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-bottom:26px; }
-.relatorio-resumo strong { font-size:22px; margin-bottom:3px; }
-.relatorio-subtitulo { font-size:16px; margin-bottom:10px; }
-.tabela-relatorio { white-space:normal; }
-.tabela-relatorio th, .tabela-relatorio td { padding:11px 10px; font-size:11px; }
-.relatorio-rodape { margin-top:24px; padding-top:16px; border-top:1px solid var(--borda); color:var(--cinza); font-size:11px; line-height:1.6; }
-.relatorio-rodape p { margin-top:8px; }
-@media (max-width:800px) {
-    .relatorio-dados { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .relatorio-resumo { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .relatorio-topo { flex-direction:column; }
-}
-@page { size:A4 landscape; margin:12mm; }
-@media print {
-    .acoes-relatorio, footer:not(.relatorio-rodape) { display:none !important; }
-    .relatorio-recebimento { max-width:none; margin:0; padding:0; border:0; box-shadow:none; }
-    .relatorio-topo h1 { font-size:19px; }
-    .relatorio-dados { grid-template-columns:repeat(4,minmax(0,1fr)); }
-    .relatorio-resumo { grid-template-columns:repeat(5,minmax(0,1fr)); }
-    .tabela-container { overflow:visible; border:0; }
-    .tabela-relatorio { white-space:normal; }
-    .tabela-relatorio th, .tabela-relatorio td { padding:7px 6px; font-size:9px; }
-    .relatorio-rodape { break-inside:avoid; }
-}
-</style>
+
 
 <%- include('../partials/fim') %>
