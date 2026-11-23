@@ -2,6 +2,7 @@
 <% var val = locals.valores || {}; %>
 
 <section class="painel formulario">
+    <div class="alerta alerta-info">A solicitação só será liberada quando houver amostra dentro de 72 horas, marcada para Transfusão / Reserva, com Imuno concluído e sem PAI ou Controle positivos.</div>
     <% if (pacientes.length === 0) { %>
         <div class="alerta alerta-aviso">
             Não há pacientes ativos. <a href="/pacientes/novo">Cadastre um paciente</a> antes de criar a solicitação.
