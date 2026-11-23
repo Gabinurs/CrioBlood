@@ -25,6 +25,11 @@ services:
     restart: unless-stopped
     ports:
       - "3001:3000"
+    # Mantém o container usando exatamente os arquivos atualizados do Codespaces.
+    # O volume anônimo preserva as dependências instaladas na imagem.
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
     environment:
       PORT: 3000
       NODE_ENV: development
