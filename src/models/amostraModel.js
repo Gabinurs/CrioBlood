@@ -169,9 +169,13 @@ class AmostraModel {
 
         if (!amostra) return { permitido: false, motivo: 'O receptor ainda não possui amostra cadastrada.' };
         if (!amostra.valida) return { permitido: false, motivo: 'A amostra está fora da validade de 72 horas. Registre uma nova coleta.' };
-        if (amostra.status_imuno === 'PENDENTE') return { permitido: false, motivo: 'A amostra está cadastrada, mas os testes Imuno ainda não foram concluídos.' };
-        if (amostra.status_imuno === 'BLOQUEADO' || amostra.pai === 'POSITIVO' || amostra.controle_rh === 'POSITIVO') {
-            return { permitido: false, motivo: 'PAI ou Controle positivo registrado. A solicitação transfusional está bloqueada e exige avaliação e liberação formal conforme protocolo institucional.' };
+        if (amostra.status_imuno !== 'CONCLUIDO') {
+            return { permitido: false, motivo: amostra.status_imuno === 'BLOQUEADO'
+                ? 'PAI ou Controle positivo registrado. A solicitação transfusional está bloqueada e exige avaliação e liberação formal conforme protocolo institucional.'
+                : 'A amostra ainda não possui resultados Imuno concluídos.' };
+        }
+        if (amostra.pai !== 'NEGATIVO' || amostra.controle_rh !== 'NEGATIVO') {
+            return { permitido: false, motivo: 'PAI ou Controle não está negativo. A solicitação transfusional permanece bloqueada conforme protocolo institucional.' };
         }
         if (!amostra.solicitacao_transfusao) {
             return { permitido: false, motivo: 'A amostra não foi marcada para Transfusão / Reserva.' };
