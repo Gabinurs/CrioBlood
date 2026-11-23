@@ -49,7 +49,11 @@ const validarHemocomponente = [
         .if((value, { req }) => req.method === 'POST' && req.path === '/novo')
         .isISO8601({ strict: true, strictSeparator: true }).withMessage('A data de coleta informada é inválida.'),
 
+    // No cadastro novo, a validade é calculada no servidor a partir do tipo e da coleta.
+    // O campo exibido no navegador é apenas uma prévia (readonly) e não precisa ser enviado.
+    // Na edição, a validade informada continua sendo validada normalmente.
     body('data_validade')
+        .if((value, { req }) => !(req.method === 'POST' && req.path === '/novo'))
         .isISO8601({ strict: true, strictSeparator: true }).withMessage('A data de validade informada é inválida.')
         .custom((value, { req }) => {
             if (req.body.data_coleta && new Date(value) < new Date(req.body.data_coleta)) {
