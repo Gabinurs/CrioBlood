@@ -190,7 +190,6 @@
     <div class="alerta alerta-info alerta-seguranca-prova">O CrioBlood registra o resultado informado pelo profissional executor. O sistema não executa nem interpreta a prova cruzada e não substitui a avaliação dos profissionais habilitados ou o protocolo institucional de hemoterapia.</div>
 </section>
 
-<% if (modoCompatibilidade) { %>
 <dialog class="modal-prova-cruzada" data-modal-prova aria-labelledby="titulo-modal-prova">
     <header class="modal-prova-topo">
         <div><span class="modal-amostra-marca">CRIOBLOOD · BANCO DE SANGUE</span><h3 id="titulo-modal-prova" data-titulo-prova>Prova cruzada</h3></div>
@@ -273,5 +272,4 @@
 
 <script src="/js/datahora.js" defer></script>
 <script src="/js/prova-cruzada.js" defer></script>
-<% } %>
 <%- include('../partials/fim') %>
