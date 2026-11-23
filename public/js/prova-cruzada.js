@@ -8,8 +8,9 @@
     var campoBolsa = modal.querySelector('[data-prova-bolsa]');
     var codigo = modal.querySelector('[data-prova-codigo]');
     var detalhes = modal.querySelector('[data-prova-detalhes]');
-    var triagem = modal.querySelector('[data-prova-triagem]');
     var resultado = modal.querySelector('[name="resultado"]');
+    var etiquetaModal = document.querySelector('[data-etiqueta-prova-modal]');
+    var etiquetaFrame = etiquetaModal && etiquetaModal.querySelector('[data-etiqueta-prova-frame]');
 
     function fechar() {
         modal.close();
@@ -37,9 +38,6 @@
             var volume = opcao.getAttribute('data-volume') || '—';
             var validade = opcao.getAttribute('data-validade') || '—';
             detalhes.textContent = local + ' · ' + tipagem + ' · ' + volume + ' mL · Validade ' + validade;
-            triagem.textContent = opcao.getAttribute('data-triagem')
-                ? 'Triagem ABO/Rh geral: compatível pelas regras cadastradas. A prova cruzada continua obrigatória.'
-                : 'Atenção: a triagem geral ABO/Rh não sugere compatibilidade. Não registre resultado compatível se houver divergência.';
             modal.showModal();
             var dataHora = modal.querySelector('[data-datahora-display]');
             if (dataHora) dataHora.focus();
@@ -52,6 +50,29 @@
     modal.addEventListener('click', function (evento) {
         if (evento.target === modal) fechar();
     });
+
+
+    if (etiquetaModal && etiquetaFrame) {
+        document.querySelectorAll('[data-abrir-etiqueta]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                etiquetaModal.showModal();
+                etiquetaFrame.src = botao.getAttribute('data-abrir-etiqueta');
+            });
+        });
+        etiquetaModal.querySelector('[data-fechar-etiqueta]').addEventListener('click', function () {
+            etiquetaModal.close();
+            etiquetaFrame.src = 'about:blank';
+        });
+        etiquetaModal.addEventListener('click', function (evento) {
+            if (evento.target === etiquetaModal) {
+                etiquetaModal.close();
+                etiquetaFrame.src = 'about:blank';
+            }
+        });
+        etiquetaModal.addEventListener('close', function () {
+            etiquetaFrame.src = 'about:blank';
+        });
+    }
 
     form.addEventListener('submit', function (evento) {
         if (!campoItem.value || !campoBolsa.value) {
