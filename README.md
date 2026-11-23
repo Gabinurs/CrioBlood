@@ -25,7 +25,7 @@ Acesse `http://localhost:3001` e entre com o login `Supervisor` e a senha defini
 ### Sem Docker
 
 1. Crie um banco PostgreSQL chamado `crioblood`.
-2. Execute, **nesta ordem**, os scripts de `database/` em ordem numérica. Para bancos já existentes, execute também a migração `11_fluxo_receptor_amostras.sql`.
+2. Execute, **nesta ordem**, os scripts de `database/` em ordem numérica. Para bancos já existentes, execute as migrações `11_fluxo_receptor_amostras.sql`, `12_dados_execucao_transfusao.sql` e `13_requisicao_prova_cruzada.sql` após os scripts anteriores.
 3. `cp .env.example .env` e preencha os valores.
 4. `npm install`
 5. `node src/scripts/criar-supervisor.js` (cria o administrador)
@@ -48,6 +48,24 @@ Get-Content .\\database\\11_fluxo_receptor_amostras.sql | docker compose exec -T
 ```
 
 A migração é aditiva: preserva os cadastros existentes e marca amostras antigas que já possuem resultados Imuno como concluídas ou bloqueadas.
+
+### Atualização do fluxo de requisição e prova cruzada
+
+O fluxo novo cria uma requisição agrupadora com a amostra específica usada no pedido, dados complementares e uma linha individual por unidade de hemocomponente. Cada unidade pode receber um registro de prova cruzada; somente o resultado lançado como **COMPATÍVEL** pelo profissional executor reserva e vincula a bolsa. Resultado **INCOMPATÍVEL** é registrado no histórico sem reservar a bolsa.
+
+Em banco já existente, aplique a migração 13 somente depois da migração 11:
+
+```bash
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < database/13_requisicao_prova_cruzada.sql
+```
+
+No PowerShell do Windows:
+
+```powershell
+Get-Content .\\database\\13_requisicao_prova_cruzada.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood
+```
+
+A tela registra dados informados pela equipe. O sistema não executa nem interpreta a prova cruzada, não substitui a avaliação dos profissionais habilitados e não substitui o protocolo institucional de hemoterapia.
 
 ## Testes
 
@@ -195,7 +213,7 @@ posição em maiúsculas), evitando duplicados como `ab-12` e `AB-12`.
 
 ## Limitações conhecidas / próximos passos
 
-- Cada solicitação pede uma única bolsa (para várias, crie várias solicitações).
+- Requisições novas agrupam várias unidades de hemocomponentes; cada unidade mantém um vínculo e um registro individual de prova cruzada. Solicitações antigas, criadas antes do fluxo novo, permanecem listadas e seguem o fluxo legado.
 - Equipamentos e usuários não são paginados (quantidade pequena por natureza).
 - O token CSRF é por sessão (não por formulário); suficiente para este porte de sistema.
 - Não há recuperação de senha por e-mail: a redefinição é feita por um administrador.
