@@ -83,11 +83,12 @@ class CompatibilidadeService {
             await cliente.query('BEGIN');
 
             const s = (await cliente.query(
-                `SELECT s.id, s.tipo, s.status, p.abo AS paciente_abo, p.fator_rh AS paciente_rh
+                `SELECT s.id, s.tipo, s.status, s.requisicao_id, p.abo AS paciente_abo, p.fator_rh AS paciente_rh
                  FROM solicitacoes_transfusionais s
                  JOIN pacientes p ON p.id = s.paciente_id
                  WHERE s.id = $1 FOR UPDATE OF s`, [solicitacaoId])).rows[0];
             if (!s) throw new ErroNaoEncontrado('Solicitação não encontrada.');
+            if (s.requisicao_id) throw new ErroConflito('Esta solicitação pertence a uma requisição em etapas. Registre a prova cruzada antes de reservar a bolsa.');
             if (s.status !== 'PENDENTE') throw new ErroConflito('Só é possível reservar bolsa para solicitações pendentes.');
             if (!s.paciente_abo || !s.paciente_rh) {
                 throw new ErroConflito('O paciente não tem tipagem (ABO/Rh) cadastrada.');
