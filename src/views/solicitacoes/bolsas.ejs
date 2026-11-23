@@ -50,11 +50,33 @@
             <article class="unidade-requisicao">
                 <div class="unidade-requisicao-cabecalho">
                     <div class="unidade-numero"><%= String(item.item_numero).padStart(2,'0') %></div>
-                    <div class="unidade-titulo"><strong><%= rot.tipo(item.tipo) %></strong><small>Unidade <%= item.item_numero %> · <%= item.tipo %></small></div>
-                    <% if (item.status === 'RESERVADA' || item.status === 'ATENDIDA') { %>
+                    <div class="unidade-titulo">
+                        <strong><%= rot.tipo(item.tipo) %></strong>
+                        <small>Unidade <%= item.item_numero %> · <%= item.tipo %></small>
+                    </div>
+                    <% if (item.status === 'RESERVADA') { %>
+                        <span class="status s-verde">Bolsa reservada</span>
+                    <% } else if (item.status === 'ATENDIDA') { %>
+                        <span class="status s-cinza">Transfusão registrada</span>
+                    <% } else if (item.status === 'CANCELADA') { %>
+                        <span class="status s-cinza">Unidade cancelada</span>
+                    <% } else if (item.hemocomponente_id) { %>
+                        <span class="status s-amarelo">Aguardando Compatibilidade</span>
+                    <% } else { %>
+                        <span class="status s-azul">Aguardando bolsa</span>
+                    <% } %>
+                </div>
+
+                <% if (item.status === 'RESERVADA' || item.status === 'ATENDIDA') { %>
                     <div class="bolsa-vinculada">
-                        <div><span class="cartao-microtitulo">BOLSA VINCULADA E RESERVADA</span><strong><%= item.bolsa_codigo %></strong><small><%= item.bolsa_codigo_interno || 'Código local não informado' %> · <%= rot.tipagem(item.bolsa_abo,item.bolsa_rh) %> · <%= item.volume_ml || '—' %> mL · Validade <%= item.bolsa_validade_br || '—' %></small></div>
-                        <% if (item.prova_compativel_id) { %><button type="button" class="botao botao-claro botao-pequeno" data-abrir-etiqueta="/solicitacoes/provas-cruzadas/<%= item.prova_compativel_id %>/etiqueta?modal=1">Imprimir etiqueta</button><% } %>
+                        <div>
+                            <span class="cartao-microtitulo">BOLSA VINCULADA E RESERVADA</span>
+                            <strong><%= item.bolsa_codigo %></strong>
+                            <small><%= item.bolsa_codigo_interno || 'Código local não informado' %> · <%= rot.tipagem(item.bolsa_abo,item.bolsa_rh) %> · <%= item.volume_ml || '—' %> mL · Validade <%= item.bolsa_validade_br || '—' %></small>
+                        </div>
+                        <% if (item.prova_compativel_id) { %>
+                            <button type="button" class="botao botao-claro botao-pequeno" data-abrir-etiqueta="/solicitacoes/provas-cruzadas/<%= item.prova_compativel_id %>/etiqueta?modal=1">Imprimir etiqueta</button>
+                        <% } %>
                     </div>
                 <% } else if (item.status === 'PENDENTE' && item.hemocomponente_id) { %>
                     <div class="bolsa-vinculada bolsa-aguardando-compatibilidade">
@@ -62,7 +84,6 @@
                             <span class="cartao-microtitulo">BOLSA ASSOCIADA · AINDA NÃO RESERVADA</span>
                             <strong><%= item.bolsa_codigo %></strong>
                             <small><%= item.bolsa_codigo_interno || 'Código local não informado' %> · <%= rot.tipagem(item.bolsa_abo,item.bolsa_rh) %> · <%= item.volume_ml || '—' %> mL · Validade <%= item.bolsa_validade_br || '—' %></small>
-                            <span class="status s-amarelo">Aguardando Compatibilidade</span>
                         </div>
                         <% if (modoCompatibilidade) { %>
                             <div class="compatibilidade-avaliacao-inline">
@@ -81,7 +102,7 @@
                                         data-validade="<%= item.bolsa_validade_br || '' %>"
                                         data-tipo-verificacao="<%= item.compatibilidade.tipoVerificacao || (item.tipo === 'CH' ? 'PROVA_CRUZADA' : 'CONFERENCIA_COMPATIBILIDADE') %>"
                                         data-permitido="<%= item.compatibilidade.permitido ? 'true' : 'false' %>"
-                                        data-excecao-possivel="<%= item.compatibilidade.excecaoPossivel ? 'true' : 'false' %>">
+                                        data-excecao-possivel="false">
                                         Registrar prova / conferência
                                     </button>
                                 <% } else if (item.compatibilidade && item.compatibilidade.excecaoPossivel) { %>
@@ -125,6 +146,7 @@
                     </div>
                 <% } else { %>
                     <form class="selecionar-bolsa-requisicao form-associar-bolsa" method="POST" action="/solicitacoes/<%= requisicao.id %>/itens/<%= item.id %>/associar-bolsa">
+                        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                         <div class="campo campo-codigo-bolsa">
                             <label for="codigo-bolsa-<%= item.id %>">Código individual da bolsa (original ou CrioBlood) *</label>
                             <div class="controle-codigo-bolsa">
