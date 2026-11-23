@@ -197,6 +197,8 @@
         tipoSelect.value = '';
         quantidadeInput.value = '1';
         renderizarItens();
+        // No padrão do RealBlood, inserir o componente avança para os dados complementares.
+        mostrarEtapa(2);
     });
 
     avancar.addEventListener('click', function () {
