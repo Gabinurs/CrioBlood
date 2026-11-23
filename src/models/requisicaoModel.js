@@ -1,6 +1,5 @@
 const db = require('../config/database');
 const AmostraModel = require('./amostraModel');
-const CompatibilidadeService = require('../services/compatibilidadeService');
 const {
     PADROES,
     LIMITE_TEXTO_LIVRE,
@@ -236,12 +235,7 @@ class RequisicaoModel {
               AND h.abo IS NOT NULL AND h.fator_rh IS NOT NULL
             ORDER BY h.data_validade ASC, h.id ASC
         `, [item.tipo]);
-        return rows.map(b => ({
-            ...b,
-            nivel_triagem: CompatibilidadeService.avaliar(
-                { abo: item.paciente_abo, fator_rh: item.paciente_rh }, b, item.tipo
-            )
-        }));
+        return rows;
     }
 
     static async listarProvas(requisicaoId) {
@@ -339,12 +333,9 @@ class RequisicaoModel {
             }
             if (bolsa.tipo !== item.tipo) throw new ErroConflito('O componente da bolsa não corresponde ao item da requisição.');
 
-            const triagem = CompatibilidadeService.avaliar(
-                { abo: requisicao.paciente_abo, fator_rh: requisicao.paciente_rh }, bolsa, item.tipo
-            );
-            if (resultado === 'COMPATIVEL' && !triagem) {
-                throw new ErroConflito('A triagem ABO/Rh cadastrada não indica compatibilidade geral. Não é possível registrar resultado compatível para esta bolsa.');
-            }
+            // O resultado da prova cruzada é informado pelo profissional executor.
+            // O sistema não realiza nem interpreta o exame: registra a declaração e
+            // só reserva a bolsa quando o resultado informado for COMPATÍVEL.
 
             const { rows: provaRows } = await cliente.query(`
                 INSERT INTO provas_cruzadas
