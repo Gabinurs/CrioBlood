@@ -5,24 +5,25 @@
         <div class="amostra-validade"><strong>72 horas</strong><small>Validade até <%= amostra.validade_br %></small></div>
     </div>
     <% if (locals.erro) { %><div class="alerta alerta-erro"><%= erro %></div><% } %>
-    <% if (!amostra.valida) { %><div class="alerta alerta-erro">Esta amostra está fora da validade. Os resultados podem ser registrados para histórico, mas ela não poderá liberar uma solicitação transfusional.</div><% } %>
+    <% if (!amostra.valida) { %><div class="alerta alerta-erro">Esta amostra está fora da validade e não poderá liberar uma solicitação transfusional.</div><% } %>
+    <% if (somenteLeitura) { %><div class="alerta <%= amostra.status_imuno==='BLOQUEADO'?'alerta-erro':'alerta-info' %>"><strong><%= amostra.status_imuno==='BLOQUEADO'?'Amostra bloqueada:':'Exames já registrados:' %></strong> <%= amostra.status_imuno==='BLOQUEADO'?'PAI ou Controle Rh positivo. Para nova avaliação, cadastre outra amostra.':'os resultados desta amostra estão em modo de consulta e não podem ser sobrescritos.' %></div><% } %>
     <form method="POST" action="/pacientes/<%= paciente.id %>/amostras/<%= amostra.id %>/imuno" data-form-imuno>
         <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <input type="hidden" name="pai_justificativa" value="<%= amostra.pai_justificativa || '' %>">
         <input type="hidden" name="controle_rh_justificativa" value="<%= amostra.controle_rh_justificativa || '' %>">
         <h3 class="titulo-secao-amostra">Tipagem sanguínea</h3>
         <div class="grade-form">
-            <div class="campo"><label>ABO *</label><select name="abo" required><option value="">Selecione</option><% ['A','B','AB','O'].forEach(x=>{ %><option value="<%= x %>" <%= amostra.abo===x?'selected':'' %>><%= x %></option><% }) %></select></div>
-            <div class="campo"><label>Fator Rh *</label><select name="fator_rh" required><option value="">Selecione</option><option value="+" <%= amostra.fator_rh==='+'?'selected':'' %>>Positivo (+)</option><option value="-" <%= amostra.fator_rh==='-'?'selected':'' %>>Negativo (-)</option></select></div>
+            <div class="campo"><label>ABO *</label><select name="abo" required <%= somenteLeitura ? 'disabled' : '' %>><option value="">Selecione</option><% ['A','B','AB','O'].forEach(x=>{ %><option value="<%= x %>" <%= amostra.abo===x?'selected':'' %>><%= x %></option><% }) %></select></div>
+            <div class="campo"><label>Fator Rh *</label><select name="fator_rh" required <%= somenteLeitura ? 'disabled' : '' %>><option value="">Selecione</option><option value="+" <%= amostra.fator_rh==='+'?'selected':'' %>>Positivo (+)</option><option value="-" <%= amostra.fator_rh==='-'?'selected':'' %>>Negativo (-)</option></select></div>
         </div>
         <hr class="separador-amostra">
         <h3 class="titulo-secao-amostra">Testes imuno-hematológicos</h3>
         <div class="grade-form">
-            <div class="campo"><label>Controle *</label><select name="controle_rh" data-imuno-resultado="controle" required><option value="">Selecione</option><option value="NEGATIVO" <%= amostra.controle_rh==='NEGATIVO'?'selected':'' %>>Negativo</option><option value="POSITIVO" <%= amostra.controle_rh==='POSITIVO'?'selected':'' %>>Positivo</option></select></div>
-            <div class="campo"><label>PAI *</label><select name="pai" data-imuno-resultado="pai" required><option value="">Selecione</option><option value="NEGATIVO" <%= amostra.pai==='NEGATIVO'?'selected':'' %>>Negativo</option><option value="POSITIVO" <%= amostra.pai==='POSITIVO'?'selected':'' %>>Positivo</option></select></div>
+            <div class="campo"><label>Controle *</label><select name="controle_rh" data-imuno-resultado="controle" required <%= somenteLeitura ? 'disabled' : '' %>><option value="">Selecione</option><option value="NEGATIVO" <%= amostra.controle_rh==='NEGATIVO'?'selected':'' %>>Negativo</option><option value="POSITIVO" <%= amostra.controle_rh==='POSITIVO'?'selected':'' %>>Positivo</option></select></div>
+            <div class="campo"><label>PAI *</label><select name="pai" data-imuno-resultado="pai" required <%= somenteLeitura ? 'disabled' : '' %>><option value="">Selecione</option><option value="NEGATIVO" <%= amostra.pai==='NEGATIVO'?'selected':'' %>>Negativo</option><option value="POSITIVO" <%= amostra.pai==='POSITIVO'?'selected':'' %>>Positivo</option></select></div>
         </div>
         <div class="alerta alerta-aviso">Se PAI ou Controle apresentar resultado positivo, o sistema solicitará justificativa e bloqueará a abertura da solicitação transfusional até avaliação e liberação conforme protocolo institucional.</div>
-        <div class="rodape-form"><button class="botao" type="submit">Salvar resultados</button><a class="botao botao-claro" href="/pacientes/<%= paciente.id %>/dossie">Voltar ao dossiê</a></div>
+        <div class="rodape-form"><% if (!somenteLeitura) { %><button class="botao" type="submit">Salvar resultados</button><% } %><a class="botao botao-claro" href="/pacientes/<%= paciente.id %>/dossie">Voltar ao dossiê</a></div>
     </form>
 </section>
 <dialog class="modal-justificativa-imuno" data-modal-justificativa>
