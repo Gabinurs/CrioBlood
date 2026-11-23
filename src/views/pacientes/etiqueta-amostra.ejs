@@ -1,0 +1,18 @@
+<%@ page contentType="text/html; charset=UTF-8" %>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Etiqueta de amostra — CrioBlood</title><link rel="stylesheet" href="/css/app.css"></head>
+<body>
+<main class="etiqueta-amostra">
+    <section class="etiqueta-tubo">
+        <h1>CRIOBLOOD · IDENTIFICAÇÃO DE AMOSTRA</h1>
+        <p><strong>Nome completo:</strong> <%= amostra.paciente_nome %></p>
+        <p><strong>Data de nascimento:</strong> <%= amostra.nascimento_br %></p>
+        <p><strong>Nome da mãe:</strong> <%= amostra.nome_mae %></p>
+        <p><strong>Data da coleta:</strong> <%= amostra.coleta_br %></p>
+        <p><strong>Responsável pela coleta:</strong> <%= amostra.responsavel_coleta || 'Não informado' %></p>
+        <p><strong>Código da amostra:</strong> <%= amostra.codigo %></p>
+    </section>
+    <div class="etiqueta-acoes"><button class="botao" onclick="window.print()">Imprimir etiqueta</button><button class="botao botao-claro" onclick="window.close()">Fechar</button></div>
+</main>
+</body></html>
