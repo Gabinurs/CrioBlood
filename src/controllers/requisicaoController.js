@@ -1,5 +1,4 @@
 const RequisicaoModel = require('../models/requisicaoModel');
-const PacienteModel = require('../models/pacienteModel');
 const AuditoriaModel = require('../models/auditoriaModel');
 const { ErroNegocio, avisar, tratar, enviarErro } = require('../utils/erros');
 const STATUS = require('../utils/status');
@@ -17,7 +16,7 @@ function dataHoraAtualLocal() {
 class RequisicaoController {
     static async formNova(req, res) {
         try {
-            const pacientes = await PacienteModel.listarAtivos();
+            const pacientes = await RequisicaoModel.listarReceptoresLiberados();
             const pacienteId = /^\d+$/.test(String(req.query.paciente_id || ''))
                 ? Number(req.query.paciente_id) : null;
             const contextoInicial = pacienteId
@@ -63,7 +62,7 @@ class RequisicaoController {
         } catch (erro) {
             if (erro instanceof ErroNegocio) {
                 try {
-                    const pacientes = await PacienteModel.listarAtivos();
+                    const pacientes = await RequisicaoModel.listarReceptoresLiberados();
                     const pacienteId = /^\d+$/.test(String(req.body.paciente_id || ''))
                         ? Number(req.body.paciente_id) : null;
                     const contextoInicial = pacienteId
