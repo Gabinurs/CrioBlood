@@ -52,7 +52,7 @@
                                 <form action="/solicitacoes/<%= s.id %>/cancelar" method="POST"
                                       data-confirmar="Cancelar esta solicitação?<%= s.status === 'RESERVADA' ? ' A bolsa reservada voltará ao estoque.' : '' %>">
 <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
-                                    <button class="botao botao-perigo botao-pequeno" type="submit">Cancelar</button>
+                                    <button class="botao botao-perigo botao-pequeno" type="submit"><%= s.requisicao_id ? 'Cancelar unidade' : 'Cancelar' %></button>
                                 </form>
                             <% } %>
                         </td>
