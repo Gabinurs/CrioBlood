@@ -1,4 +1,6 @@
 const SolicitacaoModel = require('../models/solicitacaoModel');
+const RequisicaoModel = require('../models/requisicaoModel');
+const CompatibilidadeTransfusional = require('../services/compatibilidadeTransfusionalService');
 const CompatibilidadeService = require('../services/compatibilidadeService');
 const AuditoriaModel = require('../models/auditoriaModel');
 const { avisar, tratar } = require('../utils/erros');
@@ -8,6 +10,20 @@ class CompatibilidadeController {
     static async index(req, res) {
         try {
             const pendentes = await SolicitacaoModel.listarPendentes();
+            const aguardandoCompatibilidade = await RequisicaoModel.listarAguardandoCompatibilidade();
+            for (const item of aguardandoCompatibilidade) {
+                item.compatibilidade = CompatibilidadeTransfusional.avaliarComponente({
+                    paciente: {
+                        abo: item.paciente_abo,
+                        fator_rh: item.paciente_rh,
+                        sexo: item.paciente_sexo,
+                        idade: item.paciente_idade
+                    },
+                    bolsa: { abo: item.bolsa_abo, fator_rh: item.bolsa_rh },
+                    tipo: item.tipo,
+                    pesoReceptorKg: item.peso_receptor_kg
+                });
+            }
             const id = parseInt(req.query.solicitacao, 10);
 
             let solicitacao = null;
@@ -17,8 +33,8 @@ class CompatibilidadeController {
             if (id) {
                 solicitacao = await SolicitacaoModel.buscarPorId(id);
                 if (solicitacao && solicitacao.requisicao_id) {
-                    avisar(req, 'aviso', 'Esta solicitação faz parte de uma requisição em etapas. Registre a prova cruzada na aba Bolsas / Transfusão.');
-                    return res.redirect(STATUS.REDIRECIONAR, '/solicitacoes/' + solicitacao.requisicao_id + '/bolsas');
+                    avisar(req, 'aviso', 'Esta unidade pertence a uma requisição em etapas. A bolsa vinculada será avaliada nesta etapa de Compatibilidade.');
+                    return res.redirect(STATUS.REDIRECIONAR, '/solicitacoes/' + solicitacao.requisicao_id + '/bolsas?compatibilidade=1');
                 }
                 if (solicitacao && solicitacao.status === 'PENDENTE') {
                     bolsas = await CompatibilidadeService.listarBolsasCompativeis(solicitacao);
@@ -33,7 +49,7 @@ class CompatibilidadeController {
             }
 
             res.render('compatibilidade/index', {
-                pendentes, solicitacao, bolsas, aceitos, usuario: req.session.usuario
+                pendentes, solicitacao, bolsas, aceitos, aguardandoCompatibilidade, usuario: req.session.usuario
             });
         } catch (erro) {
             tratar(req, res, erro, '/dashboard', 'Erro na tela de compatibilidade');
