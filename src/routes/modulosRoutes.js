@@ -6,6 +6,7 @@ const { exigirAutenticacao, exigirPermissao: permissao } = require('../middlewar
 const Paciente = require('../controllers/pacienteController');
 const Amostra = require('../controllers/amostraController');
 const Solicitacao = require('../controllers/solicitacaoController');
+const Requisicao = require('../controllers/requisicaoController');
 const Compatibilidade = require('../controllers/compatibilidadeController');
 const Transfusao = require('../controllers/transfusaoController');
 const EstoquePagina = require('../controllers/estoquePaginaController');
@@ -28,6 +29,11 @@ router.param('amostraId', (req, res, next, valor) => {
     if (!/^\d+$/.test(valor)) return enviarErro(req, res, STATUS.REQUISICAO_INVALIDA, 'ID de amostra inválido.');
     next();
 });
+router.param('provaId', (req, res, next, valor) => {
+    if (!/^\d+$/.test(valor)) return enviarErro(req, res, STATUS.REQUISICAO_INVALIDA, 'ID de prova cruzada inválido.');
+    next();
+});
+
 
 // Pacientes
 const pacientes = permissao('pacientes.gerenciar');
@@ -58,11 +64,15 @@ router.post('/equipamentos/novo', equipamentos, Equipamento.criar);
 router.get('/equipamentos/:id/editar', equipamentos, Equipamento.formEditar);
 router.post('/equipamentos/:id/editar', equipamentos, Equipamento.atualizar);
 
-// Solicitações transfusionais
+// Solicitações transfusionais: requisição em etapas, itens por unidade e prova cruzada.
 const solicitacoes = permissao('solicitacoes.gerenciar');
 router.get('/solicitacoes', solicitacoes, Solicitacao.listar);
-router.get('/solicitacoes/nova', solicitacoes, Solicitacao.formNova);
-router.post('/solicitacoes/nova', solicitacoes, Solicitacao.criar);
+router.get('/solicitacoes/pacientes/:id/contexto', solicitacoes, Requisicao.contextoPaciente);
+router.get('/solicitacoes/nova', solicitacoes, Requisicao.formNova);
+router.post('/solicitacoes/nova', solicitacoes, Requisicao.criar);
+router.get('/solicitacoes/provas-cruzadas/:provaId/etiqueta', solicitacoes, Requisicao.etiqueta);
+router.get('/solicitacoes/:id/bolsas', solicitacoes, Requisicao.bolsas);
+router.post('/solicitacoes/:id/provas-cruzadas', solicitacoes, Requisicao.registrarProva);
 router.post('/solicitacoes/:id/cancelar', solicitacoes, Solicitacao.cancelar);
 
 // Compatibilidade e reserva de bolsa
