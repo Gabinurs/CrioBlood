@@ -1447,3 +1447,50 @@ button.requisicao-aba { font:inherit; cursor:pointer; }
         grid-template-columns:1fr;
     }
 }
+
+
+/* Bolsa associada à requisição, aguardando avaliação no módulo Compatibilidade */
+.bolsa-aguardando-compatibilidade {
+    align-items:flex-start;
+    border-color:var(--amarelo-borda);
+    background:var(--amarelo-fundo);
+}
+.compatibilidade-avaliacao-inline {
+    display:grid;
+    gap:8px;
+    max-width:420px;
+    min-width:min(100%,280px);
+}
+.compatibilidade-avaliacao-inline p {
+    color:var(--texto-secundario);
+    font-size:11px;
+    line-height:1.5;
+    margin:0;
+}
+.form-remover-bolsa {
+    display:flex;
+    justify-content:flex-end;
+    margin-top:8px;
+}
+.form-associar-bolsa {
+    display:flex;
+    align-items:flex-end;
+    gap:12px;
+}
+.form-associar-bolsa .campo-codigo-bolsa {
+    flex:1;
+    min-width:0;
+}
+@media(max-width:760px) {
+    .form-associar-bolsa {
+        display:grid;
+        grid-template-columns:1fr;
+    }
+    .form-associar-bolsa button {
+        width:100%;
+    }
+    .compatibilidade-avaliacao-inline {
+        min-width:0;
+        width:100%;
+    }
+}
