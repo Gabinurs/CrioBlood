@@ -35,6 +35,25 @@ class LoteController {
         }
     }
 
+    // Exibe o comprovante imprimível do recebimento, com os códigos originais e internos.
+    static async relatorio(req, res) {
+        try {
+            const dados = await LoteModel.buscarRelatorio(Number(req.params.id));
+            if (!dados) {
+                return enviarErro(req, res, STATUS.NAO_ENCONTRADO, 'Lote não encontrado.');
+            }
+
+            res.render('lotes/relatorio', {
+                lote: dados.lote,
+                bolsas: dados.bolsas,
+                usuario: req.session.usuario
+            });
+        } catch (erro) {
+            console.error('Erro ao gerar relatório do lote:', erro.message);
+            return enviarErro(req, res, STATUS.ERRO_INTERNO, 'Não foi possível gerar o relatório de recebimento.');
+        }
+    }
+
     // Fechar um lote
     static async fechar(req, res) {
         const id = parseInt(req.params.id, 10);
