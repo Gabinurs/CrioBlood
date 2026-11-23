@@ -1,71 +1,160 @@
-<%- include('../partials/inicio', { titulo: 'Nova solicitação', subtitulo: 'Pedido de hemocomponente para um paciente', ativo: 'solicitacoes' }) %>
-<% var val = locals.valores || {}; %>
+<%- include('../partials/inicio', { titulo: 'Solicitação transfusional', subtitulo: 'Requisição em etapas · identificação do receptor e pedido médico', ativo: 'solicitacoes' }) %>
+<%
+    var val = locals.valores || {};
+    var pacienteSelecionado = locals.contextoInicial || null;
+%>
 
-<section class="painel formulario">
-    <% if (locals.liberacao && !liberacao.permitido) { %>
-        <div class="alerta alerta-erro"><strong>Solicitação bloqueada:</strong> <%= liberacao.motivo %> <a href="/pacientes/<%= val.paciente_id %>/amostras/nova">Registrar ou atualizar amostra</a>.</div>
-    <% } else if (locals.liberacao && liberacao.permitido) { %>
-        <div class="alerta alerta-ok">A amostra mais recente atende aos pré-requisitos cadastrados para abrir a solicitação. A equipe deve seguir as verificações institucionais aplicáveis.</div>
-    <% } else { %>
-        <div class="alerta alerta-info">A solicitação só será liberada quando houver amostra dentro de 72 horas, marcada para Transfusão / Reserva, com Imuno concluído e sem PAI ou Controle positivos.</div>
-    <% } %>
-    <% if (pacientes.length === 0) { %>
-        <div class="alerta alerta-aviso">
-            Não há pacientes ativos. <a href="/pacientes/novo">Cadastre um paciente</a> antes de criar a solicitação.
+<section class="requisicao-pagina" data-requisicao-wizard>
+    <% if (locals.erro) { %><div class="alerta alerta-erro"><%= erro %></div><% } %>
+    <header class="requisicao-titulo">
+        <div>
+            <span class="recebimento-etiqueta">NOVA REQUISIÇÃO</span>
+            <h3>Solicitação de hemocomponentes</h3>
+            <p>Preencha a requisição, confirme os dados complementares e depois registre a prova cruzada das bolsas.</p>
         </div>
-    <% } %>
+        <a class="botao botao-claro" href="/solicitacoes">Voltar às solicitações</a>
+    </header>
 
-    <form method="POST" action="/solicitacoes/nova">
-<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
-        <div class="grade-form">
-            <div class="campo largo">
-                <label for="paciente_id">Paciente</label>
-                <select id="paciente_id" name="paciente_id" required>
-                    <option value="">Selecione...</option>
+    <nav class="requisicao-abas" aria-label="Etapas da solicitação">
+        <button type="button" class="requisicao-aba ativa" data-etapa-aba="1" aria-current="step">
+            <span>1</span><span><strong>Requisição</strong><small>Receptor e componentes</small></span>
+        </button>
+        <button type="button" class="requisicao-aba" data-etapa-aba="2" disabled>
+            <span>2</span><span><strong>Complementar</strong><small>Dados clínicos e confirmações</small></span>
+        </button>
+        <div class="requisicao-aba requisicao-aba-bloqueada" aria-disabled="true">
+            <span>3</span><span><strong>Bolsas / Transfusão</strong><small>Prova cruzada e etiqueta</small></span>
+        </div>
+    </nav>
+
+    <form method="POST" action="/solicitacoes/nova" class="painel formulario requisicao-form" data-form-requisicao>
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <input type="hidden" name="itens_json" value="<%= val.itens_json || '[]' %>" data-itens-json>
+
+        <section class="requisicao-etapa" data-etapa-painel="1">
+            <div class="requisicao-secao-topo">
+                <div><span class="numero-secao">01</span><div><h3>Identificação do receptor</h3><p>Selecione o paciente para carregar a tipagem e a amostra mais recente.</p></div></div>
+            </div>
+
+            <div class="campo">
+                <label for="paciente_id">Paciente / receptor *</label>
+                <select id="paciente_id" name="paciente_id" required data-paciente-select>
+                    <option value="">Selecione um receptor...</option>
                     <% pacientes.forEach(function (p) { %>
-                        <option value="<%= p.id %>" <%= String(val.paciente_id) === String(p.id) ? 'selected' : '' %>>
-                            <%= p.nome %> — prontuário <%= p.prontuario %> — <%= rot.tipagem(p.abo, p.fator_rh) %>
+                        <option value="<%= p.id %>" <%= String(val.paciente_id || '') === String(p.id) ? 'selected' : '' %>>
+                            <%= p.nome %> · <%= rot.tipagem(p.abo, p.fator_rh) %><%= p.prontuario ? ' · Prontuário ' + p.prontuario : '' %>
                         </option>
                     <% }) %>
                 </select>
             </div>
 
+            <div class="requisicao-receptor-cartao" data-cartao-receptor <%= pacienteSelecionado ? '' : 'hidden' %>>
+                <div class="receptor-cartao-cabecalho">
+                    <div><span class="cartao-microtitulo">RECEPTOR</span><strong data-receptor-nome><%= pacienteSelecionado ? pacienteSelecionado.nome : '' %></strong></div>
+                    <div class="receptor-tipagem" data-receptor-tipagem><%= pacienteSelecionado && pacienteSelecionado.abo ? pacienteSelecionado.abo + pacienteSelecionado.fator_rh : 'ABO/Rh pendente' %></div>
+                </div>
+                <div class="receptor-cartao-dados">
+                    <div><small>Data de nascimento</small><strong data-receptor-nascimento><%= pacienteSelecionado ? pacienteSelecionado.nascimento_br : '' %></strong></div>
+                    <div><small>Nome da mãe</small><strong data-receptor-mae><%= pacienteSelecionado ? (pacienteSelecionado.nome_mae || 'Não informado') : '' %></strong></div>
+                    <div><small>Prontuário</small><strong data-receptor-prontuario><%= pacienteSelecionado ? (pacienteSelecionado.prontuario || '—') : '' %></strong></div>
+                </div>
+            </div>
+
+            <div class="amostra-status-cartao" data-cartao-amostra <%= pacienteSelecionado ? '' : 'hidden' %>>
+                <div class="amostra-status-icone"><span aria-hidden="true">◉</span></div>
+                <div class="amostra-status-conteudo">
+                    <strong data-amostra-titulo><%= pacienteSelecionado && pacienteSelecionado.amostra_id ? 'Amostra mais recente' : 'Amostra não localizada' %></strong>
+                    <p data-amostra-resumo><%= pacienteSelecionado && pacienteSelecionado.amostra_id ? 'Coleta: ' + pacienteSelecionado.coleta_br + ' · Válida até: ' + pacienteSelecionado.validade_br : 'Registre uma coleta e conclua o Imuno antes de solicitar.' %></p>
+                    <span class="amostra-status-mensagem" data-amostra-mensagem><%= pacienteSelecionado && pacienteSelecionado.liberacao ? pacienteSelecionado.liberacao.motivo || 'Amostra dentro da validade e liberada para solicitação.' : '' %></span>
+                    <a data-link-nova-amostra href="<%= pacienteSelecionado ? '/pacientes/' + pacienteSelecionado.id + '/amostras/nova' : '#' %>">Registrar nova amostra</a>
+                </div>
+                <span class="status" data-amostra-badge><%= pacienteSelecionado && pacienteSelecionado.liberacao && pacienteSelecionado.liberacao.permitido ? 'Liberada' : 'Verificar' %></span>
+            </div>
+
+            <div class="requisicao-grade-dois">
+                <div class="campo campo-data-hora" data-seletor-data-hora data-valor-inicial="<%= val.data_hora_requisicao || '' %>">
+                    <label for="data-hora-requisicao-display">Data e hora da requisição *</label>
+                    <div class="controle-data-hora">
+                        <input id="data-hora-requisicao-display" class="entrada-data-hora" type="text" placeholder="dd/mm/aaaa  --:--" data-datahora-display readonly required autocomplete="off" aria-haspopup="dialog" aria-expanded="false">
+                        <input type="hidden" name="data_hora_requisicao" data-datahora-value value="<%= val.data_hora_requisicao || '' %>">
+                        <button type="button" class="botao-abrir-calendario" data-datahora-toggle aria-label="Abrir calendário e horário">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
+                        </button>
+                    </div>
+                    <div class="popup-datahora" data-datahora-popup role="dialog" aria-label="Selecionar data e hora da requisição" hidden>
+                        <div class="cabecalho-calendario"><button type="button" class="navegar-mes" data-mes-anterior aria-label="Mês anterior">‹</button><strong data-mes-ano></strong><button type="button" class="navegar-mes" data-proximo-mes aria-label="Próximo mês">›</button></div>
+                        <div class="grade-semana" aria-hidden="true"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+                        <div class="grade-dias" data-grade-dias></div>
+                        <div class="area-horario"><div><span class="rotulo-horario">Horário da requisição</span><small>Formato 24 horas</small></div><div class="controles-horario"><label><span class="sr-only">Hora</span><select data-selecionar-hora aria-label="Hora"></select></label><span>:</span><label><span class="sr-only">Minuto</span><select data-selecionar-minuto aria-label="Minuto"></select></label></div></div>
+                        <div class="rodape-datahora"><button type="button" class="atalho-agora" data-datahora-agora>Agora</button><div><button type="button" class="botao-cancelar-datahora" data-datahora-cancelar>Cancelar</button><button type="button" class="botao-confirmar-datahora" data-datahora-confirmar>Confirmar</button></div></div>
+                    </div>
+                </div>
+                <div class="campo">
+                    <label>Usuário que registrou</label>
+                    <input type="text" value="<%= usuario ? usuario.nome : '' %>" readonly>
+                    <small>Preenchido automaticamente pelo usuário autenticado.</small>
+                </div>
+            </div>
+
             <div class="campo">
-                <label for="tipo">Hemocomponente</label>
-                <select id="tipo" name="tipo" required>
+                <label for="medico_solicitante">Médico solicitante *</label>
+                <input type="text" id="medico_solicitante" name="medico_solicitante" maxlength="<%= padroes.nomePessoa.max %>" pattern="<%= padroes.nomePessoa.fonte %>" title="<%= padroes.nomePessoa.mensagem %>" data-mascara="<%= padroes.nomePessoa.mascara %>" value="<%= val.medico_solicitante || '' %>" required>
+            </div>
+
+            <hr class="separador-amostra">
+            <div class="requisicao-secao-topo">
+                <div><span class="numero-secao">02</span><div><h3>Hemocomponentes solicitados</h3><p>Adicione cada componente e informe quantas unidades são necessárias.</p></div></div>
+            </div>
+            <div class="requisicao-adicionar-item">
+                <div class="campo"><label for="tipo">Hemocomponente *</label><select id="tipo" data-tipo-item><option value="">Selecione...</option><% ['CH','PLASMA','PLAQUETAS','CRIO'].forEach(function(t){ %><option value="<%= t %>"><%= rot.tipo(t) %></option><% }) %></select></div>
+                <div class="campo campo-quantidade"><label for="quantidade">Quantidade *</label><input type="number" id="quantidade" min="1" max="10" step="1" value="1" data-quantidade-item></div>
+                <button type="button" class="botao botao-claro botao-inserir-item" data-inserir-item>＋ Inserir</button>
+            </div>
+            <div class="lista-itens-requisicao" data-lista-itens>
+                <div class="vazio-itens" data-vazio-itens>Nenhum hemocomponente inserido.</div>
+            </div>
+
+            <div class="requisicao-avancar">
+                <button type="button" class="botao" data-avancar-etapa disabled>Avançar para dados complementares <span aria-hidden="true">→</span></button>
+            </div>
+        </section>
+
+        <section class="requisicao-etapa" data-etapa-painel="2" hidden>
+            <div class="requisicao-secao-topo">
+                <div><span class="numero-secao">03</span><div><h3>Dados complementares</h3><p>Complete as informações clínicas e confirme a documentação da requisição.</p></div></div>
+            </div>
+            <div class="requisicao-grade-dois">
+                <div class="campo"><label for="hemoglobina">Hemoglobina (g/dL)</label><input type="number" id="hemoglobina" name="hemoglobina" min="0" max="50" step="0.1" placeholder="Ex.: 7,2" value="<%= val.hemoglobina || '' %>"></div>
+                <div class="campo"><label for="setor_solicitante">Setor solicitante *</label><input type="text" id="setor_solicitante" name="setor_solicitante" maxlength="120" placeholder="Ex.: UTI, Clínica Médica, Centro Cirúrgico" value="<%= val.setor_solicitante || '' %>" required></div>
+            </div>
+            <div class="campo">
+                <label for="diagnostico">Diagnóstico / indicação clínica *</label>
+                <textarea id="diagnostico" name="diagnostico" rows="3" maxlength="500" data-contador="500" placeholder="Digite o diagnóstico e a justificativa clínica..." required><%= val.diagnostico || '' %></textarea>
+            </div>
+            <div class="campo">
+                <label for="prazo_solicitacao">Tempo / modalidade da solicitação *</label>
+                <select id="prazo_solicitacao" name="prazo_solicitacao" required>
                     <option value="">Selecione...</option>
-                    <% ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'].forEach(function (t) { %>
-                        <option value="<%= t %>" <%= val.tipo === t ? 'selected' : '' %>><%= rot.tipo(t) %></option>
-                    <% }) %>
+                    <option value="3_HORAS" <%= val.prazo_solicitacao === '3_HORAS' ? 'selected' : '' %>>Em até 3 horas</option>
+                    <option value="6_HORAS" <%= val.prazo_solicitacao === '6_HORAS' ? 'selected' : '' %>>Em até 6 horas</option>
+                    <option value="24_HORAS" <%= val.prazo_solicitacao === '24_HORAS' ? 'selected' : '' %>>Em até 24 horas</option>
+                    <option value="RESERVA_CIRURGICA" <%= val.prazo_solicitacao === 'RESERVA_CIRURGICA' ? 'selected' : '' %>>Reserva cirúrgica</option>
+                    <option value="EXTREMA_URGENCIA" <%= val.prazo_solicitacao === 'EXTREMA_URGENCIA' ? 'selected' : '' %>>Extrema urgência</option>
                 </select>
             </div>
-
-            <div class="campo">
-                <label for="urgencia">Urgência / modalidade</label>
-                <select id="urgencia" name="urgencia" required>
-                    <option value="ROTINA" <%= (val.urgencia || 'ROTINA') === 'ROTINA' ? 'selected' : '' %>>Rotina</option>
-                    <option value="URGENTE" <%= val.urgencia === 'URGENTE' ? 'selected' : '' %>>Urgente</option>
-                    <option value="EMERGENCIA" <%= val.urgencia === 'EMERGENCIA' ? 'selected' : '' %>>Emergência / extrema urgência</option>
-                </select>
+            <div class="confirmacoes-requisicao">
+                <label class="confirmacao-requisicao"><input type="checkbox" name="consentimento_confirmado" required <%= val.consentimento_confirmado === 'on' ? 'checked' : '' %>><span><strong>Termo de consentimento confirmado</strong><small>Confirme que o termo foi apresentado e registrado conforme rotina do serviço.</small></span></label>
+                <label class="confirmacao-requisicao"><input type="checkbox" name="requisicao_conforme" required <%= val.requisicao_conforme === 'on' ? 'checked' : '' %>><span><strong>Requisição médica conforme</strong><small>Confirme a conferência dos dados e da requisição médica.</small></span></label>
             </div>
-
-            <div class="campo largo">
-                <label for="medico_solicitante">Médico solicitante</label>
-                <input type="text" id="medico_solicitante" name="medico_solicitante" maxlength="<%= padroes.nomePessoa.max %>" pattern="<%= padroes.nomePessoa.fonte %>" title="<%= padroes.nomePessoa.mensagem %>" data-mascara="<%= padroes.nomePessoa.mascara %>" autocomplete="off"
-                       value="<%= val.medico_solicitante || '' %>" required>
+            <div class="alerta alerta-info requisicao-alerta-clinico">O CrioBlood registra as informações e organiza o fluxo. A avaliação clínica, a prova de compatibilidade e a liberação devem seguir o protocolo institucional e ser realizadas pelos profissionais habilitados.</div>
+            <div class="requisicao-avancar requisicao-acoes-etapa">
+                <button type="button" class="botao botao-claro" data-voltar-etapa><span aria-hidden="true">←</span> Voltar</button>
+                <button type="submit" class="botao">Salvar requisição e ir para Bolsas / Transfusão <span aria-hidden="true">→</span></button>
             </div>
-
-            <div class="campo largo">
-                <label for="indicacao">Indicação clínica</label>
-                <textarea id="indicacao" name="indicacao" data-contador="500" rows="3"><%= val.indicacao || '' %></textarea>
-            </div>
-        </div>
-
-        <div class="rodape-form">
-            <button class="botao" type="submit">Registrar solicitação</button>
-            <a class="botao botao-claro" href="/solicitacoes">Cancelar</a>
-        </div>
+        </section>
     </form>
 </section>
 
+<script src="/js/datahora.js" defer></script>
+<script src="/js/requisicao-wizard.js" defer></script>
 <%- include('../partials/fim') %>
