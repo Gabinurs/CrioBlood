@@ -32,6 +32,7 @@ router.param('amostraId', (req, res, next, valor) => {
 // Pacientes
 const pacientes = permissao('pacientes.gerenciar');
 router.get('/pacientes', pacientes, Paciente.listar);
+router.get('/pacientes/buscar', pacientes, Paciente.buscar);
 router.get('/pacientes/novo', pacientes, Paciente.formNovo);
 router.post('/pacientes/novo', pacientes, Paciente.criar);
 router.get('/pacientes/:id/dossie', pacientes, Amostra.dossie);
