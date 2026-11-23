@@ -25,7 +25,7 @@ Acesse `http://localhost:3001` e entre com o login `Supervisor` e a senha defini
 ### Sem Docker
 
 1. Crie um banco PostgreSQL chamado `crioblood`.
-2. Execute, **nesta ordem**, os scripts de `database/` em ordem numérica. Para bancos já existentes, execute as migrações `11_fluxo_receptor_amostras.sql`, `12_dados_execucao_transfusao.sql` e `13_requisicao_prova_cruzada.sql` após os scripts anteriores.
+2. Execute, **nesta ordem**, os scripts de `database/` em ordem numérica. Para bancos já existentes, execute as migrações `11_fluxo_receptor_amostras.sql`, `12_dados_execucao_transfusao.sql`, `13_requisicao_prova_cruzada.sql` e `14_peso_e_excecao_rhd.sql` após os scripts anteriores.
 3. `cp .env.example .env` e preencha os valores.
 4. `npm install`
 5. `node src/scripts/criar-supervisor.js` (cria o administrador)
@@ -211,6 +211,34 @@ Todas as expressões regulares ficam em **um só lugar**, `src/utils/padroes.js`
 
 O servidor também **normaliza** os valores (remove espaços repetidos, guarda prontuário, código da bolsa e
 posição em maiúsculas), evitando duplicados como `ab-12` e `AB-12`.
+
+
+
+### Seleção de bolsas por código e compatibilidade por hemocomponente
+
+Na etapa **Bolsas / Transfusão**, a equipe informa ou lê o código original da bolsa ou o código local CrioBlood. O servidor verifica existência, disponibilidade, validade, tipagem confirmada, correspondência do tipo de componente e regras de compatibilidade por produto. A tela não oferece catálogo/lista de bolsas.
+
+As regras aplicadas são distintas:
+- **Concentrado de hemácias (CH):** matriz ABO de hemácias e regra RhD; a prova cruzada laboratorial continua obrigatória e seu resultado é registrado pelo profissional.
+- **Plasma:** compatibilidade ABO do plasma do doador com as hemácias do receptor; RhD não é critério para plasma. O sistema registra conferência, não prova cruzada.
+- **Plaquetas:** considera a compatibilidade do plasma da unidade com as hemácias do receptor; cuidado RhD adicional para receptoras RhD negativas com menos de 50 anos. Situações de incompatibilidade plasmática/títulos baixos dependem de avaliação e protocolo do serviço.
+- **Crioprecipitado:** para adultos acima de 10 anos e acima de 35 kg, não exige compatibilidade ABO/Rh; para crianças até 10 anos ou pessoas com até 35 kg, é exigido isogrupo ou ABO compatível. O peso atual do receptor é solicitado quando houver crioprecipitado na requisição.
+
+A regra institucional solicitada para homem O RhD negativo com mais de 60 anos e bolsa O RhD positiva é tratada como **exceção sujeita a autorização formal**: o sistema exige nome do autorizador, justificativa e confirmação documentada de ausência de sensibilização prévia anti-D. Não há liberação automática.
+
+Para bancos existentes, execute a migração 14 após a migração 13:
+
+```bash
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < database/14_peso_e_excecao_rhd.sql
+```
+
+No PowerShell:
+
+```powershell
+Get-Content .\\database\\14_peso_e_excecao_rhd.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood
+```
+
+A matriz automatizada é uma barreira de seleção inicial e não substitui a prova cruzada quando indicada, pesquisa de anticorpos, avaliação clínica ou protocolos institucionais. A decisão transfusional é dos profissionais habilitados.
 
 ## Limitações conhecidas / próximos passos
 
