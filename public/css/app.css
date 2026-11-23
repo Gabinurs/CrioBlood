@@ -1462,7 +1462,7 @@ button.requisicao-aba { font:inherit; cursor:pointer; }
     min-width:min(100%,280px);
 }
 .compatibilidade-avaliacao-inline p {
-    color:var(--texto-secundario);
+    color:var(--cinza);
     font-size:11px;
     line-height:1.5;
     margin:0;
