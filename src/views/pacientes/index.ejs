@@ -20,7 +20,7 @@
                     <button type="button" class="sugestao-receptor" data-opcao-receptor
                         data-id="<%= p.id %>" data-nome="<%= p.nome %>"
                         data-nascimento="<%= p.data_nascimento_br %>"
-                        data-prontuario="<%= p.prontuario || '—' %>"
+                        data-prontuario="<%= p.prontuario || '—' %>" data-tipagem="<%= p.abo ? p.abo + p.fator_rh : 'Tipagem pendente' %>"
                         data-dossie="/pacientes/<%= p.id %>/dossie"
                         data-amostra="/pacientes/<%= p.id %>/amostras/nova"
                         data-edicao="/pacientes/<%= p.id %>/editar"
@@ -49,12 +49,14 @@
                 <div><small>Nome do paciente</small><strong data-selecionado-nome></strong></div>
                 <div><small>Data de nascimento</small><strong data-selecionado-nascimento></strong></div>
                 <div><small>Prontuário</small><strong data-selecionado-prontuario></strong></div>
+                <div><small>ABO / Rh</small><strong data-selecionado-tipagem></strong></div>
             </div>
             <div class="acoes acoes-receptor">
                 <details class="menu-acoes-receptor">
                     <summary>Ações ▾</summary>
                     <div class="menu-acoes-conteudo">
                         <a data-acao-dossie href="#">Dossiê</a>
+                        <a data-acao-imuno href="#">Imuno</a>
                         <a data-acao-amostra href="#">Nova amostra</a>
                         <a data-acao-edicao href="#">Edição</a>
                         <a data-acao-urgencia href="#">Extrema urgência</a>
