@@ -275,6 +275,92 @@ class RequisicaoModel {
         return rows;
     }
 
+    static async associarBolsa(requisicaoId, solicitacaoId, codigoInformado, usuarioId) {
+        const codigo = normalizarEspacos(String(codigoInformado || '')).toUpperCase();
+        if (!codigo || codigo.length > 50 || !/^[A-Z0-9][A-Z0-9-]*$/.test(codigo)) {
+            throw new ErroValidacao('Informe o código individual original da bolsa ou o código CrioBlood.');
+        }
+        if (codigo.startsWith('LOT-')) {
+            const lote = (await db.query('SELECT codigo FROM lotes_recebimento WHERE UPPER(BTRIM(codigo)) = $1 LIMIT 1', [codigo])).rows[0];
+            if (lote) throw new ErroValidacao('Esse é o código do lote, não da bolsa. Leia o código de barras individual da unidade ou informe o código CB- do CrioBlood.');
+        }
+        const cliente = await db.connect();
+        try {
+            await cliente.query('BEGIN');
+            const requisicao = (await cliente.query('SELECT id, status FROM requisicoes_transfusionais WHERE id = $1 FOR UPDATE', [requisicaoId])).rows[0];
+            if (!requisicao) throw new ErroNaoEncontrado('Requisição transfusional não encontrada.');
+            if (['CANCELADA', 'ATENDIDA'].includes(requisicao.status)) throw new ErroConflito('Esta requisição está encerrada e não aceita novas bolsas.');
+            const item = (await cliente.query(`SELECT id, tipo, status, hemocomponente_id FROM solicitacoes_transfusionais WHERE id = $1 AND requisicao_id = $2 FOR UPDATE`, [solicitacaoId, requisicaoId])).rows[0];
+            if (!item) throw new ErroNaoEncontrado('Unidade solicitada não encontrada nesta requisição.');
+            if (item.status !== 'PENDENTE') throw new ErroConflito('Esta unidade não está mais pendente.');
+            if (item.hemocomponente_id) throw new ErroConflito('Esta unidade já possui uma bolsa vinculada. Remova a atual antes de selecionar outra.');
+            const bolsa = (await cliente.query(`
+                SELECT h.id, h.codigo_original, h.codigo_interno, h.tipo, h.abo, h.fator_rh,
+                       h.volume_ml, h.status, h.tipagem_confirmada,
+                       (h.data_validade >= CURRENT_DATE) AS na_validade
+                FROM hemocomponentes h
+                WHERE UPPER(BTRIM(h.codigo_original)) = $1
+                   OR UPPER(BTRIM(COALESCE(h.codigo_interno, ''))) = $1
+                LIMIT 1 FOR UPDATE
+            `, [codigo])).rows[0];
+            if (!bolsa) throw new ErroNaoEncontrado('Código individual não localizado no estoque. Código LOT identifica o lote, não a bolsa. Use o código original da etiqueta ou o CB- que aparece em Bolsas (Estoque).');
+            if (bolsa.tipo !== item.tipo) throw new ErroConflito('A bolsa foi localizada, mas o componente é ' + bolsa.tipo + ' e esta unidade solicita ' + item.tipo + '.');
+            if (bolsa.status !== 'DISPONIVEL') throw new ErroConflito('A bolsa existe, mas não está disponível. Status atual: ' + bolsa.status + '.');
+            if (!bolsa.na_validade) throw new ErroConflito('A bolsa informada está vencida.');
+            if (!bolsa.tipagem_confirmada || !bolsa.abo || !bolsa.fator_rh) throw new ErroConflito('A tipagem ABO/Rh da bolsa ainda não foi confirmada no cadastro.');
+            const outroVinculo = (await cliente.query(`SELECT id FROM solicitacoes_transfusionais WHERE hemocomponente_id = $1 AND id <> $2 AND status <> 'CANCELADA' LIMIT 1`, [bolsa.id, solicitacaoId])).rows[0];
+            if (outroVinculo) throw new ErroConflito('Esta bolsa já está vinculada a outra solicitação.');
+            // Aqui não se avalia ABO/Rh nem se reserva para transfusão; a análise ocorre no menu Compatibilidade.
+            await cliente.query(`UPDATE hemocomponentes SET status = 'EM_CONFERENCIA', atualizado_em = CURRENT_TIMESTAMP WHERE id = $1 AND status = 'DISPONIVEL'`, [bolsa.id]);
+            await cliente.query(`UPDATE solicitacoes_transfusionais SET hemocomponente_id = $1, atualizado_em = CURRENT_TIMESTAMP WHERE id = $2 AND requisicao_id = $3 AND status = 'PENDENTE' AND hemocomponente_id IS NULL`, [bolsa.id, solicitacaoId, requisicaoId]);
+            await cliente.query('COMMIT');
+            return { codigo: bolsa.codigo_original, codigoInterno: bolsa.codigo_interno, tipo: bolsa.tipo, abo: bolsa.abo, fatorRh: bolsa.fator_rh };
+        } catch (erro) {
+            await cliente.query('ROLLBACK');
+            throw erro;
+        } finally {
+            cliente.release();
+        }
+    }
+
+    static async removerBolsaAssociada(requisicaoId, solicitacaoId) {
+        const cliente = await db.connect();
+        try {
+            await cliente.query('BEGIN');
+            const item = (await cliente.query(`SELECT id, status, hemocomponente_id FROM solicitacoes_transfusionais WHERE id = $1 AND requisicao_id = $2 FOR UPDATE`, [solicitacaoId, requisicaoId])).rows[0];
+            if (!item) throw new ErroNaoEncontrado('Unidade solicitada não encontrada.');
+            if (item.status !== 'PENDENTE' || !item.hemocomponente_id) throw new ErroConflito('Só é possível remover uma bolsa que aguarda compatibilidade.');
+            await cliente.query(`UPDATE hemocomponentes SET status = CASE WHEN data_validade < CURRENT_DATE THEN 'VENCIDA' ELSE 'DISPONIVEL' END, atualizado_em = CURRENT_TIMESTAMP WHERE id = $1 AND status = 'EM_CONFERENCIA'`, [item.hemocomponente_id]);
+            await cliente.query(`UPDATE solicitacoes_transfusionais SET hemocomponente_id = NULL, atualizado_em = CURRENT_TIMESTAMP WHERE id = $1`, [solicitacaoId]);
+            await cliente.query('COMMIT');
+        } catch (erro) {
+            await cliente.query('ROLLBACK');
+            throw erro;
+        } finally {
+            cliente.release();
+        }
+    }
+
+    static async listarAguardandoCompatibilidade() {
+        const { rows } = await db.query(`
+            SELECT r.id AS requisicao_id, s.id AS solicitacao_id, s.item_numero, s.tipo,
+                   s.urgencia, p.nome AS paciente_nome, p.prontuario, p.sexo,
+                   date_part('year', age(p.data_nascimento))::int AS paciente_idade,
+                   r.peso_receptor_kg, a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
+                   h.id AS bolsa_id, h.codigo_original, h.codigo_interno,
+                   h.abo AS bolsa_abo, h.fator_rh AS bolsa_rh, h.volume_ml, h.status AS bolsa_status,
+                   to_char(h.data_validade, 'DD/MM/YYYY') AS validade_br, r.prazo_solicitacao
+            FROM requisicoes_transfusionais r
+            JOIN solicitacoes_transfusionais s ON s.requisicao_id = r.id
+            JOIN pacientes p ON p.id = r.paciente_id
+            JOIN amostras_receptor a ON a.id = r.amostra_id
+            JOIN hemocomponentes h ON h.id = s.hemocomponente_id
+            WHERE s.status = 'PENDENTE' AND s.hemocomponente_id IS NOT NULL
+              AND h.status = 'EM_CONFERENCIA' AND r.status NOT IN ('CANCELADA', 'ATENDIDA')
+            ORDER BY CASE s.urgencia WHEN 'EMERGENCIA' THEN 0 WHEN 'URGENTE' THEN 1 ELSE 2 END, r.criado_em ASC, s.item_numero ASC
+        `);
+        return rows;
+    }
     static async verificarBolsa(requisicaoId, solicitacaoId, codigoInformado) {
         const codigo = normalizarEspacos(String(codigoInformado || '')).toUpperCase();
         if (!codigo || codigo.length > 50) throw new ErroValidacao('Informe o código individual da bolsa.');
