@@ -32,6 +32,9 @@ router.post('/pacientes/novo', pacientes, Paciente.criar);
 router.get('/pacientes/:id/dossie', pacientes, Amostra.dossie);
 router.get('/pacientes/:id/amostras/nova', pacientes, Amostra.nova);
 router.post('/pacientes/:id/amostras', pacientes, Amostra.criar);
+router.get('/pacientes/:id/amostras/:amostraId/imuno', pacientes, Amostra.imuno);
+router.post('/pacientes/:id/amostras/:amostraId/imuno', pacientes, Amostra.salvarImuno);
+router.get('/pacientes/:id/amostras/:amostraId/etiqueta', pacientes, Amostra.etiqueta);
 router.get('/pacientes/:id/editar', pacientes, Paciente.formEditar);
 router.post('/pacientes/:id/editar', pacientes, Paciente.atualizar);
 
