@@ -16,6 +16,10 @@ class CompatibilidadeController {
 
             if (id) {
                 solicitacao = await SolicitacaoModel.buscarPorId(id);
+                if (solicitacao && solicitacao.requisicao_id) {
+                    avisar(req, 'aviso', 'Esta solicitação faz parte de uma requisição em etapas. Registre a prova cruzada na aba Bolsas / Transfusão.');
+                    return res.redirect(STATUS.REDIRECIONAR, '/solicitacoes/' + solicitacao.requisicao_id + '/bolsas');
+                }
                 if (solicitacao && solicitacao.status === 'PENDENTE') {
                     bolsas = await CompatibilidadeService.listarBolsasCompativeis(solicitacao);
                     aceitos = CompatibilidadeService.descreverAceitos(
