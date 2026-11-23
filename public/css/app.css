@@ -784,3 +784,71 @@ body.erro-publico main { padding: 0; }
 
 @page etiqueta { size:100mm 60mm; margin:3mm; }
 .etiqueta-painel { page:etiqueta; }
+
+
+/* ---------- Fluxo de consulta de Receptores ---------- */
+.receptor-consulta { display:grid; grid-template-columns:minmax(0,1fr); gap:20px; max-width:1120px; margin:8px auto; }
+.receptor-busca, .receptor-resultados { margin-bottom:0; }
+.receptor-titulo { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+.receptor-titulo h3 { margin:0 0 4px; font-size:18px; }
+.receptor-titulo p, .ajuda-busca { color:var(--cinza); font-size:12.5px; }
+.receptor-icone { width:42px; height:42px; display:grid; place-items:center; border-radius:12px; background:var(--vermelho-fundo); color:var(--rosa); font-size:26px; }
+.rotulo-busca { display:block; margin:0 0 8px; font-size:12px; font-weight:700; }
+.campo-busca-receptor { position:relative; display:flex; gap:10px; }
+.campo-busca-receptor input { flex:1; min-width:0; min-height:48px; padding:12px 15px; border:1px solid var(--borda-forte); border-radius:12px; background:var(--superficie); color:var(--texto); font:inherit; }
+.campo-busca-receptor input:focus { outline:none; border-color:var(--rosa); box-shadow:0 0 0 4px var(--anel); }
+.botao-limpar-busca { flex-shrink:0; }
+.ajuda-busca { display:block; margin-top:10px; }
+.sugestoes-receptor { position:absolute; z-index:25; top:calc(100% + 7px); left:0; right:0; max-height:340px; overflow:auto; padding:6px; border:1px solid var(--borda-forte); border-radius:12px; background:var(--superficie); box-shadow:var(--sombra-3); }
+.sugestao-receptor { display:flex; flex-direction:column; gap:4px; width:100%; padding:12px 14px; border:0; border-radius:8px; background:transparent; color:var(--texto); text-align:left; cursor:pointer; }
+.sugestao-receptor:hover, .sugestao-receptor:focus-visible { background:var(--superficie-2); outline:none; }
+.sugestao-receptor strong { font-size:13.5px; }
+.sugestao-receptor small { color:var(--cinza); font-size:11.5px; }
+.receptor-selecionado { padding:18px; border:1px solid var(--borda-forte); border-radius:13px; background:var(--superficie-2); }
+.receptor-selecionado-dados { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:16px; }
+.receptor-selecionado-dados small { display:block; margin-bottom:5px; color:var(--cinza); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+.receptor-selecionado-dados strong { font-size:14px; overflow-wrap:anywhere; }
+.acoes-receptor { margin-top:18px; padding-top:15px; border-top:1px solid var(--borda); justify-content:flex-end; }
+.menu-acoes-receptor { position:relative; }
+.menu-acoes-receptor summary { list-style:none; display:inline-flex; align-items:center; gap:8px; padding:10px 15px; border-radius:10px; background:var(--rosa); color:#fff; font-weight:700; cursor:pointer; }
+.menu-acoes-receptor summary::-webkit-details-marker { display:none; }
+.menu-acoes-conteudo { position:absolute; right:0; top:calc(100% + 6px); z-index:20; min-width:190px; padding:6px; border:1px solid var(--borda-forte); border-radius:11px; background:var(--superficie); box-shadow:var(--sombra-3); }
+.menu-acoes-conteudo a { display:block; padding:10px 12px; border-radius:7px; color:var(--texto); font-size:13px; text-decoration:none; }
+.menu-acoes-conteudo a:hover { background:var(--superficie-2); color:var(--rosa); }
+.receptor-inserir { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:15px; border:1px dashed var(--borda-forte); border-radius:12px; background:var(--superficie-2); }
+.receptor-inserir strong, .receptor-inserir span { display:block; }
+.receptor-inserir span { color:var(--cinza); font-size:12px; margin-top:3px; }
+.botao-inserir { background:linear-gradient(135deg,var(--turquesa),#08776e); }
+.botao-inserir:hover { filter:brightness(1.06); }
+
+/* Cadastro de receptor em janela popup */
+.modal-receptor { position:fixed; inset:0; z-index:100; display:grid; place-items:center; padding:20px; }
+.modal-fundo { position:absolute; inset:0; background:rgba(4,10,20,.68); backdrop-filter:blur(4px); }
+.modal-conteudo { position:relative; z-index:1; width:min(820px,100%); max-height:min(92vh,900px); display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--borda); border-radius:18px; background:var(--superficie); color:var(--texto); box-shadow:var(--sombra-3); }
+.modal-cabecalho { display:flex; align-items:center; justify-content:space-between; gap:15px; padding:18px 22px; border-bottom:1px solid var(--borda); }
+.modal-cabecalho > div { display:flex; align-items:center; gap:10px; }
+.modal-cabecalho h3 { margin:0; font-size:18px; }
+.modal-fechar { width:34px; height:34px; border:0; border-radius:9px; background:var(--superficie-2); color:var(--texto); font-size:24px; cursor:pointer; }
+.form-receptor-modal { min-height:0; display:flex; flex-direction:column; }
+.modal-corpo { overflow:auto; padding:20px 22px; }
+.secao-modal + .secao-modal { margin-top:22px; padding-top:18px; border-top:1px solid var(--borda); }
+.secao-modal h4 { margin-bottom:14px; font-size:13px; }
+.secao-modal h4 span { color:var(--rosa); }
+.secao-modal h4 small { color:var(--cinza); font-weight:400; }
+.grade-receptor-modal { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.campo-receptor { display:flex; flex-direction:column; gap:6px; }
+.campo-receptor-largo { grid-column:1/-1; }
+.campo-receptor label { font-size:12px; font-weight:600; }
+.campo-receptor input, .campo-receptor select, .campo-receptor textarea { width:100%; min-height:42px; padding:10px 12px; border:1px solid var(--borda-forte); border-radius:9px; background:var(--superficie); color:var(--texto); font:inherit; }
+.modal-rodape { display:flex; justify-content:flex-end; gap:10px; padding:15px 22px; border-top:1px solid var(--borda); background:var(--superficie-2); }
+body.modal-aberto { overflow:hidden; }
+@media(max-width:760px) {
+    .receptor-selecionado-dados { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .campo-busca-receptor { flex-wrap:wrap; }
+    .campo-busca-receptor input { flex-basis:100%; }
+    .receptor-inserir { align-items:flex-start; flex-direction:column; }
+    .grade-receptor-modal { grid-template-columns:1fr; }
+    .campo-receptor-largo { grid-column:auto; }
+    .modal-receptor { padding:8px; }
+    .modal-conteudo { max-height:96vh; }
+}
