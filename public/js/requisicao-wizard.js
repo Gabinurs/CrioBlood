@@ -261,6 +261,8 @@
             if (proxima) {
                 opcoes.forEach(function (opcao) { opcao.classList.remove('opcao-paciente-ativa'); });
                 proxima.classList.add('opcao-paciente-ativa');
+                proxima.setAttribute('aria-selected', 'true');
+                buscaPaciente.setAttribute('aria-activedescendant', proxima.id);
                 proxima.scrollIntoView({ block: 'nearest' });
             }
         } else if (evento.key === 'ArrowUp' && !listaPacientes.hidden) {
@@ -269,6 +271,8 @@
             if (anterior) {
                 opcoes.forEach(function (opcao) { opcao.classList.remove('opcao-paciente-ativa'); });
                 anterior.classList.add('opcao-paciente-ativa');
+                anterior.setAttribute('aria-selected', 'true');
+                buscaPaciente.setAttribute('aria-activedescendant', anterior.id);
                 anterior.scrollIntoView({ block: 'nearest' });
             }
         } else if (evento.key === 'Enter' && !listaPacientes.hidden) {
