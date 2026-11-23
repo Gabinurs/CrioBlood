@@ -31,7 +31,7 @@
         <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <input type="hidden" name="itens_json" value="<%= val.itens_json || '[]' %>" data-itens-json>
 
-        <section class="requisicao-etapa" data-etapa-painel="1">
+        <div class="requisicao-paciente-persistente">
             <div class="requisicao-secao-topo">
                 <div><span class="numero-secao">01</span><div><h3>Identificação do receptor</h3><p>Selecione o paciente para carregar a tipagem e a amostra mais recente.</p></div></div>
             </div>
@@ -70,7 +70,12 @@
                 </div>
                 <span class="status" data-amostra-badge><%= pacienteSelecionado && pacienteSelecionado.liberacao && pacienteSelecionado.liberacao.permitido ? 'Liberada' : 'Verificar' %></span>
             </div>
+        </div>
 
+        <section class="requisicao-etapa" data-etapa-painel="1">
+            <div class="requisicao-secao-topo">
+                <div><span class="numero-secao">02</span><div><h3>Dados da requisição</h3><p>Informe o horário e os componentes que foram solicitados.</p></div></div>
+            </div>
             <div class="requisicao-grade-dois">
                 <div class="campo campo-data-hora" data-seletor-data-hora data-valor-inicial="<%= val.data_hora_requisicao || '' %>">
                     <label for="data-hora-requisicao-display">Data e hora da requisição *</label>
