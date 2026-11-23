@@ -1,0 +1,175 @@
+<%- include('../partials/inicio', { titulo: 'Solicitação transfusional', subtitulo: 'Etapa 3 · Bolsas / Transfusão e prova cruzada', ativo: 'solicitacoes' }) %>
+<%
+    var prazoRotulo = {
+        '3_HORAS':'Em até 3 horas',
+        '6_HORAS':'Em até 6 horas',
+        '24_HORAS':'Em até 24 horas',
+        'RESERVA_CIRURGICA':'Reserva cirúrgica',
+        'EXTREMA_URGENCIA':'Extrema urgência'
+    };
+%>
+
+<section class="requisicao-pagina requisicao-etapa-final">
+    <header class="requisicao-titulo">
+        <div><span class="recebimento-etiqueta">REQUISIÇÃO #<%= requisicao.id %></span><h3>Bolsas / Transfusão</h3><p>Selecione uma bolsa para cada unidade solicitada e registre a prova cruzada.</p></div>
+        <a class="botao botao-claro" href="/solicitacoes">Voltar às solicitações</a>
+    </header>
+
+    <nav class="requisicao-abas" aria-label="Etapas da solicitação">
+        <a class="requisicao-aba concluida" href="/solicitacoes/nova?paciente_id=<%= requisicao.paciente_id %>"><span>1</span><span><strong>Requisição</strong><small>Registrada</small></span></a>
+        <div class="requisicao-aba concluida"><span>2</span><span><strong>Complementar</strong><small>Dados salvos</small></span></div>
+        <div class="requisicao-aba ativa" aria-current="step"><span>3</span><span><strong>Bolsas / Transfusão</strong><small>Prova cruzada</small></span></div>
+    </nav>
+
+    <section class="painel resumo-requisicao">
+        <div class="resumo-requisicao-topo">
+            <div><span class="cartao-microtitulo">RECEPTOR</span><h3><%= requisicao.paciente_nome %></h3><p><%= requisicao.nascimento_br %> · Mãe: <%= requisicao.nome_mae || 'Não informada' %></p></div>
+            <div class="receptor-tipagem"><%= requisicao.paciente_abo ? requisicao.paciente_abo + requisicao.paciente_rh : 'ABO/Rh pendente' %></div>
+        </div>
+        <div class="resumo-requisicao-dados">
+            <div><small>Data/hora da requisição</small><strong><%= requisicao.requisicao_br %></strong></div>
+            <div><small>Usuário que registrou</small><strong><%= requisicao.solicitado_por_nome %></strong></div>
+            <div><small>Médico solicitante</small><strong><%= requisicao.medico_solicitante %></strong></div>
+            <div><small>Setor solicitante</small><strong><%= requisicao.setor_solicitante %></strong></div>
+            <div><small>Hemoglobina</small><strong><%= requisicao.hemoglobina === null ? 'Não informada' : requisicao.hemoglobina + ' g/dL' %></strong></div>
+            <div><small>Tempo / modalidade</small><strong><%= prazoRotulo[requisicao.prazo_solicitacao] || requisicao.prazo_solicitacao %></strong></div>
+        </div>
+        <div class="resumo-amostra <%= requisicao.amostra_valida ? 'amostra-ok' : 'amostra-vencida' %>">
+            <span aria-hidden="true"><%= requisicao.amostra_valida ? '✓' : '!' %></span>
+            <div><strong><%= requisicao.amostra_valida ? 'Amostra vinculada ainda dentro da validade' : 'Atenção: amostra vinculada fora da validade' %></strong><small>Coleta: <%= requisicao.coleta_br %> · Validade: <%= requisicao.validade_amostra_br %></small></div>
+        </div>
+        <p class="resumo-diagnostico"><strong>Diagnóstico / indicação:</strong> <%= requisicao.diagnostico %></p>
+    </section>
+
+    <section class="painel lista-unidades-requisicao">
+        <div class="painel-titulo-com-acoes"><div><h3>Unidades solicitadas</h3><p class="descricao">Cada linha representa uma unidade individual e recebe seu próprio registro de prova cruzada.</p></div><span class="status <%= requisicao.status === 'RESERVADA' ? 's-verde' : requisicao.status === 'PARCIAL' ? 's-amarelo' : 's-azul' %>"><%= requisicao.status === 'RESERVADA' ? 'Todas reservadas' : requisicao.status === 'PARCIAL' ? 'Parcialmente atendida' : 'Aguardando bolsas' %></span></div>
+
+        <% if (!itens.length) { %>
+            <div class="vazio">Nenhuma unidade foi vinculada a esta requisição.</div>
+        <% } else { itens.forEach(function(item) { %>
+            <article class="unidade-requisicao">
+                <div class="unidade-requisicao-cabecalho">
+                    <div class="unidade-numero"><%= String(item.item_numero).padStart(2,'0') %></div>
+                    <div class="unidade-titulo"><strong><%= rot.tipo(item.tipo) %></strong><small>Unidade <%= item.item_numero %> · <%= item.tipo %></small></div>
+                    <% if (item.status === 'RESERVADA') { %><span class="status s-verde">Bolsa reservada</span><% } else if (item.status === 'ATENDIDA') { %><span class="status s-cinza">Transfusão registrada</span><% } else { %><span class="status s-amarelo">Aguardando prova cruzada</span><% } %>
+                </div>
+
+                <% if (item.status === 'RESERVADA' || item.status === 'ATENDIDA') { %>
+                    <div class="bolsa-vinculada">
+                        <div><span class="cartao-microtitulo">BOLSA VINCULADA</span><strong><%= item.bolsa_codigo %></strong><small><%= item.bolsa_codigo_interno || 'Código local não informado' %> · <%= rot.tipagem(item.bolsa_abo,item.bolsa_rh) %> · <%= item.volume_ml || '—' %> mL · Validade <%= item.bolsa_validade_br || '—' %></small></div>
+                        <% if (item.prova_compativel_id) { %><a class="botao botao-claro botao-pequeno" href="/solicitacoes/provas-cruzadas/<%= item.prova_compativel_id %>/etiqueta" target="_blank" rel="noopener">Imprimir etiqueta</a><% } %>
+                    </div>
+                <% } else { %>
+                    <div class="selecionar-bolsa-requisicao">
+                        <div class="campo">
+                            <label for="bolsa-item-<%= item.id %>">Selecionar bolsa disponível</label>
+                            <select id="bolsa-item-<%= item.id %>" data-selecionar-bolsa>
+                                <option value="">Selecione pelo código original / local...</option>
+                                <% item.bolsas.forEach(function(b) { %>
+                                    <option value="<%= b.id %>"
+                                        data-codigo="<%= b.codigo_original %>"
+                                        data-interno="<%= b.codigo_interno || '' %>"
+                                        data-tipagem="<%= rot.tipagem(b.abo,b.fator_rh) %>"
+                                        data-volume="<%= b.volume_ml || '' %>"
+                                        data-validade="<%= b.data_validade_br %>"
+                                        data-triagem="<%= b.nivel_triagem || '' %>">
+                                        <%= b.codigo_original %> · <%= b.codigo_interno || 'Sem código local' %> · <%= rot.tipagem(b.abo,b.fator_rh) %> · <%= b.volume_ml || '—' %> mL · Val. <%= b.data_validade_br %>
+                                        <%= b.nivel_triagem ? ' · Triagem ABO/Rh sugerida' : ' · Atenção à triagem ABO/Rh' %>
+                                    </option>
+                                <% }) %>
+                            </select>
+                            <% if (!item.bolsas.length) { %><small>Não há bolsas disponíveis deste componente no estoque no momento.</small><% } else { %><small>A triagem ABO/Rh é apenas apoio. A prova cruzada deve ser realizada e registrada pelo profissional responsável.</small><% } %>
+                        </div>
+                        <button type="button" class="botao" data-abrir-prova data-item-id="<%= item.id %>" <%= item.bolsas.length ? '' : 'disabled' %>>Registrar prova cruzada</button>
+                    </div>
+                <% } %>
+            </article>
+        <% }) } %>
+    </section>
+
+    <section class="painel historico-provas">
+        <h3>Histórico de provas cruzadas</h3>
+        <p class="descricao">Todos os resultados são mantidos no histórico da requisição.</p>
+        <div class="tabela-container">
+            <table>
+                <thead><tr><th>Unidade</th><th>Bolsa</th><th>Tipagem</th><th>Data / hora</th><th>Responsável</th><th>Resultado</th><th>Etiqueta</th></tr></thead>
+                <tbody>
+                    <% if (!provas.length) { %><tr><td colspan="7" class="vazio">Nenhuma prova cruzada registrada.</td></tr><% } else { provas.forEach(function(p) { %>
+                        <tr>
+                            <td>#<%= p.item_numero %> · <%= rot.tipo(p.tipo) %></td>
+                            <td><strong><%= p.codigo_original %></strong><br><small><%= p.codigo_interno || '—' %></small></td>
+                            <td><%= rot.tipagem(p.abo_bolsa,p.fator_rh_bolsa) %></td>
+                            <td><%= p.data_hora_br %></td>
+                            <td><%= p.responsavel_nome %></td>
+                            <td><% if (p.resultado === 'COMPATIVEL') { %><span class="status s-verde">Compatível</span><% } else { %><span class="status s-vermelho">Incompatível</span><% } %></td>
+                            <td><% if (p.resultado === 'COMPATIVEL') { %><a class="botao botao-claro botao-pequeno" href="/solicitacoes/provas-cruzadas/<%= p.id %>/etiqueta" target="_blank" rel="noopener">Imprimir</a><% } else { %><span class="texto-secundario">Não emitida</span><% } %></td>
+                        </tr>
+                    <% }) } %>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="alerta alerta-info alerta-seguranca-prova">O CrioBlood registra o resultado informado e verifica regras gerais cadastradas de ABO/Rh. Ele não executa a prova cruzada nem substitui a conferência, a interpretação do exame ou o protocolo institucional.</div>
+</section>
+
+<dialog class="modal-prova-cruzada" data-modal-prova aria-labelledby="titulo-modal-prova">
+    <header class="modal-prova-topo">
+        <div><span class="modal-amostra-marca">CRIOBLOOD · BANCO DE SANGUE</span><h3 id="titulo-modal-prova">Prova cruzada</h3></div>
+        <button type="button" class="modal-amostra-fechar" data-fechar-prova aria-label="Fechar">×</button>
+    </header>
+    <form method="POST" action="/solicitacoes/<%= requisicao.id %>/provas-cruzadas" data-form-prova>
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <input type="hidden" name="solicitacao_id" data-prova-item>
+        <input type="hidden" name="hemocomponente_id" data-prova-bolsa>
+        <div class="modal-prova-corpo">
+            <div class="resumo-bolsa-prova">
+                <span class="cartao-microtitulo">BOLSA SELECIONADA</span>
+                <strong data-prova-codigo>—</strong>
+                <small data-prova-detalhes>—</small>
+                <span class="aviso-triagem" data-prova-triagem></span>
+            </div>
+            <div class="campo">
+                <label>Paciente / receptor</label>
+                <input type="text" value="<%= requisicao.paciente_nome %> · <%= rot.tipagem(requisicao.paciente_abo,requisicao.paciente_rh) %>" readonly>
+            </div>
+            <div class="campo campo-data-hora" data-seletor-data-hora data-valor-inicial="">
+                <label for="data-hora-prova-display">Data e hora da prova *</label>
+                <div class="controle-data-hora">
+                    <input id="data-hora-prova-display" class="entrada-data-hora" type="text" placeholder="dd/mm/aaaa  --:--" data-datahora-display readonly required autocomplete="off">
+                    <input type="hidden" name="data_hora_prova" data-datahora-value>
+                    <button type="button" class="botao-abrir-calendario" data-datahora-toggle aria-label="Abrir calendário e horário"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg></button>
+                </div>
+                <div class="popup-datahora" data-datahora-popup role="dialog" aria-label="Selecionar data e hora da prova" hidden>
+                    <div class="cabecalho-calendario"><button type="button" class="navegar-mes" data-mes-anterior aria-label="Mês anterior">‹</button><strong data-mes-ano></strong><button type="button" class="navegar-mes" data-proximo-mes aria-label="Próximo mês">›</button></div>
+                    <div class="grade-semana" aria-hidden="true"><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span></div>
+                    <div class="grade-dias" data-grade-dias></div>
+                    <div class="area-horario"><div><span class="rotulo-horario">Horário da prova</span><small>Formato 24 horas</small></div><div class="controles-horario"><label><span class="sr-only">Hora</span><select data-selecionar-hora aria-label="Hora"></select></label><span>:</span><label><span class="sr-only">Minuto</span><select data-selecionar-minuto aria-label="Minuto"></select></label></div></div>
+                    <div class="rodape-datahora"><button type="button" class="atalho-agora" data-datahora-agora>Agora</button><div><button type="button" class="botao-cancelar-datahora" data-datahora-cancelar>Cancelar</button><button type="button" class="botao-confirmar-datahora" data-datahora-confirmar>Confirmar</button></div></div>
+                </div>
+            </div>
+            <div class="campo">
+                <label for="resultado-prova">Prova de compatibilidade *</label>
+                <select id="resultado-prova" name="resultado" required>
+                    <option value="">Selecione o resultado...</option>
+                    <option value="COMPATIVEL">Compatível</option>
+                    <option value="INCOMPATIVEL">Incompatível</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="responsavel-prova">Colaborador que realizou a prova *</label>
+                <input type="text" id="responsavel-prova" name="responsavel_nome" value="<%= usuario ? usuario.nome : '' %>" maxlength="160" required>
+            </div>
+            <label class="confirmacao-requisicao confirmacao-tipagem-bolsa"><input type="checkbox" name="tipagem_bolsa_confirmada" required><span><strong>Tipagem ABO/Rh da bolsa conferida</strong><small>Confirme a identificação da bolsa física antes de registrar a prova.</small></span></label>
+            <p class="alerta alerta-info">O resultado informado é de responsabilidade do profissional executor e deve seguir o procedimento validado pelo serviço de hemoterapia.</p>
+        </div>
+        <footer class="modal-prova-rodape">
+            <button type="button" class="botao botao-claro" data-fechar-prova>Cancelar</button>
+            <button type="submit" class="botao">Inserir resultado</button>
+        </footer>
+    </form>
+</dialog>
+
+<script src="/js/datahora.js" defer></script>
+<script src="/js/prova-cruzada.js" defer></script>
+<%- include('../partials/fim') %>
