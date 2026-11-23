@@ -235,7 +235,7 @@ docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < dat
 No PowerShell:
 
 ```powershell
-Get-Content .\\database\\14_peso_e_excecao_rhd.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood
+Get-Content .\database\14_peso_e_excecao_rhd.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood
 ```
 
 A matriz automatizada é uma barreira de seleção inicial e não substitui a prova cruzada quando indicada, pesquisa de anticorpos, avaliação clínica ou protocolos institucionais. A decisão transfusional é dos profissionais habilitados.
