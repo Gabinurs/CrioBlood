@@ -1307,3 +1307,9 @@ button.requisicao-aba { font:inherit; cursor:pointer; }
 .aviso-unidade-encerrada strong { font-size:11px; }
 .aviso-unidade-encerrada small { color:var(--cinza); font-size:10px; }
 @media(max-width:760px) { .aviso-unidade-encerrada { align-items:flex-start; flex-direction:column; margin-left:0; } }
+
+.requisicao-paciente-persistente { margin-bottom:18px; padding:17px; border:1px solid var(--borda); border-radius:13px; background:var(--superficie-2); }
+.requisicao-seletor-paciente { margin-bottom:14px; }
+.requisicao-seletor-paciente .requisicao-secao-topo { margin-bottom:12px; }
+.requisicao-paciente-persistente .requisicao-receptor-cartao { margin:0 0 12px; background:var(--superficie); }
+.requisicao-paciente-persistente .amostra-status-cartao { margin:0; }
