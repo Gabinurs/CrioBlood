@@ -36,12 +36,17 @@ class HemocomponenteController {
                 req,
                 () => HemocomponenteModel.contarTodos(filtros),
                 (pag) => HemocomponenteModel.listarTodos(filtros, pag));
+            const lote = lote_id && /^\\d+$/.test(String(lote_id))
+                ? await HemocomponenteModel.buscarLotePorId(Number(lote_id))
+                : null;
 
             res.render('hemocomponentes/index', {
                 hemocomponentes,
                 paginacao,
+                lote_id: lote ? lote.id : '',
+                lote,
                 usuario: req.session.usuario,
-                title: 'Gestão de Hemocomponentes'
+                title: 'Bolsas do recebimento'
             });
         } catch (erro) {
             responderErro(req, res, erro, 'Erro interno do servidor ao carregar hemocomponentes.');
@@ -52,11 +57,19 @@ class HemocomponenteController {
     static async renderizarCadastro(req, res) {
         try {
             const lotes = await HemocomponenteModel.listarLotesAbertos();
+            const lote_id = req.query.lote_id || '';
+            const loteSelecionado = lote_id
+                ? lotes.find(l => String(l.id) === String(lote_id)) || null
+                : null;
+            if (lote_id && !loteSelecionado) {
+                return enviarErro(req, res, STATUS.CONFLITO, 'O lote informado não existe ou já foi finalizado. Abra um lote ativo para adicionar bolsas.');
+            }
             res.render('hemocomponentes/cadastro', {
-                lote_id: req.query.lote_id || '',
+                lote_id,
+                loteSelecionado,
                 lotes,
                 usuario: req.session.usuario,
-                title: 'Cadastrar Hemocomponente'
+                title: 'Adicionar bolsa ao recebimento'
             });
         } catch (erro) {
             responderErro(req, res, erro, 'Erro ao abrir o formulário de cadastro.');
@@ -108,7 +121,7 @@ class HemocomponenteController {
             await AuditoriaModel.registrarLog(
                 req.session.usuario.id, 'EDICAO_BOLSA', 'hemocomponentes', Number(id),
                 `${antes.codigo_original}. ${descreverMudancas(antes, depois) || 'Sem mudança nos campos principais.'}`);
-            res.redirect(STATUS.VER_OUTRO, '/hemocomponentes');
+            res.redirect(STATUS.VER_OUTRO, `/hemocomponentes?lote_id=${antes.lote_id}`);
         } catch (erro) {
             responderErro(req, res, erro, 'Erro ao atualizar os dados.');
         }
@@ -123,7 +136,7 @@ class HemocomponenteController {
 
             await AuditoriaModel.registrarLog(
                 req.session.usuario.id, 'DESCARTE_BOLSA', 'hemocomponentes', Number(id), '');
-            res.redirect(STATUS.VER_OUTRO, '/hemocomponentes');
+            res.redirect(STATUS.VER_OUTRO, '/lotes');
         } catch (erro) {
             responderErro(req, res, erro, 'Erro ao descartar o item.');
         }
