@@ -3,7 +3,7 @@
     var opcoesStatus = ['EM_CONFERENCIA', 'DISPONIVEL'];
     if (bloqueado) opcoesStatus = [hemocomponente.status];
 %>
-<%- include('../partials/inicio', { titulo: 'Editar hemocomponente', subtitulo: 'Código ' + hemocomponente.codigo_original, ativo: 'hemocomponentes' }) %>
+<%- include('../partials/inicio', { titulo: 'Editar hemocomponente', subtitulo: 'Código ' + hemocomponente.codigo_original, ativo: 'recebimento' }) %>
 
 <section class="painel formulario">
     <p class="descricao" style="margin-bottom: 18px;">
@@ -76,7 +76,7 @@
 
         <div class="rodape-form">
             <button class="botao" type="submit">Atualizar dados</button>
-            <a class="botao botao-claro" href="/hemocomponentes">Cancelar</a>
+            <a class="botao botao-claro" href="/hemocomponentes?lote_id=<%= hemocomponente.lote_id %>">Voltar ao lote</a>
         </div>
     </form>
 </section>
