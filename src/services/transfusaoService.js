@@ -67,7 +67,7 @@ class TransfusaoService {
             await cliente.query('BEGIN');
 
             const s = (await cliente.query(
-                `SELECT s.id, s.status, s.hemocomponente_id, s.medico_solicitante,
+                `SELECT s.id, s.requisicao_id, s.status, s.hemocomponente_id, s.medico_solicitante,
                         p.nome AS paciente_nome, p.prontuario
                  FROM solicitacoes_transfusionais s
                  JOIN pacientes p ON p.id = s.paciente_id
@@ -102,6 +102,23 @@ class TransfusaoService {
             await cliente.query(
                 `UPDATE solicitacoes_transfusionais SET status = 'ATENDIDA', atualizado_em = CURRENT_TIMESTAMP WHERE id = $1`,
                 [s.id]);
+
+            if (s.requisicao_id) {
+                const resumo = (await cliente.query(
+                    `SELECT COUNT(*)::int AS total,
+                            COUNT(*) FILTER (WHERE status = 'ATENDIDA')::int AS atendidas,
+                            COUNT(*) FILTER (WHERE status = 'RESERVADA')::int AS reservadas
+                     FROM solicitacoes_transfusionais WHERE requisicao_id = $1`,
+                    [s.requisicao_id]
+                )).rows[0];
+                const statusRequisicao = resumo.total > 0 && resumo.total === resumo.atendidas
+                    ? 'ATENDIDA'
+                    : (resumo.reservadas > 0 ? 'PARCIAL' : 'PENDENTE');
+                await cliente.query(
+                    'UPDATE requisicoes_transfusionais SET status = $1, atualizado_em = CURRENT_TIMESTAMP WHERE id = $2',
+                    [statusRequisicao, s.requisicao_id]
+                );
+            }
 
             await cliente.query('COMMIT');
             return { codigo: b.codigo_original, paciente: s.paciente_nome };
