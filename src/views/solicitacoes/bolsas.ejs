@@ -107,7 +107,7 @@
                             <td><%= p.data_hora_br %></td>
                             <td><%= p.responsavel_nome %></td>
                             <td><% if (p.resultado === 'COMPATIVEL') { %><span class="status s-verde">Compatível</span><% } else { %><span class="status s-vermelho">Incompatível</span><% } %></td>
-                            <td><% if (p.resultado === 'COMPATIVEL') { %><button type="button" class="botao botao-claro botao-pequeno" data-abrir-etiqueta="/solicitacoes/provas-cruzadas/<%= p.id %>/etiqueta?modal=1">Imprimir</button><% } else { %><span class="texto-secundario">Não emitida</span><% } %></td>
+                            <td><% if (p.resultado === 'COMPATIVEL' && p.status_unidade !== 'CANCELADA') { %><button type="button" class="botao botao-claro botao-pequeno" data-abrir-etiqueta="/solicitacoes/provas-cruzadas/<%= p.id %>/etiqueta?modal=1">Imprimir</button><% } else if (p.resultado === 'COMPATIVEL') { %><span class="texto-secundario">Vínculo cancelado</span><% } else { %><span class="texto-secundario">Não emitida</span><% } %></td>
                         </tr>
                     <% }) } %>
                 </tbody>
