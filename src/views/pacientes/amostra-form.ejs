@@ -12,9 +12,89 @@
         <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <h3 class="titulo-secao-amostra">Dados da coleta</h3>
         <div class="grade-form">
-            <div class="campo"><label>Data e hora da coleta *</label><input type="datetime-local" name="coletado_em" value="<%= valores.coletado_em || '' %>" required></div>
+            <div class="campo campo-data-hora" data-seletor-data-hora data-valor-inicial="<%= valores.coletado_em || '' %>">
+                <label for="coletado-em-display">Data e hora da coleta *</label>
+                <div class="controle-data-hora">
+                    <input id="coletado-em-display" class="entrada-data-hora" type="text" placeholder="dd/mm/aaaa  --:--"
+                        data-datahora-display readonly required autocomplete="off"
+                        aria-haspopup="dialog" aria-expanded="false" aria-label="Data e hora da coleta">
+                    <input type="hidden" name="coletado_em" data-datahora-value value="<%= valores.coletado_em || '' %>">
+                    <button type="button" class="botao-abrir-calendario" data-datahora-toggle
+                        aria-label="Abrir calendário e horário" title="Selecionar data e hora">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="popup-datahora" data-datahora-popup role="dialog" aria-label="Selecionar data e hora" hidden>
+                    <div class="cabecalho-calendario">
+                        <button type="button" class="navegar-mes" data-mes-anterior aria-label="Mês anterior">‹</button>
+                        <strong data-mes-ano></strong>
+                        <button type="button" class="navegar-mes" data-proximo-mes aria-label="Próximo mês">›</button>
+                    </div>
+                    <div class="grade-semana" aria-hidden="true">
+                        <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+                    </div>
+                    <div class="grade-dias" data-grade-dias></div>
+                    <div class="area-horario">
+                        <div><span class="rotulo-horario">Horário da coleta</span><small>Formato 24 horas</small></div>
+                        <div class="controles-horario">
+                            <label><span class="sr-only">Hora</span><select data-selecionar-hora aria-label="Hora"></select></label>
+                            <span>:</span>
+                            <label><span class="sr-only">Minuto</span><select data-selecionar-minuto aria-label="Minuto"></select></label>
+                        </div>
+                    </div>
+                    <div class="rodape-datahora">
+                        <button type="button" class="atalho-agora" data-datahora-agora>Agora</button>
+                        <div>
+                            <button type="button" class="botao-cancelar-datahora" data-datahora-cancelar>Cancelar</button>
+                            <button type="button" class="botao-confirmar-datahora" data-datahora-confirmar>Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="campo"><label>Responsável pela coleta *</label><input name="responsavel_coleta" maxlength="160" required value="<%= valores.responsavel_coleta || (usuario && usuario.nome) || '' %>"></div>
-            <div class="campo"><label>Data e hora do recebimento *</label><input type="datetime-local" name="recebido_em" value="<%= valores.recebido_em || '' %>" required></div>
+            <div class="campo campo-data-hora" data-seletor-data-hora data-valor-inicial="<%= valores.recebido_em || '' %>">
+                <label for="recebido-em-display">Data e hora do recebimento *</label>
+                <div class="controle-data-hora">
+                    <input id="recebido-em-display" class="entrada-data-hora" type="text" placeholder="dd/mm/aaaa  --:--"
+                        data-datahora-display readonly required autocomplete="off"
+                        aria-haspopup="dialog" aria-expanded="false" aria-label="Data e hora do recebimento">
+                    <input type="hidden" name="recebido_em" data-datahora-value value="<%= valores.recebido_em || '' %>">
+                    <button type="button" class="botao-abrir-calendario" data-datahora-toggle
+                        aria-label="Abrir calendário e horário" title="Selecionar data e hora">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="popup-datahora" data-datahora-popup role="dialog" aria-label="Selecionar data e hora" hidden>
+                    <div class="cabecalho-calendario">
+                        <button type="button" class="navegar-mes" data-mes-anterior aria-label="Mês anterior">‹</button>
+                        <strong data-mes-ano></strong>
+                        <button type="button" class="navegar-mes" data-proximo-mes aria-label="Próximo mês">›</button>
+                    </div>
+                    <div class="grade-semana" aria-hidden="true">
+                        <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+                    </div>
+                    <div class="grade-dias" data-grade-dias></div>
+                    <div class="area-horario">
+                        <div><span class="rotulo-horario">Horário da coleta</span><small>Formato 24 horas</small></div>
+                        <div class="controles-horario">
+                            <label><span class="sr-only">Hora</span><select data-selecionar-hora aria-label="Hora"></select></label>
+                            <span>:</span>
+                            <label><span class="sr-only">Minuto</span><select data-selecionar-minuto aria-label="Minuto"></select></label>
+                        </div>
+                    </div>
+                    <div class="rodape-datahora">
+                        <button type="button" class="atalho-agora" data-datahora-agora>Agora</button>
+                        <div>
+                            <button type="button" class="botao-cancelar-datahora" data-datahora-cancelar>Cancelar</button>
+                            <button type="button" class="botao-confirmar-datahora" data-datahora-confirmar>Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="campo"><label>Responsável pelo recebimento</label><input name="responsavel_recebimento" maxlength="160" value="<%= valores.responsavel_recebimento || '' %>"></div>
             <div class="campo"><label>Dupla checagem *</label><input name="dupla_checagem" maxlength="160" required value="<%= valores.dupla_checagem || '' %>"></div>
             <div class="campo"><label>Local da coleta</label><input name="local_coleta" maxlength="120" value="<%= valores.local_coleta || '' %>" placeholder="Ex.: Enfermaria, UTI, Centro Cirúrgico"></div>
@@ -27,4 +107,5 @@
         </div>
     </form>
 </section>
+<script src="/js/datahora.js" defer></script>
 <%- include('../partials/fim') %>
