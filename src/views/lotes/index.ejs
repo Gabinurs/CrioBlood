@@ -1,18 +1,24 @@
-<%- include('../partials/inicio', { titulo: 'Lotes de recebimento', subtitulo: 'Abertura, conferência e fechamento dos lotes', ativo: 'lotes' }) %>
+<%- include('../partials/inicio', { titulo: 'Recebimento de bolsas', subtitulo: 'Abertura de lote, inclusão, conferência e finalização', ativo: 'recebimento' }) %>
 
-<section class="cabecalho-pagina">
+<section class="cabecalho-pagina recebimento-cabecalho">
     <div>
-        <h3>Controle de lotes</h3>
-        <p>
-            Abra um lote para cadastrar as bolsas recebidas. Para fechar, o lote precisa ter ao menos
-            uma bolsa e nenhuma bolsa em conferência. Lotes fechados não recebem novas bolsas.
-        </p>
+        <span class="recebimento-etiqueta">FLUXO INTEGRADO</span>
+        <h3>Recebimento de bolsas</h3>
+        <p>Abra um lote, adicione todas as bolsas recebidas, confira os registros e finalize o recebimento com o comprovante em PDF.</p>
     </div>
+    <% if (locals.pode && locals.pode('lotes.gerenciar')) { %>
+        <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
+            <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+            <button class="botao" type="submit">＋ Abrir novo lote</button>
+        </form>
+    <% } %>
+</section>
 
-    <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
-<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
-        <button class="botao" type="submit">+ Abrir novo lote</button>
-    </form>
+<section class="recebimento-etapas">
+    <div class="recebimento-etapa"><span>1</span><div><strong>Abrir lote</strong><small>Identifique o recebimento</small></div></div>
+    <div class="recebimento-etapa"><span>2</span><div><strong>Adicionar bolsas</strong><small>Cadastre uma ou várias</small></div></div>
+    <div class="recebimento-etapa"><span>3</span><div><strong>Conferir</strong><small>Valide cada bolsa</small></div></div>
+    <div class="recebimento-etapa"><span>4</span><div><strong>Finalizar</strong><small>Gerar comprovante PDF</small></div></div>
 </section>
 
 <section class="indicadores">
@@ -22,58 +28,62 @@
     </div>
     <div class="indicador destaque-verde">
         <strong><%= lotes.filter(function (l) { return l.status === 'FECHADO'; }).length %></strong>
-        <span>Lotes fechados</span>
+        <span>Lotes finalizados</span>
     </div>
-    <div class="indicador">
-        <strong><%= lotes.reduce(function (total, l) { return total + l.quantidade_bolsas; }, 0) %></strong>
+    <div class="indicador destaque-azul">
+        <strong><%= lotes.reduce(function (total, l) { return total + Number(l.quantidade_bolsas || 0); }, 0) %></strong>
         <span>Bolsas recebidas</span>
     </div>
 </section>
 
-<section class="painel" data-filtravel>
-    <h3>Histórico de lotes</h3>
-    <p class="descricao">Consulte os lotes já registrados no sistema.</p>
+<section class="painel recebimento-historico" data-filtravel>
+    <div class="cabecalho-pagina recebimento-lista-titulo">
+        <div>
+            <h3>Histórico de recebimentos</h3>
+            <p class="descricao">Cada lote agrupa as bolsas que chegaram no mesmo recebimento.</p>
+        </div>
+    </div>
 
     <div class="filtros">
-        <input type="search" data-filtro-texto placeholder="Buscar por código do lote..." aria-label="Buscar lote">
-        <select data-filtro-campo="status" aria-label="Filtrar por status">
-            <option value="">Todos os status</option>
-            <option value="ABERTO">Abertos</option>
-            <option value="FECHADO">Fechados</option>
+        <input type="search" data-filtro-texto placeholder="Buscar pelo código do lote..." aria-label="Buscar lote">
+        <select data-filtro-campo="status" aria-label="Filtrar por situação">
+            <option value="">Todos os lotes</option>
+            <option value="ABERTO">Em andamento</option>
+            <option value="FECHADO">Finalizados</option>
         </select>
     </div>
 
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>Lote</th><th>Recebimento</th><th>Origem</th><th>Bolsas</th><th>Em conferência</th><th>Status</th><th>Ações</th></tr>
+                <tr><th>Lote</th><th>Data/hora de abertura</th><th>Origem</th><th>Bolsas</th><th>Em conferência</th><th>Situação</th><th>Etapas</th></tr>
             </thead>
             <tbody>
-                <% if (lotes.length === 0) { %>
-                    <tr><td colspan="7" class="vazio">Nenhum lote cadastrado.<br>Clique em "+ Abrir novo lote" para começar.</td></tr>
+                <% if (!lotes.length) { %>
+                    <tr><td colspan="7" class="vazio">Nenhum recebimento registrado.<br>Use “Abrir novo lote” para iniciar o primeiro recebimento.</td></tr>
                 <% } else { lotes.forEach(function (lote) { %>
-                    <tr data-busca="<%= lote.codigo.toLowerCase() %>" data-status="<%= lote.status %>">
-                        <td><strong><%= lote.codigo %></strong></td>
+                    <tr data-busca="<%= String(lote.codigo || '').toLowerCase() %>" data-status="<%= lote.status %>">
+                        <td><strong class="codigo-lote"><%= lote.codigo %></strong><small class="recebimento-responsavel">Responsável: <%= lote.responsavel_abertura || 'Não informado' %></small></td>
                         <td><%= new Date(lote.data_recebimento).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></td>
-                        <td><%= lote.origem %></td>
-                        <td><%= lote.quantidade_bolsas %></td>
+                        <td><%= lote.origem || 'Não informada' %></td>
+                        <td><strong><%= lote.quantidade_bolsas %></strong></td>
                         <td><%= lote.em_conferencia %></td>
-                        <td>
-                            <span class="status <%= lote.status === 'ABERTO' ? 'aberto' : 'fechado' %>">
-                                <%= lote.status === 'ABERTO' ? 'Aberto' : 'Fechado' %>
-                            </span>
-                        </td>
-                        <td class="acoes">
-                            <a class="botao botao-claro botao-pequeno" href="/hemocomponentes?lote_id=<%= lote.id %>">Ver bolsas</a>
-                            <% if (lote.quantidade_bolsas > 0) { %>
-                                <a class="botao botao-claro botao-pequeno" href="/lotes/<%= lote.id %>/relatorio">Relatório PDF</a>
+                        <td><span class="status <%= lote.status === 'ABERTO' ? 'aberto' : 'fechado' %>"><%= lote.status === 'ABERTO' ? 'Em andamento' : 'Finalizado' %></span></td>
+                        <td class="acoes acoes-recebimento">
+                            <% if (locals.pode && locals.pode('bolsas.gerenciar')) { %>
+                                <a class="botao botao-claro botao-pequeno" href="/hemocomponentes?lote_id=<%= lote.id %>">Conferir bolsas</a>
+                                <% if (lote.status === 'ABERTO') { %>
+                                    <a class="botao botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">＋ Adicionar bolsa</a>
+                                <% } %>
                             <% } %>
-                            <% if (lote.status === 'ABERTO') { %>
-                                <a class="botao botao-claro botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">+ Adicionar bolsa</a>
+                            <% if (lote.quantidade_bolsas > 0) { %>
+                                <a class="botao botao-claro botao-pequeno" href="/lotes/<%= lote.id %>/relatorio">Comprovante PDF</a>
+                            <% } %>
+                            <% if (lote.status === 'ABERTO' && locals.pode && locals.pode('lotes.gerenciar')) { %>
                                 <form action="/lotes/<%= lote.id %>/fechar" method="POST"
-                                      data-confirmar="Fechar o lote <%= lote.codigo %>? Depois de fechado, ele não recebe novas bolsas.">
-<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
-                                    <button class="botao botao-perigo botao-pequeno" type="submit">Fechar lote</button>
+                                      data-confirmar="Finalizar o lote <%= lote.codigo %>? É necessário concluir a conferência de todas as bolsas.">
+                                    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                                    <button class="botao botao-perigo botao-pequeno" type="submit">Finalizar lote</button>
                                 </form>
                             <% } %>
                         </td>
