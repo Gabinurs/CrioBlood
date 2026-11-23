@@ -66,26 +66,25 @@
                     </div>
                 <% } else { %>
                     <div class="selecionar-bolsa-requisicao">
-                        <div class="campo">
-                            <label for="bolsa-item-<%= item.id %>">Selecionar bolsa disponível</label>
-                            <select id="bolsa-item-<%= item.id %>" data-selecionar-bolsa>
-                                <option value="">Selecione pelo código original / local...</option>
-                                <% item.bolsas.forEach(function(b) { %>
-                                    <option value="<%= b.id %>"
-                                        data-codigo="<%= b.codigo_original %>"
-                                        data-interno="<%= b.codigo_interno || '' %>"
-                                        data-tipagem="<%= rot.tipagem(b.abo,b.fator_rh) %>"
-                                        data-volume="<%= b.volume_ml || '' %>"
-                                        data-validade="<%= b.data_validade_br %>"
-                                        data-tipo="<%= b.tipo %>">
-                                        <%= b.codigo_original %> · <%= b.codigo_interno || 'Sem código local' %> · <%= rot.tipagem(b.abo,b.fator_rh) %> · <%= b.volume_ml || '—' %> mL · Val. <%= b.data_validade_br %>
-
-                                    </option>
-                                <% }) %>
-                            </select>
-                            <% if (!item.bolsas.length) { %><small>Não há bolsas disponíveis deste componente no estoque no momento.</small><% } else { %><small>Confira a tipagem da bolsa física e registre o resultado efetivamente obtido na prova cruzada.</small><% } %>
+                        <div class="campo campo-codigo-bolsa">
+                            <label for="codigo-bolsa-<%= item.id %>">Código da bolsa (original ou local CrioBlood) *</label>
+                            <div class="controle-codigo-bolsa">
+                                <input type="text" id="codigo-bolsa-<%= item.id %>" data-codigo-bolsa
+                                       maxlength="30" autocomplete="off" autocapitalize="characters"
+                                       placeholder="Digite ou leia o código de barras da bolsa">
+                                <button type="button" class="botao botao-claro" data-verificar-bolsa
+                                        data-item-id="<%= item.id %>">Verificar código</button>
+                            </div>
+                            <small>Digite exatamente o código original da etiqueta ou o código local CB-… do CrioBlood. Nenhuma lista de bolsas será exibida.</small>
+                            <div class="resultado-validacao-codigo" data-resultado-codigo role="status" aria-live="polite" hidden>
+                                <strong data-resultado-titulo></strong>
+                                <p data-resultado-mensagem></p>
+                                <small data-resultado-detalhes></small>
+                            </div>
                         </div>
-                        <button type="button" class="botao" data-abrir-prova data-item-id="<%= item.id %>" <%= item.bolsas.length ? '' : 'disabled' %>>Registrar prova cruzada</button>
+                        <button type="button" class="botao" data-abrir-prova data-item-id="<%= item.id %>" disabled>
+                            Registrar prova / conferência
+                        </button>
                     </div>
                 <% } %>
             </article>
@@ -120,7 +119,7 @@
 
 <dialog class="modal-prova-cruzada" data-modal-prova aria-labelledby="titulo-modal-prova">
     <header class="modal-prova-topo">
-        <div><span class="modal-amostra-marca">CRIOBLOOD · BANCO DE SANGUE</span><h3 id="titulo-modal-prova">Prova cruzada</h3></div>
+        <div><span class="modal-amostra-marca">CRIOBLOOD · BANCO DE SANGUE</span><h3 id="titulo-modal-prova" data-titulo-prova>Prova cruzada</h3></div>
         <button type="button" class="modal-amostra-fechar" data-fechar-prova aria-label="Fechar">×</button>
     </header>
     <form method="POST" action="/solicitacoes/<%= requisicao.id %>/provas-cruzadas" data-form-prova>
@@ -132,7 +131,7 @@
                 <span class="cartao-microtitulo">BOLSA SELECIONADA</span>
                 <strong data-prova-codigo>—</strong>
                 <small data-prova-detalhes>—</small>
-                <span class="aviso-triagem">O sistema não realiza a prova cruzada nem conclui compatibilidade. Registre o resultado efetivamente obtido pelo profissional executor.</span>
+                <span class="aviso-triagem" data-aviso-tipo-verificacao>O sistema não realiza a prova cruzada nem conclui compatibilidade. Registre o resultado efetivamente obtido pelo profissional executor.</span>
             </div>
             <div class="campo">
                 <label>Paciente / receptor</label>
@@ -154,7 +153,7 @@
                 </div>
             </div>
             <div class="campo">
-                <label for="resultado-prova">Prova de compatibilidade *</label>
+                <label for="resultado-prova" data-rotulo-resultado>Resultado da prova cruzada *</label>
                 <select id="resultado-prova" name="resultado" required>
                     <option value="">Selecione o resultado...</option>
                     <option value="COMPATIVEL">Compatível</option>
@@ -162,10 +161,24 @@
                 </select>
             </div>
             <div class="campo">
-                <label for="responsavel-prova">Colaborador que realizou a prova *</label>
+                <label for="responsavel-prova" data-rotulo-responsavel>Colaborador que realizou a prova *</label>
                 <input type="text" id="responsavel-prova" name="responsavel_nome" value="<%= usuario ? usuario.nome : '' %>" maxlength="160" required>
             </div>
             <label class="confirmacao-requisicao confirmacao-tipagem-bolsa"><input type="checkbox" name="tipagem_bolsa_confirmada" required><span><strong>Tipagem ABO/Rh da bolsa conferida</strong><small>Confirme a identificação da bolsa física antes de registrar a prova.</small></span></label>
+            <section class="excecao-rhd-bloco" data-excecao-rhd hidden>
+                <span class="recebimento-etiqueta">EXCEÇÃO RHd · AUTORIZAÇÃO OBRIGATÓRIA</span>
+                <p>Esta unidade O positivo foi identificada como exceção possível para receptor masculino O negativo com mais de 60 anos. A bolsa só será reservada após autorização médica/hemoterápica documentada, confirmação de ausência de sensibilização prévia anti-D e justificativa registrada.</p>
+                <label class="confirmacao-requisicao"><input type="checkbox" name="excecao_rhd_confirmada"><span><strong>Autorização formal conferida</strong><small>Confirmo que a decisão foi autorizada conforme protocolo institucional.</small></span></label>
+                <label class="confirmacao-requisicao"><input type="checkbox" name="sem_historico_anti_d"><span><strong>Ausência de histórico de sensibilização anti-D conferida</strong><small>Confirme a pesquisa e o histórico no prontuário antes de continuar.</small></span></label>
+                <div class="campo">
+                    <label for="autorizador-rhd">Médico/hemoterapeuta que autorizou *</label>
+                    <input type="text" id="autorizador-rhd" name="autorizador_nome" maxlength="160" placeholder="Nome completo do autorizador">
+                </div>
+                <div class="campo">
+                    <label for="justificativa-rhd">Justificativa da exceção *</label>
+                    <textarea id="justificativa-rhd" name="justificativa_excecao" rows="3" maxlength="600" placeholder="Registre a justificativa clínica e a referência ao protocolo institucional."></textarea>
+                </div>
+            </section>
             <p class="alerta alerta-info">O resultado informado é de responsabilidade do profissional executor e deve seguir o procedimento validado pelo serviço de hemoterapia.</p>
         </div>
         <footer class="modal-prova-rodape">
