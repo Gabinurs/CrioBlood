@@ -114,21 +114,36 @@ class RequisicaoController {
             const resultado = await RequisicaoModel.registrarProva(
                 Number(req.params.id), req.body, req.session.usuario.id
             );
+            const ehProvaCruzada = resultado.tipoVerificacao === 'PROVA_CRUZADA';
+            const evento = resultado.resultado === 'COMPATIVEL'
+                ? (ehProvaCruzada ? 'PROVA_CRUZADA_COMPATIVEL' : 'CONFERENCIA_COMPATIBILIDADE_COMPATIVEL')
+                : (ehProvaCruzada ? 'PROVA_CRUZADA_INCOMPATIVEL' : 'CONFERENCIA_COMPATIBILIDADE_INCOMPATIVEL');
+            const detalheExcecao = resultado.excecaoRhd
+                ? ' Exceção RhD autorizada por ' + resultado.autorizadorNome + '.'
+                : '';
             await AuditoriaModel.registrarLog(
                 req.session.usuario.id,
-                resultado.resultado === 'COMPATIVEL' ? 'PROVA_CRUZADA_COMPATIVEL' : 'PROVA_CRUZADA_INCOMPATIVEL',
+                evento,
                 'provas_cruzadas',
                 Number(resultado.id),
-                'Bolsa ' + resultado.codigo + (resultado.reservada ? ' reservada para a requisição.' : ' registrada como incompatível; não reservada.')
+                'Bolsa ' + resultado.codigo +
+                    (resultado.reservada ? ' vinculada e reservada.' : ' registrada como não compatível; não reservada.') +
+                    detalheExcecao
             );
             if (resultado.reservada) {
-                avisar(req, 'ok', 'Prova cruzada registrada como compatível. A bolsa foi vinculada e reservada. Imprima a etiqueta de identificação.');
+                avisar(req, 'ok', (ehProvaCruzada
+                    ? 'Prova cruzada compatível registrada.'
+                    : 'Conferência do componente registrada como compatível.') +
+                    ' A bolsa foi vinculada e reservada. Imprima a etiqueta.');
             } else {
-                avisar(req, 'aviso', 'Resultado incompatível registrado. A bolsa não foi reservada nem vinculada ao item.');
+                avisar(req, 'aviso', (ehProvaCruzada
+                    ? 'Resultado incompatível da prova cruzada registrado.'
+                    : 'Conferência registrada como incompatível.') +
+                    ' A bolsa não foi reservada nem vinculada ao receptor.');
             }
             return res.redirect(STATUS.VER_OUTRO, '/solicitacoes/' + req.params.id + '/bolsas');
         } catch (erro) {
-            tratar(req, res, erro, '/solicitacoes/' + req.params.id + '/bolsas', 'Erro ao registrar a prova cruzada');
+            tratar(req, res, erro, '/solicitacoes/' + req.params.id + '/bolsas', 'Erro ao registrar a prova ou conferência da bolsa');
         }
     }
 
