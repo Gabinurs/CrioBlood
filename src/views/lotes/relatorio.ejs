@@ -1,10 +1,10 @@
-<%- include('../partials/inicio', { titulo: 'Relatório de recebimento', subtitulo: 'Comprovante das bolsas cadastradas no lote', ativo: 'lotes' }) %>
+<%- include('../partials/inicio', { titulo: 'Relatório de recebimento', subtitulo: 'Comprovante das bolsas cadastradas no lote', ativo: 'recebimento' }) %>
 
 <section class="painel relatorio-recebimento">
     <div class="acoes-relatorio">
-        <a class="botao botao-claro" href="/lotes">Voltar aos lotes</a>
+        <a class="botao botao-claro" href="/lotes">Voltar ao recebimento</a>
         <% if (lote.status === 'ABERTO') { %>
-            <a class="botao botao-claro" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">+ Adicionar outra bolsa</a>
+            <a class="botao botao-claro" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">+ Adicionar outra bolsa ao lote</a>
         <% } %>
         <button class="botao" type="button" data-imprimir>Imprimir / Salvar PDF</button>
     </div>
