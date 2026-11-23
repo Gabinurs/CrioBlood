@@ -38,8 +38,8 @@
                     <td><%= a.validade_br %><br><span class="status <%= a.valida ? 's-verde' : 's-vermelho' %>"><%= a.valida ? 'Dentro de 72h' : 'Vencida' %></span></td>
                     <td><span class="status <%= a.status_imuno==='CONCLUIDO' ? 's-verde' : a.status_imuno==='BLOQUEADO' ? 's-vermelho' : 's-amarelo' %>"><%= a.status_imuno==='CONCLUIDO' ? 'Concluído' : a.status_imuno==='BLOQUEADO' ? 'Bloqueado' : 'Pendente' %></span></td>
                     <td class="acoes">
-                        <a class="botao botao-claro botao-pequeno" href="/pacientes/<%= paciente.id %>/amostras/<%= a.id %>/imuno">Imuno</a>
-                        <a class="botao botao-claro botao-pequeno" href="/pacientes/<%= paciente.id %>/amostras/<%= a.id %>/etiqueta" target="_blank" rel="noopener">Etiqueta</a>
+                        <button type="button" class="botao botao-claro botao-pequeno" data-amostra-modal-url="/pacientes/<%= paciente.id %>/amostras/<%= a.id %>/imuno" data-amostra-modal-titulo="Imuno-hematologia">Imuno</button>
+                        <button type="button" class="botao botao-claro botao-pequeno" data-amostra-modal-url="/pacientes/<%= paciente.id %>/amostras/<%= a.id %>/etiqueta" data-amostra-modal-titulo="Etiqueta de identificação">Etiqueta</button>
                     </td>
                 </tr>
             <% }) } %>
