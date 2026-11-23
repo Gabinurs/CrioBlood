@@ -5,6 +5,10 @@
 
     var form = root.querySelector('[data-form-requisicao]');
     var pacienteSelect = root.querySelector('[data-paciente-select]');
+    var buscaPaciente = root.querySelector('[data-busca-paciente]');
+    var listaPacientes = root.querySelector('[data-lista-pacientes]');
+    var opcaoVaziaPacientes = root.querySelector('[data-pacientes-sem-resultado]');
+    var botaoLimparPaciente = root.querySelector('[data-limpar-paciente]');
     var seletorPaciente = root.querySelector('[data-seletor-paciente]');
     var cartao = root.querySelector('[data-cartao-receptor]');
     var cartaoAmostra = root.querySelector('[data-cartao-amostra]');
@@ -135,10 +139,14 @@
     }
 
     function etapaUmValida() {
-        if (!pacienteSelect.checkValidity()) {
-            pacienteSelect.reportValidity();
+        if (!pacienteSelect.value || !buscaPaciente.value.trim()) {
+            buscaPaciente.setCustomValidity('Selecione um paciente da lista de resultados.');
+            buscaPaciente.reportValidity();
+            listaPacientes.hidden = false;
+            buscaPaciente.setAttribute('aria-expanded', 'true');
             return false;
         }
+        buscaPaciente.setCustomValidity('');
         var campos = etapa1.querySelectorAll('[required]');
         for (var i = 0; i < campos.length; i++) {
             if (!campos[i].checkValidity()) {
@@ -159,7 +167,7 @@
 
     function atualizarProgresso() {
         var liberado = Boolean(contexto && contexto.liberacao && contexto.liberacao.permitido);
-        var habilitado = Boolean(pacienteSelect.value && liberado && itens.length);
+        var habilitado = Boolean(pacienteSelect.value && buscaPaciente.value.trim() && liberado && itens.length);
         avancar.disabled = !habilitado;
         proximaAba.disabled = !habilitado;
     }
@@ -177,12 +185,130 @@
             else aba.removeAttribute('aria-current');
         });
         if (numero === 2) etapa2.querySelector('input,select,textarea')?.focus();
-        else pacienteSelect.focus();
+        else buscaPaciente.focus();
     }
 
-    pacienteSelect.addEventListener('change', function () {
-        carregarContexto(pacienteSelect.value);
+    function normalizarBusca(valor) {
+        return String(valor || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().trim();
+    }
+
+    function fecharListaPacientes() {
+        listaPacientes.hidden = true;
+        buscaPaciente.setAttribute('aria-expanded', 'false');
+        buscaPaciente.removeAttribute('aria-activedescendant');
+        listaPacientes.querySelectorAll('[data-paciente-opcao]').forEach(function (opcao) {
+            opcao.classList.remove('opcao-paciente-ativa');
+            opcao.setAttribute('aria-selected', 'false');
+        });
+    }
+
+    function filtrarPacientes(abreLista) {
+        var termo = normalizarBusca(buscaPaciente.value);
+        var encontrados = 0;
+        listaPacientes.querySelectorAll('[data-paciente-opcao]').forEach(function (opcao) {
+            var texto = normalizarBusca([
+                opcao.getAttribute('data-nome'),
+                opcao.getAttribute('data-prontuario'),
+                opcao.getAttribute('data-tipagem')
+            ].join(' '));
+            var visivel = !termo || texto.includes(termo);
+            opcao.hidden = !visivel;
+            opcao.setAttribute('aria-selected', 'false');
+            opcao.classList.remove('opcao-paciente-ativa');
+            if (visivel) encontrados += 1;
+        });
+        opcaoVaziaPacientes.hidden = encontrados > 0;
+        if (abreLista) {
+            listaPacientes.hidden = false;
+            buscaPaciente.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    function selecionarPaciente(opcao) {
+        var id = opcao.getAttribute('data-paciente-id');
+        if (!id) return;
+        pacienteSelect.value = id;
+        buscaPaciente.value = opcao.getAttribute('data-nome') || '';
+        buscaPaciente.setCustomValidity('');
+        botaoLimparPaciente.hidden = false;
+        fecharListaPacientes();
+        carregarContexto(id);
+    }
+
+    buscaPaciente.addEventListener('input', function () {
+        pacienteSelect.value = '';
+        contexto = null;
+        cartao.hidden = true;
+        cartaoAmostra.hidden = true;
+        botaoLimparPaciente.hidden = true;
+        buscaPaciente.setCustomValidity('Selecione um paciente da lista de resultados.');
+        filtrarPacientes(true);
+        atualizarProgresso();
     });
+
+    buscaPaciente.addEventListener('focus', function () {
+        filtrarPacientes(true);
+    });
+
+    buscaPaciente.addEventListener('keydown', function (evento) {
+        var opcoes = Array.prototype.slice.call(listaPacientes.querySelectorAll('[data-paciente-opcao]:not([hidden])'));
+        var ativa = listaPacientes.querySelector('.opcao-paciente-ativa');
+        var indice = opcoes.indexOf(ativa);
+
+        if (evento.key === 'ArrowDown' && !listaPacientes.hidden) {
+            evento.preventDefault();
+            var proxima = opcoes[Math.min(indice + 1, opcoes.length - 1)];
+            if (proxima) {
+                opcoes.forEach(function (opcao) { opcao.classList.remove('opcao-paciente-ativa'); });
+                proxima.classList.add('opcao-paciente-ativa');
+                proxima.scrollIntoView({ block: 'nearest' });
+            }
+        } else if (evento.key === 'ArrowUp' && !listaPacientes.hidden) {
+            evento.preventDefault();
+            var anterior = opcoes[Math.max(indice - 1, 0)];
+            if (anterior) {
+                opcoes.forEach(function (opcao) { opcao.classList.remove('opcao-paciente-ativa'); });
+                anterior.classList.add('opcao-paciente-ativa');
+                anterior.scrollIntoView({ block: 'nearest' });
+            }
+        } else if (evento.key === 'Enter' && !listaPacientes.hidden) {
+            var escolhida = ativa || opcoes[0];
+            if (escolhida) {
+                evento.preventDefault();
+                selecionarPaciente(escolhida);
+            }
+        } else if (evento.key === 'Escape') {
+            fecharListaPacientes();
+        }
+    });
+
+    listaPacientes.addEventListener('click', function (evento) {
+        var opcao = evento.target.closest('[data-paciente-opcao]');
+        if (opcao) selecionarPaciente(opcao);
+    });
+
+    botaoLimparPaciente.addEventListener('click', function () {
+        pacienteSelect.value = '';
+        buscaPaciente.value = '';
+        buscaPaciente.setCustomValidity('');
+        contexto = null;
+        cartao.hidden = true;
+        cartaoAmostra.hidden = true;
+        botaoLimparPaciente.hidden = true;
+        filtrarPacientes(false);
+        fecharListaPacientes();
+        atualizarProgresso();
+        buscaPaciente.focus();
+    });
+
+    document.addEventListener('click', function (evento) {
+        if (!seletorPaciente.contains(evento.target)) fecharListaPacientes();
+    });
+
+    if (pacienteSelect.value) {
+        botaoLimparPaciente.hidden = false;
+        buscaPaciente.setCustomValidity('');
+    }
 
     root.querySelector('[data-inserir-item]').addEventListener('click', function () {
         var tipo = tipoSelect.value;
