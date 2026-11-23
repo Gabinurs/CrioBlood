@@ -283,6 +283,8 @@
             }
         } else if (evento.key === 'Escape') {
             fecharListaPacientes();
+        } else if (evento.key === 'Enter') {
+            evento.preventDefault();
         }
     });
 
