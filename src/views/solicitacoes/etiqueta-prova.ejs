@@ -1,0 +1,48 @@
+<%- include('../partials/inicio', { titulo: 'Etiqueta de prova cruzada', subtitulo: 'Identificação da bolsa vinculada ao receptor', ativo: 'solicitacoes' }) %>
+
+<section class="painel pagina-etiqueta-prova">
+    <div class="acoes-etiqueta-prova">
+        <a class="botao botao-claro" href="/solicitacoes/<%= prova.requisicao_id %>/bolsas">Voltar à requisição</a>
+        <button type="button" class="botao" data-imprimir>Imprimir etiqueta</button>
+    </div>
+
+    <article class="etiqueta-prova-cruzada">
+        <header class="etiqueta-prova-topo">
+            <div class="etiqueta-prova-logo"><span>Crio</span>Blood</div>
+            <div><span class="etiqueta-prova-supra">BANCO DE SANGUE · CRIOBLOOD</span><h1>Prova cruzada</h1></div>
+            <span class="etiqueta-prova-selo">✓ COMPATÍVEL</span>
+        </header>
+
+        <section class="etiqueta-prova-bloco">
+            <span class="etiqueta-prova-legenda">IDENTIFICAÇÃO DO RECEPTOR</span>
+            <div class="etiqueta-prova-linha"><span>Paciente</span><strong><%= prova.paciente_nome %></strong></div>
+            <div class="etiqueta-prova-grade">
+                <div><span>Data de nascimento</span><strong><%= prova.nascimento_br %></strong></div>
+                <div><span>Nome da mãe</span><strong><%= prova.nome_mae || 'Não informado' %></strong></div>
+            </div>
+        </section>
+
+        <section class="etiqueta-prova-bloco etiqueta-prova-resultado">
+            <span class="etiqueta-prova-legenda">RESULTADO DA PROVA DE COMPATIBILIDADE</span>
+            <div class="etiqueta-prova-resultado-texto">COMPATÍVEL</div>
+            <div class="etiqueta-prova-grade">
+                <div><span>Tipagem da bolsa</span><strong class="etiqueta-prova-tipagem"><%= prova.abo_bolsa %><%= prova.fator_rh_bolsa %></strong></div>
+                <div><span>Volume da bolsa</span><strong><%= prova.volume_ml || 'Não informado' %> <%= prova.volume_ml ? 'mL' : '' %></strong></div>
+            </div>
+        </section>
+
+        <section class="etiqueta-prova-bloco">
+            <span class="etiqueta-prova-legenda">IDENTIFICAÇÃO DA BOLSA</span>
+            <div class="etiqueta-prova-linha"><span>Código original</span><strong><%= prova.codigo_original %></strong></div>
+            <div class="etiqueta-prova-linha"><span>Código local CrioBlood</span><strong><%= prova.codigo_interno || '—' %></strong></div>
+        </section>
+
+        <footer class="etiqueta-prova-rodape">
+            <div><span>Data e hora da prova</span><strong><%= prova.data_prova_br %> · <%= prova.hora_prova_br %></strong></div>
+            <div><span>Colaborador que realizou</span><strong><%= prova.responsavel_nome %></strong></div>
+            <p>Resultado registrado no sistema por profissional responsável. Conferir identificação física da bolsa e seguir o protocolo institucional antes de qualquer administração.</p>
+        </footer>
+    </article>
+</section>
+
+<%- include('../partials/fim') %>
