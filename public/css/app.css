@@ -1025,3 +1025,68 @@ html:not([data-tema="dark"]) .campo input[type="datetime-local"] {
 @media(max-width:600px) {
     .popup-datahora { left:auto; right:0; }
 }
+
+
+/* ---------- Janelas modais de Imuno e etiqueta ---------- */
+.modal-amostra-dialog {
+    width:min(980px,calc(100vw - 32px));
+    max-width:none;
+    height:min(820px,calc(100vh - 36px));
+    max-height:none;
+    margin:auto;
+    padding:0;
+    overflow:hidden;
+    flex-direction:column;
+    border:1px solid var(--borda-forte);
+    border-radius:18px;
+    background:var(--superficie);
+    color:var(--texto);
+    box-shadow:var(--sombra-3);
+}
+.modal-amostra-dialog[open] { display:flex; }
+.modal-amostra-dialog::backdrop { background:rgba(3,9,18,.78); backdrop-filter:blur(5px); }
+.modal-amostra-topo {
+    display:flex;
+    flex:0 0 auto;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    padding:13px 18px;
+    border-bottom:1px solid var(--borda);
+    background:var(--superficie-2);
+}
+.modal-amostra-marca { display:block; color:var(--rosa); font-size:9px; font-weight:800; letter-spacing:.14em; }
+.modal-amostra-topo h3 { margin:3px 0 0; font-size:15px; }
+.modal-amostra-fechar {
+    display:grid;
+    place-items:center;
+    width:36px;
+    height:36px;
+    border:1px solid var(--borda-forte);
+    border-radius:10px;
+    background:var(--superficie);
+    color:var(--texto);
+    font-size:24px;
+    line-height:1;
+    cursor:pointer;
+}
+.modal-amostra-fechar:hover { border-color:var(--rosa); color:var(--rosa); background:var(--brilho); }
+.modal-amostra-frame { display:block; width:100%; height:100%; min-height:0; flex:1 1 auto; border:0; background:var(--fundo); }
+body.modal-frame-body { min-height:100vh; margin:0; padding:18px; background:var(--fundo); color:var(--texto); }
+.modal-frame-body .painel { width:100%; max-width:900px; margin:0 auto; box-shadow:none; }
+.modal-frame-body .formulario { max-width:900px; }
+.modal-frame-body .rodape-form { padding-bottom:8px; }
+.modal-concluido { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:28px; text-align:center; }
+.modal-concluido-icone { display:grid; place-items:center; width:56px; height:56px; margin-bottom:14px; border-radius:50%; background:var(--verde-fundo); color:var(--verde); font-size:28px; font-weight:800; }
+.modal-concluido h2 { margin:0 0 8px; font-size:20px; }
+.modal-concluido p { max-width:460px; color:var(--texto); font-size:14px; }
+.modal-concluido small { margin-top:10px; color:var(--cinza); font-size:11px; }
+@media(max-width:700px) {
+    .modal-amostra-dialog { width:calc(100vw - 12px); height:calc(100vh - 12px); border-radius:12px; }
+    body.modal-frame-body { padding:10px; }
+}
+@media print {
+    body.modal-frame-body { padding:0 !important; background:#fff !important; }
+    .modal-frame-body .etiqueta-painel { margin:0 !important; padding:0 !important; }
+    .modal-frame-body .etiqueta-acoes { display:none !important; }
+}
