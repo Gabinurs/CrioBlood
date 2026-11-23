@@ -36,11 +36,8 @@
         if (prazo.unidade === 'dias') {
             data.setUTCDate(data.getUTCDate() + prazo.quantidade);
         } else {
-            var diaOriginal = data.getUTCDate();
-            data.setUTCDate(1);
+            // Mantém exatamente o mesmo cálculo usado pelo servidor ao gravar a bolsa.
             data.setUTCFullYear(data.getUTCFullYear() + prazo.quantidade);
-            var ultimoDiaMes = new Date(Date.UTC(data.getUTCFullYear(), data.getUTCMonth() + 1, 0)).getUTCDate();
-            data.setUTCDate(Math.min(diaOriginal, ultimoDiaMes));
         }
 
         return data.toISOString().slice(0, 10);
