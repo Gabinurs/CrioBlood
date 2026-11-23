@@ -20,7 +20,7 @@
         <a class="botao" href="/pacientes/<%= paciente.id %>/amostras/nova">Nova amostra</a>
         <% if (liberacao && liberacao.permitido) { %><a class="botao botao-ok" href="/solicitacoes/nova?paciente_id=<%= paciente.id %>">Transfusão / Reserva</a><% } %>
     </div>
-    <h3 class="titulo-secao-amostra">Histórico de amostras</h3>
+    <h3 class="titulo-secao-amostra" id="imuno">Histórico de amostras e Imuno</h3>
     <div class="tabela-container"><table class="tabela-amostras"><thead><tr><th>Código</th><th>Coleta</th><th>Recebimento</th><th>Validade</th><th>Imuno</th><th>PAI</th><th>Controle</th><th>Transfusão / Reserva</th><th>Ações</th></tr></thead><tbody>
     <% if (!amostras.length) { %><tr><td colspan="9" class="vazio">Nenhuma amostra registrada.</td></tr><% } else { amostras.forEach(a=>{ %>
         <tr>
