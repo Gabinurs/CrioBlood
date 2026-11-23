@@ -25,7 +25,7 @@ Acesse `http://localhost:3001` e entre com o login `Supervisor` e a senha defini
 ### Sem Docker
 
 1. Crie um banco PostgreSQL chamado `crioblood`.
-2. Execute, **nesta ordem**, os scripts de `database/` em ordem numérica. Para bancos já existentes, execute as migrações `11_fluxo_receptor_amostras.sql`, `12_dados_execucao_transfusao.sql`, `13_requisicao_prova_cruzada.sql` e `14_peso_e_excecao_rhd.sql` após os scripts anteriores.
+2. Execute, **nesta ordem**, os scripts de `database/` em ordem numérica. Para bancos já existentes, execute as migrações `11_fluxo_receptor_amostras.sql`, `12_dados_execucao_transfusao.sql`, `13_requisicao_prova_cruzada.sql`, `14_peso_e_excecao_rhd.sql` e `15_corrigir_codigos_internos_bolsas.sql` após os scripts anteriores.
 3. `cp .env.example .env` e preencha os valores.
 4. `npm install`
 5. `node src/scripts/criar-supervisor.js` (cria o administrador)
@@ -239,6 +239,17 @@ Get-Content .\database\14_peso_e_excecao_rhd.sql | docker compose exec -T db psq
 ```
 
 A matriz automatizada é uma barreira de seleção inicial e não substitui a prova cruzada quando indicada, pesquisa de anticorpos, avaliação clínica ou protocolos institucionais. A decisão transfusional é dos profissionais habilitados.
+
+
+### Correção dos códigos internos das bolsas
+
+Para bancos que já possuem bolsas cadastradas, execute a migração 15. Ela substitui identificadores temporários `CB-LEGADO-*` e códigos ausentes por códigos locais aleatórios e únicos no padrão `CB-YY-XXXXXXX`. Preserva os códigos originais do fornecedor e os códigos internos válidos já emitidos.
+
+```bash
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < database/15_corrigir_codigos_internos_bolsas.sql
+```
+
+A sequência de códigos futuros é reposicionada após os identificadores retroativos para evitar colisões. A tela Bolsas (Estoque) exibe lado a lado o código CrioBlood e o código original, e a busca aceita ambos.
 
 ## Limitações conhecidas / próximos passos
 
