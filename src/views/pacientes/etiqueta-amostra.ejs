@@ -12,6 +12,6 @@
         <p><strong>Responsável pela coleta:</strong> <%= amostra.responsavel_coleta || 'Não informado' %></p>
         <p><strong>Código da amostra:</strong> <%= amostra.codigo %></p>
     </section>
-    <div class="etiqueta-acoes"><button class="botao" onclick="window.print()">Imprimir etiqueta</button><button class="botao botao-claro" onclick="window.close()">Fechar</button></div>
+    <div class="etiqueta-acoes"><button class="botao" data-imprimir-etiqueta>Imprimir etiqueta</button><button class="botao botao-claro" data-fechar-etiqueta>Fechar</button></div>
 </main>
 </body></html>
