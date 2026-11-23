@@ -1,15 +1,55 @@
-<%- include('../partials/inicio',{titulo:'Dossiê do receptor',subtitulo:'Dados cadastrais e histórico de amostras',ativo:'pacientes'}) %>
+<%- include('../partials/inicio',{titulo:'Dossiê do receptor',subtitulo:'Dados cadastrais, amostras e histórico transfusional',ativo:'pacientes'}) %>
 <section class="painel">
-    <div class="cabecalho-pagina"><div><h3><%= paciente.nome %></h3><p>Nascimento: <%= paciente.data_nascimento_br %> · Mãe: <%= paciente.nome_mae || 'Não informado' %></p></div>
-    <div class="acoes"><a class="botao botao-claro" href="/pacientes">Voltar</a><a class="botao botao-claro" href="/pacientes/<%= paciente.id %>/editar">Editar cadastro</a><a class="botao" href="/pacientes/<%= paciente.id %>/amostras/nova">+ Nova amostra</a></div></div>
+    <div class="cabecalho-pagina">
+        <div><h3><%= paciente.nome %></h3><p>Nascimento: <%= paciente.data_nascimento_br %> · Mãe: <%= paciente.nome_mae || 'Não informado' %></p></div>
+        <div class="acoes">
+            <a class="botao botao-claro" href="/pacientes">Voltar</a>
+            <a class="botao botao-claro" href="/pacientes/<%= paciente.id %>/editar">Edição</a>
+            <a class="botao" href="/pacientes/<%= paciente.id %>/amostras/nova">+ Nova amostra</a>
+        </div>
+    </div>
     <div class="detalhes">
         <% [['Prontuário',paciente.prontuario],['CNS',paciente.cns],['CPF',paciente.cpf],['RG',paciente.rg],['Telefone',paciente.telefone],['Convênio',paciente.convenio],['Plano',paciente.plano],['ABO/Rh',paciente.abo ? paciente.abo+paciente.fator_rh : 'Pendente']].forEach(function(item){ %>
-        <div><span><%= item[0] %></span><strong><%= item[1] || 'Não informado' %></strong></div><% }) %>
+        <div><span><%= item[0] %></span><strong><%= item[1] || 'Não informado' %></strong></div>
+        <% }) %>
     </div>
-    <h3>Histórico de amostras</h3>
-    <div class="tabela-container"><table><thead><tr><th>Código</th><th>Coleta</th><th>Recebimento</th><th>ABO/Rh</th><th>Controle Rh</th><th>PAI</th><th>Validade</th><th>Status</th></tr></thead><tbody>
-    <% if (!amostras.length) { %><tr><td colspan="8" class="vazio">Nenhuma amostra registrada.</td></tr><% } else { amostras.forEach(function(a){ %>
-    <tr><td><%= a.codigo %></td><td><%= a.coleta_br %></td><td><%= a.recebimento_br %></td><td><strong><%= a.abo %><%= a.fator_rh %></strong></td><td><%= a.controle_rh %></td><td><%= a.pai %><% if(a.pai==='POSITIVO'){ %><br><small><%= a.pai_justificativa %></small><% } %></td><td><%= a.validade_br %></td><td><span class="status <%= a.valida && a.pai==='NEGATIVO'?'s-verde':'s-vermelho' %>"><%= !a.valida?'Vencida':a.pai==='POSITIVO'?'PAI positivo':'Válida' %></span></td></tr>
-    <% }) } %></tbody></table></div>
+
+    <div class="dossie-liberacao">
+        <strong>Solicitação transfusional:</strong>
+        <span class="status <%= liberacao.permitido ? 's-verde' : 's-vermelho' %>"><%= liberacao.permitido ? 'Pré-requisitos registrados' : 'Bloqueada' %></span>
+        <p><%= liberacao.permitido ? 'A amostra mais recente atende às regras cadastrais do sistema. A solicitação ainda depende das verificações e autorizações profissionais institucionais.' : liberacao.motivo %></p>
+    </div>
+
+    <h3 id="amostras">Histórico de amostras</h3>
+    <div class="tabela-container">
+        <table>
+            <thead><tr><th>Código</th><th>Coleta</th><th>Recebimento</th><th>ABO/Rh</th><th>Controle</th><th>PAI</th><th>Validade</th><th>Imuno</th><th>Ações</th></tr></thead>
+            <tbody>
+            <% if (!amostras.length) { %>
+                <tr><td colspan="9" class="vazio">Nenhuma amostra registrada.</td></tr>
+            <% } else { amostras.forEach(function(a){ %>
+                <tr>
+                    <td><strong><%= a.codigo %></strong></td>
+                    <td><%= a.coleta_br %></td>
+                    <td><%= a.recebimento_br %></td>
+                    <td><strong><%= a.abo ? a.abo + a.fator_rh : 'Pendente' %></strong></td>
+                    <td><%= a.controle_rh || 'Pendente' %><% if(a.controle_rh==='POSITIVO'){ %><br><small><%= a.controle_rh_justificativa %></small><% } %></td>
+                    <td><%= a.pai || 'Pendente' %><% if(a.pai==='POSITIVO'){ %><br><small><%= a.pai_justificativa %></small><% } %></td>
+                    <td><%= a.validade_br %><br><span class="status <%= a.valida ? 's-verde' : 's-vermelho' %>"><%= a.valida ? 'Dentro de 72h' : 'Vencida' %></span></td>
+                    <td><span class="status <%= a.status_imuno==='CONCLUIDO' ? 's-verde' : a.status_imuno==='BLOQUEADO' ? 's-vermelho' : 's-amarelo' %>"><%= a.status_imuno==='CONCLUIDO' ? 'Concluído' : a.status_imuno==='BLOQUEADO' ? 'Bloqueado' : 'Pendente' %></span></td>
+                    <td class="acoes">
+                        <a class="botao botao-claro botao-pequeno" href="/pacientes/<%= paciente.id %>/amostras/<%= a.id %>/imuno">Imuno</a>
+                        <a class="botao botao-claro botao-pequeno" href="/pacientes/<%= paciente.id %>/amostras/<%= a.id %>/etiqueta" target="_blank" rel="noopener">Etiqueta</a>
+                    </td>
+                </tr>
+            <% }) } %>
+            </tbody>
+        </table>
+    </div>
 </section>
+<style>
+.dossie-liberacao { margin:18px 0 24px; padding:14px 16px; border:1px solid var(--borda); border-radius:12px; background:var(--superficie-2); }
+.dossie-liberacao .status { margin-left:8px; }
+.dossie-liberacao p { margin-top:8px; color:var(--cinza); font-size:12.5px; }
+</style>
 <%- include('../partials/fim') %>
