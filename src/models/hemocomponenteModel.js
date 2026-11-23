@@ -53,6 +53,17 @@ class HemocomponenteModel {
         return rows;
     }
 
+    // Dados do lote usados para manter o contexto do recebimento na tela de bolsas.
+    static async buscarLotePorId(id) {
+        const { rows } = await db.query(
+            `SELECT id, codigo, status, origem,
+                    to_char(data_recebimento AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS data_br
+             FROM lotes_recebimento WHERE id = $1`,
+            [id]
+        );
+        return rows[0] || null;
+    }
+
     // Lista os hemocomponentes, com filtro opcional por lote ou status
     static async listarTodos(filtros = {}, pag = {}) {
         let query = `
