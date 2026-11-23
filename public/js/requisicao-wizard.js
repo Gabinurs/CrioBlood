@@ -5,6 +5,7 @@
 
     var form = root.querySelector('[data-form-requisicao]');
     var pacienteSelect = root.querySelector('[data-paciente-select]');
+    var seletorPaciente = root.querySelector('[data-seletor-paciente]');
     var cartao = root.querySelector('[data-cartao-receptor]');
     var cartaoAmostra = root.querySelector('[data-cartao-amostra]');
     var lista = root.querySelector('[data-lista-itens]');
@@ -132,6 +133,10 @@
     }
 
     function etapaUmValida() {
+        if (!pacienteSelect.checkValidity()) {
+            pacienteSelect.reportValidity();
+            return false;
+        }
         var campos = etapa1.querySelectorAll('[required]');
         for (var i = 0; i < campos.length; i++) {
             if (!campos[i].checkValidity()) {
@@ -159,6 +164,7 @@
 
     function mostrarEtapa(numero) {
         root.setAttribute('data-etapa-atual', String(numero));
+        if (seletorPaciente) seletorPaciente.hidden = numero !== 1;
         etapa1.hidden = numero !== 1;
         etapa2.hidden = numero !== 2;
         root.querySelectorAll('[data-etapa-aba]').forEach(function (aba) {
