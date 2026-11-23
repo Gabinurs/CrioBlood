@@ -175,7 +175,6 @@
     function mostrarEtapa(numero) {
         root.setAttribute('data-etapa-atual', String(numero));
         if (seletorPaciente) seletorPaciente.hidden = numero !== 1;
-        pacienteSelect.required = numero === 1;
         etapa1.hidden = numero !== 1;
         etapa2.hidden = numero !== 2;
         root.querySelectorAll('[data-etapa-aba]').forEach(function (aba) {
