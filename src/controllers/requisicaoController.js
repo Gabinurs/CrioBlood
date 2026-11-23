@@ -1,4 +1,5 @@
 const RequisicaoModel = require('../models/requisicaoModel');
+const CompatibilidadeTransfusional = require('../services/compatibilidadeTransfusionalService');
 const AuditoriaModel = require('../models/auditoriaModel');
 const { ErroNegocio, avisar, tratar, enviarErro } = require('../utils/erros');
 const STATUS = require('../utils/status');
@@ -86,11 +87,71 @@ class RequisicaoController {
             if (!requisicao) return enviarErro(req, res, STATUS.NAO_ENCONTRADO, 'Requisição transfusional não encontrada.');
             const itens = await RequisicaoModel.listarItens(requisicao.id);
             const provas = await RequisicaoModel.listarProvas(requisicao.id);
+            const modoCompatibilidade = req.query.compatibilidade === '1';
+
+            if (modoCompatibilidade) {
+                for (const item of itens) {
+                    if (item.status === 'PENDENTE' && item.hemocomponente_id) {
+                        item.compatibilidade = CompatibilidadeTransfusional.avaliarComponente({
+                            paciente: {
+                                abo: requisicao.paciente_abo,
+                                fator_rh: requisicao.paciente_rh,
+                                sexo: requisicao.sexo,
+                                idade: requisicao.idade
+                            },
+                            bolsa: { abo: item.bolsa_abo, fator_rh: item.bolsa_rh },
+                            tipo: item.tipo,
+                            pesoReceptorKg: requisicao.peso_receptor_kg
+                        });
+                    }
+                }
+            }
+
             return res.render('solicitacoes/bolsas', {
-                requisicao, itens, provas, usuario: req.session.usuario
+                requisicao, itens, provas, modoCompatibilidade, usuario: req.session.usuario
             });
         } catch (erro) {
             tratar(req, res, erro, '/solicitacoes', 'Erro ao abrir Bolsas/Transfusão da requisição');
+        }
+    }
+
+    static async associarBolsa(req, res) {
+        const requisicaoId = Number(req.params.id);
+        const solicitacaoId = Number(req.params.solicitacaoId);
+        try {
+            const bolsa = await RequisicaoModel.associarBolsa(
+                requisicaoId, solicitacaoId, req.body.codigo_bolsa, req.session.usuario.id
+            );
+            await AuditoriaModel.registrarLog(
+                req.session.usuario.id,
+                'BOLSA_ASSOCIADA_AGUARDANDO_COMPATIBILIDADE',
+                'solicitacoes_transfusionais',
+                solicitacaoId,
+                'Bolsa ' + bolsa.codigo + ' (' + (bolsa.codigoInterno || 'sem código local') + ') vinculada sem reserva; aguarda módulo Compatibilidade.'
+            );
+            avisar(req, 'ok', 'Bolsa ' + bolsa.codigo + ' adicionada à unidade. Ela ainda não está reservada; faça a avaliação no módulo Compatibilidade.');
+            return res.redirect(STATUS.VER_OUTRO, '/solicitacoes/' + requisicaoId + '/bolsas');
+        } catch (erro) {
+            tratar(req, res, erro, '/solicitacoes/' + requisicaoId + '/bolsas', 'Erro ao adicionar bolsa à requisição');
+        }
+    }
+
+    static async removerBolsa(req, res) {
+        const requisicaoId = Number(req.params.id);
+        const solicitacaoId = Number(req.params.solicitacaoId);
+        try {
+            await RequisicaoModel.removerBolsaAssociada(requisicaoId, solicitacaoId);
+            await AuditoriaModel.registrarLog(
+                req.session.usuario.id,
+                'BOLSA_REMOVIDA_AGUARDANDO_COMPATIBILIDADE',
+                'solicitacoes_transfusionais',
+                solicitacaoId,
+                'Bolsa removida da unidade antes da compatibilidade.'
+            );
+            avisar(req, 'ok', 'Bolsa removida da unidade e devolvida ao estoque.');
+            return res.redirect(STATUS.VER_OUTRO, '/solicitacoes/' + requisicaoId + '/bolsas');
+        } catch (erro) {
+            tratar(req, res, erro, '/solicitacoes/' + requisicaoId + '/bolsas', 'Erro ao remover bolsa da requisição');
         }
     }
 
