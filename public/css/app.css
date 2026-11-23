@@ -1125,3 +1125,180 @@ body.modal-frame-body { min-height:100vh; margin:0; padding:18px; background:var
 .lote-contexto-cadastro { padding:15px 17px; border:1px solid var(--borda-forte); border-radius:12px; background:var(--superficie-2); }
 .lote-contexto-cadastro strong { display:block; color:var(--texto); font-size:18px; letter-spacing:.02em; }
 .lote-contexto-cadastro small { display:block; margin-top:5px; color:var(--cinza); }
+
+
+/* ==========================================================================
+   Solicitação transfusional — fluxo por etapas
+   ========================================================================== */
+.requisicao-pagina { width:min(1120px,100%); margin:10px auto 30px; }
+.requisicao-titulo { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; margin:0 0 20px; }
+.requisicao-titulo h3 { margin:0 0 5px; font-size:22px; }
+.requisicao-titulo p { max-width:720px; color:var(--cinza); font-size:12.5px; }
+.requisicao-abas { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+.requisicao-aba { display:flex; align-items:center; gap:11px; min-width:0; padding:13px 15px; border:1px solid var(--borda); border-radius:12px; background:var(--superficie); color:var(--texto); text-align:left; text-decoration:none; }
+button.requisicao-aba { font:inherit; cursor:pointer; }
+.requisicao-aba > span:first-child { display:grid; place-items:center; width:34px; height:34px; flex:0 0 34px; border-radius:50%; background:var(--superficie-2); color:var(--cinza); font-weight:800; }
+.requisicao-aba strong,.requisicao-aba small { display:block; }
+.requisicao-aba strong { font-size:12px; }
+.requisicao-aba small { margin-top:3px; color:var(--cinza); font-size:10px; }
+.requisicao-aba.ativa { border-color:var(--rosa); background:var(--brilho); box-shadow:0 0 0 2px var(--anel); }
+.requisicao-aba.ativa > span:first-child { background:var(--rosa); color:#fff; }
+.requisicao-aba.concluida > span:first-child { background:var(--verde-fundo); color:var(--verde); }
+.requisicao-aba:disabled,.requisicao-aba-bloqueada { opacity:.48; cursor:not-allowed; }
+.requisicao-form { padding:24px; }
+.requisicao-etapa[hidden] { display:none !important; }
+.requisicao-secao-topo { display:flex; align-items:center; justify-content:space-between; margin:0 0 18px; }
+.requisicao-secao-topo > div { display:flex; align-items:center; gap:12px; }
+.numero-secao { display:grid; place-items:center; width:38px; height:38px; flex:0 0 38px; border-radius:12px; background:var(--brilho); color:var(--rosa); font-size:13px; font-weight:850; }
+.requisicao-secao-topo h3 { margin:0 0 3px; font-size:15px; }
+.requisicao-secao-topo p { color:var(--cinza); font-size:11.5px; }
+.requisicao-form .campo { min-width:0; }
+.requisicao-form .campo label { font-size:12px; }
+.requisicao-grade-dois { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px; margin:16px 0; }
+.requisicao-receptor-cartao { margin:16px 0; padding:17px; border:1px solid var(--borda-forte); border-radius:14px; background:var(--superficie-2); }
+.receptor-cartao-cabecalho { display:flex; justify-content:space-between; align-items:center; gap:15px; padding-bottom:14px; border-bottom:1px solid var(--borda); }
+.cartao-microtitulo { display:block; margin-bottom:5px; color:var(--cinza); font-size:9px; font-weight:850; letter-spacing:.13em; }
+.receptor-cartao-cabecalho strong { display:block; font-size:17px; }
+.receptor-tipagem { display:grid; place-items:center; min-width:78px; min-height:52px; padding:8px 12px; border:1px solid var(--vermelho-borda); border-radius:12px; background:var(--vermelho-fundo); color:var(--vermelho); font-size:19px; font-weight:850; }
+.receptor-cartao-dados { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding-top:13px; }
+.receptor-cartao-dados small,.receptor-cartao-dados strong { display:block; }
+.receptor-cartao-dados small { margin-bottom:4px; color:var(--cinza); font-size:10px; }
+.receptor-cartao-dados strong { font-size:12px; overflow-wrap:anywhere; }
+.amostra-status-cartao { display:flex; align-items:flex-start; gap:12px; margin:14px 0 20px; padding:14px; border:1px solid var(--azul-borda); border-radius:12px; background:var(--azul-fundo); }
+.amostra-status-icone { display:grid; place-items:center; width:30px; height:30px; flex:0 0 30px; border-radius:9px; background:var(--superficie); color:var(--azul-texto); font-size:17px; }
+.amostra-status-conteudo { flex:1; min-width:0; }
+.amostra-status-conteudo > strong { display:block; font-size:12px; }
+.amostra-status-conteudo > p { margin-top:3px; color:var(--azul-texto); font-size:11px; }
+.amostra-status-mensagem { display:block; margin-top:4px; color:var(--azul-texto); font-size:10.5px; }
+.amostra-status-conteudo a { display:inline-block; margin-top:6px; color:var(--azul-texto); font-size:10.5px; font-weight:700; }
+.amostra-status-cartao > .status { flex-shrink:0; }
+.requisicao-adicionar-item { display:grid; grid-template-columns:minmax(0,1fr) 130px auto; align-items:end; gap:12px; padding:16px; border:1px solid var(--borda); border-radius:12px; background:var(--superficie-2); }
+.campo-quantidade input { text-align:center; }
+.botao-inserir-item { min-height:43px; white-space:nowrap; }
+.lista-itens-requisicao { display:grid; gap:8px; margin-top:12px; }
+.vazio-itens { padding:18px; border:1px dashed var(--borda-forte); border-radius:10px; color:var(--cinza); font-size:11.5px; text-align:center; }
+.item-requisicao-inserido { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--borda); border-radius:10px; background:var(--superficie); }
+.item-requisicao-identificacao strong,.item-requisicao-identificacao small { display:block; }
+.item-requisicao-identificacao strong { font-size:12px; }
+.item-requisicao-identificacao small { margin-top:3px; color:var(--cinza); font-size:10px; }
+.botao-remover-item { padding:6px 9px; border:1px solid var(--vermelho-borda); border-radius:8px; background:var(--vermelho-fundo); color:var(--vermelho); font:inherit; font-size:10px; font-weight:700; cursor:pointer; }
+.requisicao-avancar { display:flex; justify-content:flex-end; gap:10px; margin-top:22px; padding-top:18px; border-top:1px solid var(--borda); }
+.requisicao-avancar .botao:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
+.confirmacoes-requisicao { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:18px; }
+.confirmacao-requisicao { display:flex; align-items:flex-start; gap:10px; padding:13px; border:1px solid var(--borda); border-radius:11px; background:var(--superficie-2); cursor:pointer; }
+.confirmacao-requisicao input { width:17px; height:17px; margin-top:2px; flex:0 0 17px; accent-color:var(--rosa); }
+.confirmacao-requisicao strong,.confirmacao-requisicao small { display:block; }
+.confirmacao-requisicao strong { font-size:11.5px; }
+.confirmacao-requisicao small { margin-top:4px; color:var(--cinza); font-size:10px; line-height:1.5; }
+.requisicao-alerta-clinico { margin-top:18px; font-size:11px; }
+.requisicao-acoes-etapa { justify-content:space-between; }
+
+/* ---------- Resumo e etapa de bolsas / transfusão ---------- */
+.requisicao-etapa-final .requisicao-titulo { margin-bottom:18px; }
+.resumo-requisicao { margin-bottom:16px; }
+.resumo-requisicao-topo { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:15px; border-bottom:1px solid var(--borda); }
+.resumo-requisicao-topo h3 { font-size:18px; }
+.resumo-requisicao-topo p { margin-top:4px; color:var(--cinza); font-size:11px; }
+.resumo-requisicao-dados { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding:17px 0; }
+.resumo-requisicao-dados small,.resumo-requisicao-dados strong { display:block; }
+.resumo-requisicao-dados small { margin-bottom:4px; color:var(--cinza); font-size:10px; }
+.resumo-requisicao-dados strong { font-size:11.5px; overflow-wrap:anywhere; }
+.resumo-amostra { display:flex; align-items:center; gap:11px; padding:11px 13px; border:1px solid var(--verde-borda); border-radius:10px; background:var(--verde-fundo); color:var(--verde); }
+.resumo-amostra > span { display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--superficie); font-weight:900; }
+.resumo-amostra strong,.resumo-amostra small { display:block; }
+.resumo-amostra strong { font-size:11px; }
+.resumo-amostra small { margin-top:3px; font-size:10px; }
+.resumo-amostra.amostra-vencida { border-color:var(--vermelho-borda); background:var(--vermelho-fundo); color:var(--vermelho); }
+.resumo-diagnostico { margin-top:13px; color:var(--cinza); font-size:11px; }
+.painel-titulo-com-acoes { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.painel-titulo-com-acoes h3 { margin:0 0 3px; }
+.unidade-requisicao { padding:16px; border:1px solid var(--borda); border-radius:13px; background:var(--superficie-2); }
+.unidade-requisicao + .unidade-requisicao { margin-top:10px; }
+.unidade-requisicao-cabecalho { display:flex; align-items:center; gap:11px; }
+.unidade-numero { display:grid; place-items:center; width:34px; height:34px; flex:0 0 34px; border-radius:10px; background:var(--brilho); color:var(--rosa); font-weight:850; font-size:11px; }
+.unidade-titulo { flex:1; min-width:0; }
+.unidade-titulo strong,.unidade-titulo small { display:block; }
+.unidade-titulo strong { font-size:12px; }
+.unidade-titulo small { margin-top:3px; color:var(--cinza); font-size:10px; }
+.selecionar-bolsa-requisicao { display:flex; align-items:flex-end; gap:12px; margin:15px 0 0 45px; }
+.selecionar-bolsa-requisicao .campo { flex:1; min-width:0; }
+.selecionar-bolsa-requisicao .botao { flex-shrink:0; min-height:43px; }
+.bolsa-vinculada { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:14px 0 0 45px; padding:12px; border:1px solid var(--verde-borda); border-radius:10px; background:var(--verde-fundo); }
+.bolsa-vinculada strong,.bolsa-vinculada small { display:block; }
+.bolsa-vinculada strong { font-size:13px; }
+.bolsa-vinculada small { margin-top:4px; color:var(--cinza); font-size:10px; }
+.historico-provas { margin-top:16px; }
+.texto-secundario { color:var(--cinza); font-size:11px; }
+.alerta-seguranca-prova { font-size:11px; }
+
+/* ---------- Modal de prova cruzada ---------- */
+.modal-prova-cruzada { width:min(650px,calc(100vw - 24px)); max-width:none; max-height:calc(100vh - 24px); margin:auto; padding:0; overflow:visible; border:1px solid var(--borda-forte); border-radius:17px; background:var(--superficie); color:var(--texto); box-shadow:var(--sombra-3); }
+.modal-prova-cruzada[open] { display:flex; flex-direction:column; }
+.modal-prova-cruzada::backdrop { background:rgba(3,9,18,.78); backdrop-filter:blur(5px); }
+.modal-prova-topo { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 18px; border-bottom:1px solid var(--borda); background:var(--superficie-2); border-radius:17px 17px 0 0; }
+.modal-prova-topo h3 { margin-top:3px; font-size:16px; }
+.modal-prova-corpo { overflow-y:auto; padding:18px; }
+.resumo-bolsa-prova { margin-bottom:16px; padding:13px; border:1px solid var(--borda-forte); border-radius:11px; background:var(--superficie-2); }
+.resumo-bolsa-prova strong,.resumo-bolsa-prova small { display:block; }
+.resumo-bolsa-prova strong { font-size:15px; }
+.resumo-bolsa-prova small { margin-top:3px; color:var(--cinza); font-size:10px; }
+.aviso-triagem { display:block; margin-top:8px; color:var(--azul-texto); font-size:10px; }
+.modal-prova-corpo > .campo { margin-bottom:13px; }
+.confirmacao-tipagem-bolsa { margin-top:15px; }
+.modal-prova-corpo > .alerta { margin-top:14px; font-size:10.5px; }
+.modal-prova-rodape { display:flex; justify-content:flex-end; gap:9px; padding:13px 18px; border-top:1px solid var(--borda); background:var(--superficie-2); border-radius:0 0 17px 17px; }
+
+/* ---------- Etiqueta moderna da prova cruzada ---------- */
+.pagina-etiqueta-prova { max-width:900px; margin:12px auto 30px; }
+.acoes-etiqueta-prova { display:flex; justify-content:flex-end; gap:10px; margin-bottom:16px; }
+.etiqueta-prova-cruzada { overflow:hidden; border:1px solid #d5dce6; border-radius:16px; background:#fff; color:#182235; box-shadow:var(--sombra-2); }
+.etiqueta-prova-topo { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:16px; padding:20px 22px; background:#101c30; color:#fff; }
+.etiqueta-prova-logo { display:grid; place-items:center; min-width:56px; min-height:56px; padding:8px; border-radius:14px; background:#d6203f; color:#fff; font-size:13px; font-weight:900; }
+.etiqueta-prova-logo span { color:#ffd3dc; }
+.etiqueta-prova-supra { color:#aebbd0; font-size:9px; font-weight:800; letter-spacing:.15em; }
+.etiqueta-prova-topo h1 { margin-top:3px; font-size:23px; letter-spacing:-.02em; }
+.etiqueta-prova-selo { padding:9px 12px; border:1px solid #67d6ae; border-radius:999px; background:rgba(33,190,137,.13); color:#8cf0c7; font-size:10px; font-weight:900; white-space:nowrap; letter-spacing:.06em; }
+.etiqueta-prova-bloco { padding:18px 22px; border-bottom:1px solid #e2e7ee; }
+.etiqueta-prova-legenda { display:block; margin-bottom:12px; color:#728098; font-size:9px; font-weight:900; letter-spacing:.13em; }
+.etiqueta-prova-linha { display:flex; justify-content:space-between; align-items:baseline; gap:14px; padding:5px 0; }
+.etiqueta-prova-linha span,.etiqueta-prova-grade span { color:#69778d; font-size:10px; }
+.etiqueta-prova-linha strong { text-align:right; font-size:13px; overflow-wrap:anywhere; }
+.etiqueta-prova-grade { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.etiqueta-prova-grade span,.etiqueta-prova-grade strong { display:block; }
+.etiqueta-prova-grade strong { margin-top:5px; font-size:14px; overflow-wrap:anywhere; }
+.etiqueta-prova-resultado { background:#f1fbf7; }
+.etiqueta-prova-resultado-texto { margin:0 0 14px; color:#087a5a; font-size:23px; font-weight:950; letter-spacing:.02em; }
+.etiqueta-prova-tipagem { color:#a71937; font-size:22px !important; }
+.etiqueta-prova-rodape { padding:17px 22px 19px; background:#f7f9fc; }
+.etiqueta-prova-rodape span,.etiqueta-prova-rodape strong { display:block; }
+.etiqueta-prova-rodape span { color:#69778d; font-size:10px; }
+.etiqueta-prova-rodape strong { margin-top:4px; font-size:13px; }
+.etiqueta-prova-rodape > div + div { margin-top:12px; }
+.etiqueta-prova-rodape p { margin-top:16px; padding-top:12px; border-top:1px solid #e0e6ee; color:#6c7789; font-size:9px; line-height:1.5; }
+
+@media(max-width:760px) {
+    .requisicao-titulo { align-items:flex-start; flex-direction:column; }
+    .requisicao-abas { grid-template-columns:1fr; }
+    .requisicao-grade-dois,.confirmacoes-requisicao,.resumo-requisicao-dados { grid-template-columns:1fr; }
+    .requisicao-adicionar-item { grid-template-columns:minmax(0,1fr) 105px; }
+    .botao-inserir-item { grid-column:1/-1; width:100%; }
+    .receptor-cartao-dados { grid-template-columns:1fr 1fr; }
+    .selecionar-bolsa-requisicao,.bolsa-vinculada { align-items:stretch; flex-direction:column; margin-left:0; }
+    .unidade-requisicao-cabecalho { flex-wrap:wrap; }
+    .modal-prova-cruzada { width:calc(100vw - 12px); max-height:calc(100vh - 12px); }
+    .etiqueta-prova-topo { grid-template-columns:auto 1fr; }
+    .etiqueta-prova-selo { grid-column:1/-1; justify-self:start; }
+}
+@media print {
+    body:has(.pagina-etiqueta-prova) { background:#fff !important; }
+    body:has(.pagina-etiqueta-prova) .sidebar,
+    body:has(.pagina-etiqueta-prova) .topo,
+    body:has(.pagina-etiqueta-prova) footer,
+    body:has(.pagina-etiqueta-prova) .acoes-etiqueta-prova { display:none !important; }
+    body:has(.pagina-etiqueta-prova) .principal { margin:0 !important; }
+    body:has(.pagina-etiqueta-prova) main { padding:0 !important; }
+    body:has(.pagina-etiqueta-prova) .pagina-etiqueta-prova { max-width:none; margin:0; }
+    body:has(.pagina-etiqueta-prova) .etiqueta-prova-cruzada { border:1px solid #222; border-radius:0; box-shadow:none; break-inside:avoid; }
+    body:has(.pagina-etiqueta-prova) .etiqueta-prova-topo { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+    body:has(.pagina-etiqueta-prova) .etiqueta-prova-resultado { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+}
