@@ -34,11 +34,11 @@
             </div>
 
             <div class="campo">
-                <label for="urgencia">Urgência</label>
+                <label for="urgencia">Urgência / modalidade</label>
                 <select id="urgencia" name="urgencia" required>
                     <option value="ROTINA" <%= (val.urgencia || 'ROTINA') === 'ROTINA' ? 'selected' : '' %>>Rotina</option>
                     <option value="URGENTE" <%= val.urgencia === 'URGENTE' ? 'selected' : '' %>>Urgente</option>
-                    <option value="EMERGENCIA" <%= val.urgencia === 'EMERGENCIA' ? 'selected' : '' %>>Emergência</option>
+                    <option value="EMERGENCIA" <%= val.urgencia === 'EMERGENCIA' ? 'selected' : '' %>>Emergência / extrema urgência</option>
                 </select>
             </div>
 
