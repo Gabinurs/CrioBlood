@@ -10,8 +10,9 @@ const URGENCIAS = ['ROTINA', 'URGENTE', 'EMERGENCIA'];
 class SolicitacaoModel {
     static async listar(pag = {}) {
         const { rows } = await db.query(`
-            SELECT s.id, s.tipo, s.urgencia, s.medico_solicitante, s.indicacao, s.status,
-                   s.hemocomponente_id,
+            SELECT s.id, s.requisicao_id, s.item_numero, s.tipo, s.urgencia,
+                   s.medico_solicitante, s.indicacao, s.status, s.hemocomponente_id,
+                   r.prazo_solicitacao, r.setor_solicitante, r.status AS status_requisicao,
                    p.nome AS paciente_nome, p.prontuario,
                    p.abo AS paciente_abo, p.fator_rh AS paciente_rh,
                    h.codigo_original AS bolsa_codigo,
@@ -19,6 +20,7 @@ class SolicitacaoModel {
             FROM solicitacoes_transfusionais s
             JOIN pacientes p ON p.id = s.paciente_id
             LEFT JOIN hemocomponentes h ON h.id = s.hemocomponente_id
+            LEFT JOIN requisicoes_transfusionais r ON r.id = s.requisicao_id
             ORDER BY CASE s.status WHEN 'PENDENTE' THEN 0 WHEN 'RESERVADA' THEN 1 ELSE 2 END,
                      CASE s.urgencia WHEN 'EMERGENCIA' THEN 0 WHEN 'URGENTE' THEN 1 ELSE 2 END,
                      s.criado_em DESC
