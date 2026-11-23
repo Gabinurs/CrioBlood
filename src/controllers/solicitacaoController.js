@@ -1,6 +1,7 @@
 const { paginar } = require('../utils/paginacao');
 const SolicitacaoModel = require('../models/solicitacaoModel');
 const PacienteModel = require('../models/pacienteModel');
+const AmostraModel = require('../models/amostraModel');
 const AuditoriaModel = require('../models/auditoriaModel');
 const { ErroNegocio, avisar, tratar } = require('../utils/erros');
 
@@ -19,8 +20,11 @@ class SolicitacaoController {
     static async formNova(req, res) {
         try {
             const pacientes = await PacienteModel.listarAtivos();
+            const pacienteId = /^\\d+$/.test(String(req.query.paciente_id || '')) ? Number(req.query.paciente_id) : null;
+            const liberacao = pacienteId ? await AmostraModel.podeSolicitar(pacienteId) : null;
             res.render('solicitacoes/form', {
                 pacientes,
+                liberacao,
                 valores: { paciente_id: req.query.paciente_id || '', urgencia: req.query.urgencia === 'EXTREMA_URGENCIA' ? 'EMERGENCIA' : (req.query.urgencia || '') },
                 usuario: req.session.usuario
             });
