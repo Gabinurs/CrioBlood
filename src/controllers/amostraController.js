@@ -24,6 +24,13 @@ class AmostraController {
             const id = await AmostraModel.criar(req.params.id, req.body, req.session.usuario.id);
             await AuditoriaModel.registrarLog(req.session.usuario.id, 'CADASTRO_AMOSTRA', 'amostras_receptor', id, '');
             avisar(req, 'ok', 'Amostra cadastrada. Agora registre os testes na opção Imuno.');
+            if (req.query.modal === '1') {
+                return res.render('pacientes/modal-concluido', {
+                    mensagem: resultado.bloqueada
+                        ? 'Resultados registrados. A solicitação transfusional permanece bloqueada.'
+                        : 'Resultados Imuno registrados com sucesso.'
+                });
+            }
             return res.redirect(STATUS.VER_OUTRO, '/pacientes/' + req.params.id + '/dossie');
         } catch (erro) {
             if (erro instanceof ErroNegocio) {
@@ -45,6 +52,7 @@ class AmostraController {
             if (!paciente || !amostra) return enviarErro(req, res, STATUS.NAO_ENCONTRADO, 'Receptor ou amostra não encontrado.');
             res.render('pacientes/imuno-form', {
                 paciente, amostra, valores: {}, somenteLeitura: amostra.status_imuno !== 'PENDENTE',
+                modal: req.query.modal === '1',
                 usuario: req.session.usuario
             });
         } catch (erro) {
@@ -73,7 +81,8 @@ class AmostraController {
                 const amostra = await AmostraModel.buscarPorId(req.params.id, req.params.amostraId);
                 return res.status(erro.statusCode || STATUS.ENTIDADE_INVALIDA).render('pacientes/imuno-form', {
                     paciente, amostra, valores: req.body, erro: erro.message,
-                    somenteLeitura: false, usuario: req.session.usuario
+                    somenteLeitura: false, modal: req.query.modal === '1',
+                    usuario: req.session.usuario
                 });
             }
             tratar(req, res, erro, '/pacientes', 'Erro ao registrar exames Imuno');
@@ -84,7 +93,9 @@ class AmostraController {
         try {
             const amostra = await AmostraModel.buscarPorId(req.params.id, req.params.amostraId);
             if (!amostra) return enviarErro(req, res, STATUS.NAO_ENCONTRADO, 'Amostra não encontrada.');
-            res.render('pacientes/etiqueta-amostra', { amostra, usuario: req.session.usuario });
+            res.render('pacientes/etiqueta-amostra', {
+                amostra, modal: req.query.modal === '1', usuario: req.session.usuario
+            });
         } catch (erro) {
             tratar(req, res, erro, '/pacientes', 'Erro ao abrir etiqueta');
         }
