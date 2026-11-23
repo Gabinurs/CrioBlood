@@ -53,7 +53,7 @@
             <div class="requisicao-receptor-cartao" data-cartao-receptor <%= pacienteSelecionado ? '' : 'hidden' %>>
                 <div class="receptor-cartao-cabecalho">
                     <div><span class="cartao-microtitulo">RECEPTOR</span><strong data-receptor-nome><%= pacienteSelecionado ? pacienteSelecionado.nome : '' %></strong></div>
-                    <div class="receptor-tipagem" data-receptor-tipagem><%= pacienteSelecionado && pacienteSelecionado.abo ? pacienteSelecionado.abo + pacienteSelecionado.fator_rh : 'ABO/Rh pendente' %></div>
+                    <div class="receptor-tipagem" data-receptor-tipagem><%= pacienteSelecionado && (pacienteSelecionado.amostra_abo || pacienteSelecionado.abo) ? (pacienteSelecionado.amostra_abo || pacienteSelecionado.abo) + (pacienteSelecionado.amostra_rh || pacienteSelecionado.fator_rh) : 'ABO/Rh pendente' %></div>
                 </div>
                 <div class="receptor-cartao-dados">
                     <div><small>Data de nascimento</small><strong data-receptor-nascimento><%= pacienteSelecionado ? pacienteSelecionado.nascimento_br : '' %></strong></div>
