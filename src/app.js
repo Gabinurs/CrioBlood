@@ -8,7 +8,8 @@ const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 const rateLimit = require('express-rate-limit');
 const pool = require('./config/database');
-const { carregarPermissoes } = require('./middlewares/autenticacao');
+const { carregarPermissoes, exigirAutenticacao, exigirPermissao } = require('./middlewares/autenticacao');
+const RequisicaoController = require('./controllers/requisicaoController');
 const { protegerCsrf } = require('./middlewares/csrf');
 const { rotaNaoEncontrada, tratarErros } = require('./middlewares/erros');
 const { paraViews } = require('./utils/padroes');
@@ -120,6 +121,25 @@ app.use(carregarPermissoes);
 
 // Exige o token CSRF em todos os formulários (POST)
 app.use(protegerCsrf);
+
+// Associação de bolsa à unidade da requisição.
+// Registrada antes dos demais roteadores para garantir que o POST
+// seja tratado pelo fluxo de associação e não por outra rota genérica.
+app.post(
+    '/solicitacoes/:id/itens/:solicitacaoId/associar-bolsa',
+    exigirAutenticacao,
+    exigirPermissao('solicitacoes.gerenciar'),
+    (req, res, next) => {
+        if (!/^\d+$/.test(req.params.id) || !/^\d+$/.test(req.params.solicitacaoId)) {
+            return res.status(400).render('errors/erro', {
+                status: 400,
+                titulo: 'Requisição inválida',
+                mensagem: 'Identificador da requisição ou da unidade inválido.'
+            });
+        }
+        return RequisicaoController.associarBolsa(req, res, next);
+    }
+);
 
 // Página de login
 app.get('/login', (req, res) => {
