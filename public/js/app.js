@@ -41,6 +41,7 @@
         var instrucao = document.querySelector('[data-instrucao-busca]');
         var limpar = document.querySelector('[data-limpar-busca]');
         var trocar = document.querySelector('[data-trocar-receptor]');
+        var inserirReceptor = document.querySelector('[data-receptor-inserir]');
 
         function normalizar(valor) {
             return (valor || '').toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -58,6 +59,7 @@
                 if (corresponde) encontrados++;
             });
             var mostrar = termo.length > 0 && encontrados > 0 && (!selecionado || selecionado.hidden);
+            if (inserirReceptor) inserirReceptor.hidden = termo.length === 0 || encontrados > 0;
             if (sugestoes) sugestoes.hidden = !mostrar;
             buscaReceptor.setAttribute('aria-expanded', mostrar ? 'true' : 'false');
             if (instrucao && (!selecionado || selecionado.hidden)) {
@@ -72,6 +74,8 @@
             selecionado.querySelector('[data-selecionado-nascimento]').textContent = opcao.getAttribute('data-nascimento');
             selecionado.querySelector('[data-selecionado-prontuario]').textContent = opcao.getAttribute('data-prontuario');
             selecionado.querySelector('[data-acao-dossie]').href = opcao.getAttribute('data-dossie');
+            selecionado.querySelector('[data-acao-imuno]').href = opcao.getAttribute('data-dossie') + '#imuno';
+            selecionado.querySelector('[data-selecionado-tipagem]').textContent = opcao.getAttribute('data-tipagem') || 'Tipagem pendente';
             selecionado.querySelector('[data-acao-amostra]').href = opcao.getAttribute('data-amostra');
             selecionado.querySelector('[data-acao-edicao]').href = opcao.getAttribute('data-edicao');
             selecionado.querySelector('[data-acao-urgencia]').href = opcao.getAttribute('data-urgencia');
@@ -93,6 +97,7 @@
             if (selecionado) selecionado.hidden = true;
             fecharSugestoes();
             if (instrucao) instrucao.textContent = 'Nenhum paciente selecionado.';
+            if (inserirReceptor) inserirReceptor.hidden = true;
             buscaReceptor.focus();
         });
         if (trocar) trocar.addEventListener('click', function () {
@@ -100,6 +105,7 @@
             buscaReceptor.value = '';
             fecharSugestoes();
             if (instrucao) instrucao.textContent = 'Pesquise e selecione outro paciente.';
+            if (inserirReceptor) inserirReceptor.hidden = true;
             buscaReceptor.focus();
         });
         document.addEventListener('click', function (evento) {
