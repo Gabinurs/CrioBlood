@@ -3,6 +3,7 @@ const { ErroNegocio } = require('../utils/erros');
 
 const COLUNAS = `
     p.*,
+    (SELECT a.id FROM amostras_receptor a WHERE a.paciente_id = p.id ORDER BY a.coletado_em DESC LIMIT 1) AS ultima_amostra_id,
     to_char(p.data_nascimento, 'DD/MM/YYYY') AS data_nascimento_br,
     to_char(p.data_nascimento, 'YYYY-MM-DD') AS data_nascimento_iso,
     date_part('year', age(p.data_nascimento))::int AS idade
