@@ -76,6 +76,8 @@ router.get('/solicitacoes/nova', solicitacoes, Requisicao.formNova);
 router.post('/solicitacoes/nova', solicitacoes, Requisicao.criar);
 router.get('/solicitacoes/provas-cruzadas/:provaId/etiqueta', solicitacoes, Requisicao.etiqueta);
 router.get('/solicitacoes/:id/itens/:solicitacaoId/verificar-bolsa', solicitacoes, Requisicao.verificarBolsa);
+router.post('/solicitacoes/:id/itens/:solicitacaoId/associar-bolsa', solicitacoes, Requisicao.associarBolsa);
+router.post('/solicitacoes/:id/itens/:solicitacaoId/remover-bolsa', solicitacoes, Requisicao.removerBolsa);
 router.get('/solicitacoes/:id/bolsas', solicitacoes, Requisicao.bolsas);
 router.post('/solicitacoes/:id/provas-cruzadas', solicitacoes, Requisicao.registrarProva);
 router.post('/solicitacoes/:id/cancelar', solicitacoes, Solicitacao.cancelar);
