@@ -152,6 +152,10 @@
         rotuloResponsavel.textContent = isProvaCruzada
             ? 'Colaborador que realizou a prova *'
             : 'Colaborador que realizou a conferência *';
+        var opcaoCompat = resultado.querySelector('option[value="COMPATIVEL"]');
+        var opcaoIncomp = resultado.querySelector('option[value="INCOMPATIVEL"]');
+        opcaoCompat.textContent = isProvaCruzada ? 'Compatível' : 'Conferência conforme';
+        opcaoIncomp.textContent = isProvaCruzada ? 'Incompatível' : 'Conferência não conforme';
         avisoTipo.textContent = isProvaCruzada
             ? 'A prova cruzada é realizada pelo serviço de hemoterapia. O CrioBlood apenas registra o resultado informado pelo profissional executor.'
             : 'Este registro documenta a conferência aplicável ao componente. Para plasma e crioprecipitado, a norma não exige prova de compatibilidade; siga o protocolo institucional.';
