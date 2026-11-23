@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS requisicoes_transfusionais (
     id BIGSERIAL PRIMARY KEY,
     paciente_id INTEGER NOT NULL REFERENCES pacientes(id),
+    amostra_id BIGINT NOT NULL REFERENCES amostras_receptor(id),
     data_hora_requisicao TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     solicitado_por INTEGER NOT NULL REFERENCES usuarios(id),
     medico_solicitante VARCHAR(255) NOT NULL,
