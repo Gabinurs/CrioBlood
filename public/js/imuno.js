@@ -55,13 +55,15 @@
     });
 
     form.addEventListener('submit', function (evento) {
-        ['pai', 'controle'].forEach(function (tipo) {
+        var pendente = ['pai', 'controle'].find(function (tipo) {
             var campo = form.querySelector('[data-imuno-resultado="' + tipo + '"]');
             var justificativa = form.querySelector('[name="' + (tipo === 'controle' ? 'controle_rh' : tipo) + '_justificativa"]');
-            if (campo && campo.value === 'POSITIVO' && (!justificativa || justificativa.value.trim().length < 5)) {
-                evento.preventDefault();
-                abrirJustificativa(campo);
-            }
+            return campo && campo.value === 'POSITIVO' && (!justificativa || justificativa.value.trim().length < 5);
         });
+        if (pendente) {
+            evento.preventDefault();
+            abrirJustificativa(form.querySelector('[data-imuno-resultado="' + pendente + '"]'));
+        }
     });
+
 })();
