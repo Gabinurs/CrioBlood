@@ -44,7 +44,7 @@ docker compose exec -T db psql -U postgres -d crioblood < database/11_fluxo_rece
 No PowerShell do Windows:
 
 ```powershell
-Get-Content .\\database\\11_fluxo_receptor_amostras.sql | docker compose exec -T db psql -U postgres -d crioblood
+Get-Content .\database\11_fluxo_receptor_amostras.sql | docker compose exec -T db psql -U postgres -d crioblood
 ```
 
 A migração é aditiva: preserva os cadastros existentes e marca amostras antigas que já possuem resultados Imuno como concluídas ou bloqueadas.
@@ -62,7 +62,7 @@ docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < dat
 No PowerShell do Windows:
 
 ```powershell
-Get-Content .\\database\\13_requisicao_prova_cruzada.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood
+Get-Content .\database\13_requisicao_prova_cruzada.sql | docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood
 ```
 
 A tela registra dados informados pela equipe. O sistema não executa nem interpreta a prova cruzada, não substitui a avaliação dos profissionais habilitados e não substitui o protocolo institucional de hemoterapia.
@@ -141,8 +141,9 @@ src/
 ├── config/           configuração (conexão com o PostgreSQL)
 ├── routes/           (R) URLs e permissões exigidas por cada uma
 ├── controllers/      (C) recebem a requisição, chamam models/services e escolhem a resposta
+│   └── requisicaoController (requisição em etapas, prova cruzada e etiqueta)
 ├── models/           (M) entidades: SQL, validação e regras de cada tabela
-│   ├── pacienteModel, loteModel, hemocomponenteModel, solicitacaoModel,
+│   ├── pacienteModel, loteModel, hemocomponenteModel, solicitacaoModel, requisicaoModel,
 │   ├── equipamentoModel, usuarioModel, auditoriaModel, estoqueModel,
 │   └── relatorioModel, dashboardModel
 ├── services/         processos de negócio que cruzam entidades (transações)
