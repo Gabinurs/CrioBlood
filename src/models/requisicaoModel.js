@@ -411,7 +411,11 @@ class RequisicaoModel {
             FROM provas_cruzadas pc
             JOIN pacientes p ON p.id = pc.paciente_id
             JOIN requisicoes_transfusionais r ON r.id = pc.requisicao_id
-            WHERE pc.id = $1 AND pc.resultado = 'COMPATIVEL'
+            JOIN solicitacoes_transfusionais s ON s.id = pc.solicitacao_id
+            WHERE pc.id = $1
+              AND pc.resultado = 'COMPATIVEL'
+              AND r.status <> 'CANCELADA'
+              AND s.status <> 'CANCELADA'
         `, [provaId]);
         return rows[0] || null;
     }
