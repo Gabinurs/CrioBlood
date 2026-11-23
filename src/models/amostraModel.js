@@ -158,8 +158,9 @@ class AmostraModel {
 
     static async podeSolicitar(pacienteId) {
         const { rows } = await db.query(`
-            SELECT id, pai, controle_rh, status_imuno, solicitacao_transfusao,
-                   (coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS valida
+            SELECT id, abo, fator_rh, pai, controle_rh, status_imuno, solicitacao_transfusao,
+                   (coletado_em <= CURRENT_TIMESTAMP
+                    AND coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS valida
             FROM amostras_receptor
             WHERE paciente_id = $1
             ORDER BY coletado_em DESC, id DESC
@@ -169,6 +170,9 @@ class AmostraModel {
 
         if (!amostra) return { permitido: false, motivo: 'O receptor ainda não possui amostra cadastrada.' };
         if (!amostra.valida) return { permitido: false, motivo: 'A amostra está fora da validade de 72 horas. Registre uma nova coleta.' };
+        if (!amostra.abo || !amostra.fator_rh) {
+            return { permitido: false, motivo: 'A tipagem ABO/Rh da amostra ainda não foi concluída.' };
+        }
         if (amostra.status_imuno !== 'CONCLUIDO') {
             return { permitido: false, motivo: amostra.status_imuno === 'BLOQUEADO'
                 ? 'PAI ou Controle positivo registrado. A solicitação transfusional está bloqueada e exige avaliação e liberação formal conforme protocolo institucional.'
