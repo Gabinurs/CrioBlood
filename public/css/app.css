@@ -1302,3 +1302,8 @@ button.requisicao-aba { font:inherit; cursor:pointer; }
     body:has(.pagina-etiqueta-prova) .etiqueta-prova-topo { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
     body:has(.pagina-etiqueta-prova) .etiqueta-prova-resultado { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
 }
+
+.aviso-unidade-encerrada { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:14px 0 0 45px; padding:12px; border:1px solid var(--borda); border-radius:10px; background:var(--superficie); }
+.aviso-unidade-encerrada strong { font-size:11px; }
+.aviso-unidade-encerrada small { color:var(--cinza); font-size:10px; }
+@media(max-width:760px) { .aviso-unidade-encerrada { align-items:flex-start; flex-direction:column; margin-left:0; } }
