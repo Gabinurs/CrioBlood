@@ -69,7 +69,7 @@ class HemocomponenteController {
             const id = await HemocomponenteModel.criar(req.body, req.session.usuario.id);
             await AuditoriaModel.registrarLog(
                 req.session.usuario.id, 'CADASTRO_BOLSA', 'hemocomponentes', id, req.body.codigo_original);
-            res.redirect(STATUS.VER_OUTRO, '/hemocomponentes');
+            res.redirect(STATUS.VER_OUTRO, `/lotes/${req.body.lote_id}/relatorio`);
         } catch (erro) {
             responderErro(req, res, erro, 'Erro ao salvar os dados.');
         }
