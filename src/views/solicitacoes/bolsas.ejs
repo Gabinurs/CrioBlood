@@ -59,6 +59,11 @@
                         <div><span class="cartao-microtitulo">BOLSA VINCULADA</span><strong><%= item.bolsa_codigo %></strong><small><%= item.bolsa_codigo_interno || 'Código local não informado' %> · <%= rot.tipagem(item.bolsa_abo,item.bolsa_rh) %> · <%= item.volume_ml || '—' %> mL · Validade <%= item.bolsa_validade_br || '—' %></small></div>
                         <% if (item.prova_compativel_id) { %><button type="button" class="botao botao-claro botao-pequeno" data-abrir-etiqueta="/solicitacoes/provas-cruzadas/<%= item.prova_compativel_id %>/etiqueta?modal=1">Imprimir etiqueta</button><% } %>
                     </div>
+                <% } else if (item.status === 'CANCELADA' || requisicao.status === 'CANCELADA' || requisicao.status === 'ATENDIDA') { %>
+                    <div class="aviso-unidade-encerrada">
+                        <strong><%= item.status === 'CANCELADA' ? 'Unidade cancelada' : 'Etapa encerrada' %></strong>
+                        <small>Não é possível vincular uma nova bolsa a esta unidade.</small>
+                    </div>
                 <% } else { %>
                     <div class="selecionar-bolsa-requisicao">
                         <div class="campo">
