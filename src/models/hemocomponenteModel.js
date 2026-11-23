@@ -1,6 +1,6 @@
 const db = require('../config/database');
 const { ErroValidacao, ErroConflito } = require('../utils/erros');
-const { PADROES, LIMITE_TEXTO_LIVRE, textoLivreValido, normalizarEspacos } = require('../utils/padroes');
+const { PADROES, LIMITE_TEXTO_LIVRE, textoLivreValido, normalizarEspacos, ehDataValida } = require('../utils/padroes');
 const { sqlLimite } = require('../utils/paginacao');
 
 // Colunas de data já formatadas (evita problemas de fuso horário nas telas)
@@ -126,16 +126,16 @@ class HemocomponenteModel {
         const lote = (await db.query('SELECT status FROM lotes_recebimento WHERE id = $1', [dados.lote_id])).rows[0];
         if (!lote) throw new ErroValidacao('O lote informado não existe. Confira o lote selecionado.');
         if (lote.status !== 'ABERTO') throw new ErroConflito('Esse lote já está fechado e não recebe novas bolsas.');
-        const prazos = { CH: {dias:42}, PLAQUETAS: {dias:7}, PLASMA: {anos:1}, CRIO: {anos:1} };
-        const prazo = prazos[dados.tipo];
-        if (!prazo) throw new ErroValidacao('Tipo de hemocomponente inválido.');
-        const partes = String(dados.data_coleta || '').split('-').map(Number);
-        if (partes.length !== 3 || partes.some(Number.isNaN)) throw new ErroValidacao('Informe uma data de coleta válida.');
-        const data = new Date(Date.UTC(partes[0], partes[1]-1, partes[2]));
-        if (data.getUTCFullYear()!==partes[0] || data.getUTCMonth()!==partes[1]-1 || data.getUTCDate()!==partes[2]) throw new ErroValidacao('A data de coleta informada não é válida.');
-        if (prazo.dias) data.setUTCDate(data.getUTCDate()+prazo.dias);
-        if (prazo.anos) data.setUTCFullYear(data.getUTCFullYear()+prazo.anos);
-        const dataValidade = data.toISOString().slice(0,10);
+        if (!['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'].includes(dados.tipo)) {
+            throw new ErroValidacao('Tipo de hemocomponente inválido.');
+        }
+        const dataColeta = String(dados.data_coleta || '');
+        if (!ehDataValida(dataColeta)) throw new ErroValidacao('Informe uma data de coleta válida.');
+        const dataValidade = String(dados.data_validade || '');
+        if (!ehDataValida(dataValidade)) throw new ErroValidacao('Informe uma data de validade válida.');
+        if (dataValidade < dataColeta) {
+            throw new ErroValidacao('A data de validade não pode ser anterior à data de coleta.');
+        }
         const exames = ['anti_hbc','anti_hcv','anti_hiv_1_2','anti_htlv_i_ii','chagas','hbsag','nat_hbv','nat_hcv','nat_hiv','nat_malaria','sifilis','pesquisa_hbs','pai_negativo'];
         const codigoInterno = (await db.query(
             `SELECT 'CB-' || to_char(CURRENT_DATE,'YY') || '-' || lpad(nextval('hemocomponentes_codigo_interno_seq')::text,7,'0') AS codigo`
@@ -151,7 +151,7 @@ class HemocomponenteModel {
         `;
         try {
             const { rows } = await db.query(query, [
-                dados.lote_id,codigo,codigoInterno,dados.tipo,dados.abo,dados.fator_rh,dados.data_coleta,
+                dados.lote_id,codigo,codigoInterno,dados.tipo,dados.abo,dados.fator_rh,dataColeta,
                 dataValidade,volume,dados.inspecao_visual==='on',dados.integridade_confirmada==='on',
                 dados.tipagem_confirmada==='on',dados.status||'EM_CONFERENCIA',
                 (dados.observacoes||'').trim()||null,usuarioId,...exames.map(k=>dados[k]==='on')
