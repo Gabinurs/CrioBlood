@@ -301,13 +301,52 @@ class RequisicaoModel {
             JOIN amostras_receptor a ON a.id = r.amostra_id
             JOIN solicitacoes_transfusionais s ON s.requisicao_id = r.id
             JOIN hemocomponentes h
-              ON UPPER(h.codigo_original) = $3 OR UPPER(h.codigo_interno) = $3
+              ON (
+                  UPPER(BTRIM(h.codigo_original)) = $3
+                  OR UPPER(BTRIM(COALESCE(h.codigo_interno, ''))) = $3
+              )
             WHERE r.id = $1 AND s.id = $2
             LIMIT 1
         `, [requisicaoId, solicitacaoId, codigo]);
 
         const item = rows[0];
-        if (!item) throw new ErroNaoEncontrado('Código não localizado no estoque ou não vinculado a esta requisição.');
+        if (!item) {
+            const bolsaExistente = (await db.query(`
+                SELECT id, codigo_original, codigo_interno, tipo, abo, fator_rh, status
+                FROM hemocomponentes
+                WHERE UPPER(BTRIM(codigo_original)) = $1
+                   OR UPPER(BTRIM(COALESCE(codigo_interno, ''))) = $1
+                LIMIT 1
+            `, [codigo])).rows[0];
+
+            if (!bolsaExistente) {
+                throw new ErroNaoEncontrado(
+                    'Código não encontrado no estoque. Copie o código original ou o código CrioBlood diretamente da tela Bolsas (Estoque).'
+                );
+            }
+
+            const unidade = (await db.query(`
+                SELECT tipo, status
+                FROM solicitacoes_transfusionais
+                WHERE id = $1 AND requisicao_id = $2
+            `, [solicitacaoId, requisicaoId])).rows[0];
+
+            if (!unidade) {
+                throw new ErroNaoEncontrado('A unidade solicitada não pertence a esta requisição.');
+            }
+
+            if (bolsaExistente.tipo !== unidade.tipo) {
+                throw new ErroConflito(
+                    'Bolsa localizada: ' + bolsaExistente.codigo_original +
+                    ' (' + bolsaExistente.tipo + ', ' + bolsaExistente.abo + bolsaExistente.fator_rh +
+                    '). O componente não corresponde ao item solicitado (' + unidade.tipo + ').'
+                );
+            }
+
+            throw new ErroConflito(
+                'Bolsa encontrada no estoque, mas não pôde ser vinculada a esta unidade. Verifique o status da bolsa, da requisição e se ela já está reservada.'
+            );
+        }
         if (['CANCELADA', 'ATENDIDA'].includes(item.status_requisicao)) {
             throw new ErroConflito('Esta requisição está encerrada e não aceita novas bolsas.');
         }
