@@ -51,6 +51,37 @@ function urgenciaDoPrazo(prazo) {
 }
 
 class RequisicaoModel {
+    static async listarReceptoresLiberados() {
+        const { rows } = await db.query(`
+            SELECT p.id, p.nome, p.prontuario, p.nome_mae, p.data_nascimento,
+                   to_char(p.data_nascimento, 'DD/MM/YYYY') AS nascimento_br,
+                   a.abo, a.fator_rh,
+                   a.id AS amostra_id,
+                   a.codigo AS amostra_codigo,
+                   to_char(a.coletado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS coleta_br,
+                   to_char((a.coletado_em + INTERVAL '72 hours') AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS validade_br
+            FROM pacientes p
+            JOIN LATERAL (
+                SELECT ar.*
+                FROM amostras_receptor ar
+                WHERE ar.paciente_id = p.id
+                ORDER BY ar.coletado_em DESC, ar.id DESC
+                LIMIT 1
+            ) a ON TRUE
+            WHERE p.ativo = TRUE
+              AND a.coletado_em <= CURRENT_TIMESTAMP
+              AND a.coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP
+              AND a.status_imuno = 'CONCLUIDO'
+              AND a.pai = 'NEGATIVO'
+              AND a.controle_rh = 'NEGATIVO'
+              AND a.solicitacao_transfusao = TRUE
+              AND a.abo IS NOT NULL
+              AND a.fator_rh IS NOT NULL
+            ORDER BY p.nome ASC
+        `);
+        return rows;
+    }
+
     static async buscarContextoPaciente(pacienteId) {
         const { rows } = await db.query(`
             SELECT p.id, p.nome, p.nome_mae, p.prontuario, p.data_nascimento,
@@ -136,8 +167,9 @@ class RequisicaoModel {
             if (!paciente || !paciente.ativo) throw new ErroNaoEncontrado('Receptor não encontrado ou inativo.');
 
             const amostra = (await cliente.query(`
-                SELECT id, status_imuno, pai, controle_rh, solicitacao_transfusao,
-                       (coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS valida
+                SELECT id, abo, fator_rh, status_imuno, pai, controle_rh, solicitacao_transfusao,
+                       (coletado_em <= CURRENT_TIMESTAMP
+                        AND coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS valida
                 FROM amostras_receptor
                 WHERE paciente_id = $1
                 ORDER BY coletado_em DESC, id DESC
