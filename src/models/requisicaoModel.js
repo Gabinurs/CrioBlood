@@ -56,6 +56,7 @@ class RequisicaoModel {
             SELECT p.id, p.nome, p.nome_mae, p.prontuario, p.data_nascimento,
                    to_char(p.data_nascimento, 'DD/MM/YYYY') AS nascimento_br,
                    p.abo, p.fator_rh,
+                   a.abo AS amostra_abo, a.fator_rh AS amostra_rh,
                    a.id AS amostra_id,
                    a.codigo AS amostra_codigo,
                    a.coletado_em,
@@ -143,7 +144,7 @@ class RequisicaoModel {
                 LIMIT 1
                 FOR SHARE
             `, [pacienteId])).rows[0];
-            if (!amostra || !amostra.valida || amostra.status_imuno !== 'CONCLUIDO' ||
+            if (!amostra || !amostra.abo || !amostra.fator_rh || !amostra.valida || amostra.status_imuno !== 'CONCLUIDO' ||
                 amostra.pai !== 'NEGATIVO' || amostra.controle_rh !== 'NEGATIVO' ||
                 !amostra.solicitacao_transfusao) {
                 throw new ErroConflito('A amostra mais recente não está válida e liberada para transfusão. Atualize a coleta e os testes Imuno.');
@@ -192,7 +193,7 @@ class RequisicaoModel {
     static async buscarPorId(id) {
         const { rows } = await db.query(`
             SELECT r.*, p.nome AS paciente_nome, p.prontuario,
-                   p.nome_mae, p.abo AS paciente_abo, p.fator_rh AS paciente_rh,
+                   p.nome_mae, a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
                    to_char(p.data_nascimento, 'DD/MM/YYYY') AS nascimento_br,
                    to_char(r.data_hora_requisicao AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS requisicao_br,
                    to_char(a.coletado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS coleta_br,
@@ -290,9 +291,9 @@ class RequisicaoModel {
 
             const requisicao = (await cliente.query(`
                 SELECT r.id, r.paciente_id, r.amostra_id, r.status,
-                       p.abo AS paciente_abo, p.fator_rh AS paciente_rh
+                       a.abo AS amostra_abo, a.fator_rh AS amostra_rh
                 FROM requisicoes_transfusionais r
-                JOIN pacientes p ON p.id = r.paciente_id
+                JOIN amostras_receptor a ON a.id = r.amostra_id
                 WHERE r.id = $1
                 FOR UPDATE OF r
             `, [requisicaoId])).rows[0];
@@ -302,7 +303,7 @@ class RequisicaoModel {
             }
 
             const amostra = (await cliente.query(`
-                SELECT id, status_imuno, pai, controle_rh, solicitacao_transfusao,
+                SELECT id, abo, fator_rh, status_imuno, pai, controle_rh, solicitacao_transfusao,
                        (coletado_em <= $3::timestamptz
                         AND coletado_em + INTERVAL '72 hours' > $3::timestamptz) AS valida
                 FROM amostras_receptor
@@ -406,17 +407,21 @@ class RequisicaoModel {
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY') AS data_prova_br,
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI') AS hora_prova_br,
                    p.nome AS paciente_nome, p.nome_mae,
-                   p.abo AS paciente_abo, p.fator_rh AS paciente_rh,
+                   a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
                    to_char(p.data_nascimento, 'DD/MM/YYYY') AS nascimento_br,
                    r.id AS requisicao_id
             FROM provas_cruzadas pc
             JOIN pacientes p ON p.id = pc.paciente_id
             JOIN requisicoes_transfusionais r ON r.id = pc.requisicao_id
+            JOIN amostras_receptor a ON a.id = r.amostra_id
             JOIN solicitacoes_transfusionais s ON s.id = pc.solicitacao_id
+            JOIN hemocomponentes h ON h.id = pc.hemocomponente_id
             WHERE pc.id = $1
               AND pc.resultado = 'COMPATIVEL'
               AND r.status <> 'CANCELADA'
-              AND s.status <> 'CANCELADA'
+              AND s.status IN ('RESERVADA', 'ATENDIDA')
+              AND s.hemocomponente_id = pc.hemocomponente_id
+              AND h.status IN ('RESERVADA', 'TRANSFUNDIDA')
         `, [provaId]);
         return rows[0] || null;
     }
