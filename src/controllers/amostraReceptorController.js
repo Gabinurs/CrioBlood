@@ -35,7 +35,7 @@ class AmostraReceptorController {
             const paciente=await PacienteService.buscarPorId(req.params.id);
             const amostra=await AmostraService.buscarPorId(req.params.id,req.params.amostraId);
             if(!paciente||!amostra){avisar(req,'erro','Receptor ou amostra não encontrado.');return res.redirect('/pacientes');}
-            res.render('pacientes/imuno-form',{paciente,amostra,usuario:req.session.usuario});
+            res.render('pacientes/imuno-form',{paciente,amostra,somenteLeitura:amostra.status_imuno!=='PENDENTE',usuario:req.session.usuario});
         } catch(e){tratar(req,res,e,'/pacientes','Erro ao abrir Imuno');}
     }
     static async salvarImuno(req,res) {
