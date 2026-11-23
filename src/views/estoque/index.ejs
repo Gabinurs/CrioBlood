@@ -44,7 +44,7 @@
     <p class="descricao">Disponíveis, reservadas e em conferência, da validade mais próxima para a mais distante.</p>
 
     <div class="filtros">
-        <input type="search" data-filtro-texto placeholder="Buscar por código ou lote..." aria-label="Buscar bolsa">
+        <input type="search" data-filtro-texto placeholder="Buscar por código CrioBlood, original ou lote..." aria-label="Buscar por código CrioBlood, original ou lote">
         <select data-filtro-campo="status" aria-label="Filtrar por status">
             <option value="">Todos os status</option>
             <option value="DISPONIVEL">Disponíveis</option>
@@ -60,13 +60,14 @@
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>Código</th><th>Lote</th><th>Produto</th><th>ABO/Rh</th><th>Validade</th><th>Prazo</th><th>Status</th><th>Localização</th><th></th></tr>
+                <tr><th>Código CrioBlood</th><th>Código original</th><th>Lote</th><th>Produto</th><th>ABO/Rh</th><th>Validade</th><th>Prazo</th><th>Status</th><th>Localização</th><th>Ações</th></tr>
             </thead>
             <tbody>
                 <% if (bolsas.length === 0) { %>
-                    <tr><td colspan="9" class="vazio">Nenhuma bolsa em estoque.</td></tr>
+                    <tr><td colspan="10" class="vazio">Nenhuma bolsa em estoque.</td></tr>
                 <% } else { bolsas.forEach(function (b) { %>
-                    <tr data-busca="<%= (b.codigo_original + ' ' + b.codigo_lote).toLowerCase() %>" data-status="<%= b.status %>" data-tipo="<%= b.tipo %>">
+                    <tr data-busca="<%= ((b.codigo_interno || '') + ' ' + b.codigo_original + ' ' + b.codigo_lote).toLowerCase() %>" data-status="<%= b.status %>" data-tipo="<%= b.tipo %>">
+                        <td><strong><%= b.codigo_interno || '—' %></strong></td>
                         <td><strong><%= b.codigo_original %></strong></td>
                         <td><%= b.codigo_lote %></td>
                         <td><%= b.tipo %></td>
@@ -81,7 +82,7 @@
                         </td>
                     </tr>
                 <% }) %>
-                    <tr data-sem-resultado hidden><td colspan="9" class="vazio">Nenhuma bolsa encontrada com esse filtro.</td></tr>
+                    <tr data-sem-resultado hidden><td colspan="10" class="vazio">Nenhuma bolsa encontrada com esse filtro.</td></tr>
                 <% } %>
             </tbody>
         </table>
