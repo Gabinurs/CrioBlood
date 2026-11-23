@@ -67,7 +67,7 @@ class TransfusaoService {
             await cliente.query('BEGIN');
 
             const s = (await cliente.query(
-                `SELECT s.id, s.requisicao_id, s.status, s.hemocomponente_id, s.medico_solicitante,
+                `SELECT s.id, s.requisicao_id, s.paciente_id, s.status, s.hemocomponente_id, s.medico_solicitante,
                         p.nome AS paciente_nome, p.prontuario
                  FROM solicitacoes_transfusionais s
                  JOIN pacientes p ON p.id = s.paciente_id
@@ -75,6 +75,23 @@ class TransfusaoService {
             if (!s) throw new ErroNaoEncontrado('Solicitação não encontrada.');
             if (s.status !== 'RESERVADA') {
                 throw new ErroConflito('Só é possível registrar a transfusão de solicitações com bolsa reservada.');
+            }
+
+            if (s.requisicao_id) {
+                const amostra = (await cliente.query(`
+                    SELECT a.status_imuno, a.pai, a.controle_rh, a.solicitacao_transfusao,
+                           (a.coletado_em <= $2::timestamptz
+                            AND a.coletado_em + INTERVAL '72 hours' > $2::timestamptz) AS valida
+                    FROM requisicoes_transfusionais r
+                    JOIN amostras_receptor a ON a.id = r.amostra_id
+                    WHERE r.id = $1 AND r.paciente_id = $3
+                    FOR SHARE OF a
+                `, [s.requisicao_id, inicio.toISOString(), s.paciente_id])).rows[0];
+                if (!amostra || !amostra.valida || amostra.status_imuno !== 'CONCLUIDO' ||
+                    amostra.pai !== 'NEGATIVO' || amostra.controle_rh !== 'NEGATIVO' ||
+                    !amostra.solicitacao_transfusao) {
+                    throw new ErroConflito('A amostra vinculada não estava válida e liberada no horário de início da transfusão. A equipe deve reavaliar o caso conforme protocolo institucional.');
+                }
             }
 
             const b = (await cliente.query(
