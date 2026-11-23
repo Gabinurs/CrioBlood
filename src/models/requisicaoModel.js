@@ -122,25 +122,33 @@ class RequisicaoModel {
         }
 
         const itens = normalizarItens(dados.itens_json);
-        const paciente = (await db.query(
-            'SELECT id, ativo FROM pacientes WHERE id = $1', [pacienteId]
-        )).rows[0];
-        if (!paciente || !paciente.ativo) throw new ErroNaoEncontrado('Receptor não encontrado ou inativo.');
-
         const liberacao = await AmostraModel.podeSolicitar(pacienteId);
         if (!liberacao.permitido) throw new ErroConflito(liberacao.motivo);
-
-        const amostra = (await db.query(`
-            SELECT id FROM amostras_receptor
-            WHERE paciente_id = $1
-            ORDER BY coletado_em DESC, id DESC
-            LIMIT 1
-        `, [pacienteId])).rows[0];
-        if (!amostra) throw new ErroConflito('Não foi possível identificar a amostra válida do receptor.');
 
         const cliente = await db.connect();
         try {
             await cliente.query('BEGIN');
+
+            const paciente = (await cliente.query(
+                'SELECT id, ativo FROM pacientes WHERE id = $1 FOR SHARE', [pacienteId]
+            )).rows[0];
+            if (!paciente || !paciente.ativo) throw new ErroNaoEncontrado('Receptor não encontrado ou inativo.');
+
+            const amostra = (await cliente.query(`
+                SELECT id, status_imuno, pai, controle_rh, solicitacao_transfusao,
+                       (coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS valida
+                FROM amostras_receptor
+                WHERE paciente_id = $1
+                ORDER BY coletado_em DESC, id DESC
+                LIMIT 1
+                FOR SHARE
+            `, [pacienteId])).rows[0];
+            if (!amostra || !amostra.valida || amostra.status_imuno !== 'CONCLUIDO' ||
+                amostra.pai !== 'NEGATIVO' || amostra.controle_rh !== 'NEGATIVO' ||
+                !amostra.solicitacao_transfusao) {
+                throw new ErroConflito('A amostra mais recente não está válida e liberada para transfusão. Atualize a coleta e os testes Imuno.');
+            }
+
             const { rows: requisicao } = await cliente.query(`
                 INSERT INTO requisicoes_transfusionais
                     (paciente_id, amostra_id, data_hora_requisicao, solicitado_por,
