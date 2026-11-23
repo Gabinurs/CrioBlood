@@ -543,7 +543,15 @@ class RequisicaoModel {
             `, [statusRequisicao, requisicaoId]);
 
             await cliente.query('COMMIT');
-            return { id: provaId, resultado, reservada: resultado === 'COMPATIVEL', codigo: bolsa.codigo_original };
+            return {
+                id: provaId,
+                resultado,
+                reservada: resultado === 'COMPATIVEL',
+                codigo: bolsa.codigo_original,
+                tipoVerificacao,
+                excecaoRhd: excecaoRhd !== null,
+                autorizadorNome
+            };
         } catch (erro) {
             await cliente.query('ROLLBACK');
             throw erro;
