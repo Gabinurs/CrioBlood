@@ -87,6 +87,26 @@ class PacienteModel {
         return rows[0].total;
     }
 
+
+    // Pesquisa por nome parcial para o autocomplete da tela de Receptores.
+    static async buscarPorNome(termo) {
+        const nome = normalizarEspacos(termo || '');
+        if (nome.length < 2) return [];
+        const { rows } = await db.query(
+            `SELECT ${COLUNAS},
+                    (SELECT a.id FROM amostras_receptor a
+                     WHERE a.paciente_id = p.id
+                     ORDER BY a.coletado_em DESC, a.id DESC
+                     LIMIT 1) AS ultima_amostra_id
+             FROM pacientes p
+             WHERE p.nome ILIKE $1
+             ORDER BY p.ativo DESC, p.nome ASC
+             LIMIT 12`,
+            [`%${nome}%`]
+        );
+        return rows;
+    }
+
     static async listarAtivos() {
         const { rows } = await db.query(
             `SELECT p.id, p.nome, p.prontuario, p.abo, p.fator_rh
