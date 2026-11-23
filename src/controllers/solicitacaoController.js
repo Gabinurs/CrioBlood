@@ -21,7 +21,7 @@ class SolicitacaoController {
             const pacientes = await PacienteModel.listarAtivos();
             res.render('solicitacoes/form', {
                 pacientes,
-                valores: { paciente_id: req.query.paciente_id || '' },
+                valores: { paciente_id: req.query.paciente_id || '', urgencia: req.query.urgencia === 'EXTREMA_URGENCIA' ? 'EMERGENCIA' : (req.query.urgencia || '') },
                 usuario: req.session.usuario
             });
         } catch (erro) {
