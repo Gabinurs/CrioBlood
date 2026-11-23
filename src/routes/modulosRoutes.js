@@ -24,6 +24,11 @@ router.param('id', (req, res, next, valor) => {
     next();
 });
 
+router.param('amostraId', (req, res, next, valor) => {
+    if (!/^\\d+$/.test(valor)) return enviarErro(req, res, STATUS.REQUISICAO_INVALIDA, 'ID de amostra inválido.');
+    next();
+});
+
 // Pacientes
 const pacientes = permissao('pacientes.gerenciar');
 router.get('/pacientes', pacientes, Paciente.listar);
