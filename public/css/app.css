@@ -777,3 +777,10 @@ body.erro-publico main { padding: 0; }
     .etiqueta-painel { margin:0; padding:0; border:0; box-shadow:none; }
     .etiqueta-tubo { width:100%; margin:0; border:1px solid #111; border-radius:0; break-inside:avoid; }
 }
+
+.dossie-liberacao { margin:18px 0 24px; padding:14px 16px; border:1px solid var(--borda); border-radius:12px; background:var(--superficie-2); }
+.dossie-liberacao .status { margin-left:8px; }
+.dossie-liberacao p { margin-top:8px; color:var(--cinza); font-size:12.5px; }
+
+@page etiqueta { size:100mm 60mm; margin:3mm; }
+.etiqueta-painel { page:etiqueta; }
