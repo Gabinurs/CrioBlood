@@ -1,4 +1,15 @@
+<% if (locals.modal) { %>
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="dark">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Imuno-hematologia | CrioBlood</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="modal-frame-body">
+<% } else { %>
 <%- include('../partials/inicio',{titulo:'Imuno-hematologia',subtitulo:'Registro dos testes realizados na amostra',ativo:'pacientes'}) %>
+<% } %>
 <section class="painel formulario amostra-form">
     <div class="amostra-cabecalho">
         <div><span>RECEPTOR</span><h3><%= paciente.nome %></h3><p>Amostra <strong><%= amostra.codigo %></strong> · Coleta: <%= amostra.coleta_br %></p></div>
@@ -12,7 +23,7 @@
             <%= amostra.status_imuno === 'BLOQUEADO' ? 'PAI ou Controle positivo. O bloqueio transfusional permanece ativo.' : 'Os resultados desta amostra estão em modo de consulta e não podem ser sobrescritos.' %>
         </div>
     <% } %>
-    <form method="POST" action="/pacientes/<%= paciente.id %>/amostras/<%= amostra.id %>/imuno" data-form-imuno>
+    <form method="POST" action="/pacientes/<%= paciente.id %>/amostras/<%= amostra.id %>/imuno<%= locals.modal ? '?modal=1' : '' %>" data-form-imuno>
         <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
         <input type="hidden" name="pai_justificativa" data-justificativa-value="pai" value="<%= valores.pai_justificativa || amostra.pai_justificativa || '' %>">
         <input type="hidden" name="controle_rh_justificativa" data-justificativa-value="controle" value="<%= valores.controle_rh_justificativa || amostra.controle_rh_justificativa || '' %>">
@@ -46,4 +57,8 @@
     </form>
 </dialog>
 <script src="/js/imuno.js" defer></script>
+<% if (locals.modal) { %>
+</body></html>
+<% } else { %>
 <%- include('../partials/fim') %>
+<% } %>
