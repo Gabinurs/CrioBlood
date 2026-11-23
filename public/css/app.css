@@ -1117,3 +1117,11 @@ body.modal-frame-body { min-height:100vh; margin:0; padding:18px; background:var
     .recebimento-cabecalho { align-items:flex-start; flex-direction:column; }
     .acoes-recebimento { min-width:0; }
 }
+
+
+.recebimento-cabecalho .recebimento-etiqueta { margin-bottom:7px; }
+.bolsas-recebimento-cabecalho { align-items:center; }
+.bolsas-recebimento-cabecalho .acoes { display:flex; align-items:center; flex-wrap:wrap; gap:9px; }
+.lote-contexto-cadastro { padding:15px 17px; border:1px solid var(--borda-forte); border-radius:12px; background:var(--superficie-2); }
+.lote-contexto-cadastro strong { display:block; color:var(--texto); font-size:18px; letter-spacing:.02em; }
+.lote-contexto-cadastro small { display:block; margin-top:5px; color:var(--cinza); }
