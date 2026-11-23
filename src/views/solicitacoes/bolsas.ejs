@@ -96,16 +96,17 @@
         <p class="descricao">Todos os resultados são mantidos no histórico da requisição.</p>
         <div class="tabela-container">
             <table>
-                <thead><tr><th>Unidade</th><th>Bolsa</th><th>Tipagem</th><th>Data / hora</th><th>Responsável</th><th>Resultado</th><th>Etiqueta</th></tr></thead>
+                <thead><tr><th>Unidade</th><th>Verificação</th><th>Bolsa</th><th>Tipagem</th><th>Data / hora</th><th>Responsável</th><th>Resultado</th><th>Etiqueta</th></tr></thead>
                 <tbody>
-                    <% if (!provas.length) { %><tr><td colspan="7" class="vazio">Nenhuma prova cruzada registrada.</td></tr><% } else { provas.forEach(function(p) { %>
+                    <% if (!provas.length) { %><tr><td colspan="8" class="vazio">Nenhuma prova ou conferência registrada.</td></tr><% } else { provas.forEach(function(p) { %>
                         <tr>
                             <td>#<%= p.item_numero %> · <%= rot.tipo(p.tipo) %></td>
+                            <td><%= p.tipo_verificacao === 'PROVA_CRUZADA' ? 'Prova cruzada' : 'Conferência do componente' %><% if (p.excecao_rhd_protocolo) { %><br><small>Exceção RhD autorizada por <%= p.autorizador_nome %></small><% } %></td>
                             <td><strong><%= p.codigo_original %></strong><br><small><%= p.codigo_interno || '—' %></small></td>
                             <td><%= rot.tipagem(p.abo_bolsa,p.fator_rh_bolsa) %></td>
                             <td><%= p.data_hora_br %></td>
                             <td><%= p.responsavel_nome %></td>
-                            <td><% if (p.resultado === 'COMPATIVEL') { %><span class="status s-verde">Compatível</span><% } else { %><span class="status s-vermelho">Incompatível</span><% } %></td>
+                            <td><% if (p.resultado === 'COMPATIVEL') { %><span class="status s-verde"><%= p.tipo_verificacao === 'PROVA_CRUZADA' ? 'Compatível' : 'Conferência conforme' %></span><% } else { %><span class="status s-vermelho"><%= p.tipo_verificacao === 'PROVA_CRUZADA' ? 'Incompatível' : 'Não conforme' %></span><% } %></td>
                             <td><% if (p.resultado === 'COMPATIVEL' && p.status_unidade !== 'CANCELADA') { %><button type="button" class="botao botao-claro botao-pequeno" data-abrir-etiqueta="/solicitacoes/provas-cruzadas/<%= p.id %>/etiqueta?modal=1">Imprimir</button><% } else if (p.resultado === 'COMPATIVEL') { %><span class="texto-secundario">Vínculo cancelado</span><% } else { %><span class="texto-secundario">Não emitida</span><% } %></td>
                         </tr>
                     <% }) } %>
