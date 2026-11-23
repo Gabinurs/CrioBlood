@@ -1395,3 +1395,55 @@ button.requisicao-aba { font:inherit; cursor:pointer; }
     .controle-codigo-bolsa { grid-template-columns:1fr; }
     .controle-codigo-bolsa button { width:100%; }
 }
+
+
+/* Cadastro de bolsa: exames em colunas responsivas */
+.bolsa-exames-cabecalho {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:8px 14px;
+    margin:12px 0 10px;
+}
+.bolsa-exames-contador {
+    color:var(--turquesa);
+    font-size:11px;
+    font-weight:750;
+}
+.marcas.bolsa-exames-grade {
+    display:grid !important;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:9px;
+    align-items:stretch;
+}
+.marcas.bolsa-exames-grade .marca {
+    min-width:0;
+    min-height:44px;
+    margin:0;
+    padding:10px 12px;
+    font-size:12px;
+    line-height:1.35;
+}
+.marcas.bolsa-exames-grade .marca input {
+    width:17px;
+    height:17px;
+    flex:0 0 17px;
+    margin:0;
+}
+#data_validade[readonly] {
+    background:var(--superficie-2);
+    color:var(--texto);
+    cursor:default;
+    opacity:1;
+}
+@media(max-width:900px) {
+    .marcas.bolsa-exames-grade {
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+@media(max-width:560px) {
+    .marcas.bolsa-exames-grade {
+        grid-template-columns:1fr;
+    }
+}
