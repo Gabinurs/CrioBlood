@@ -30,8 +30,7 @@
     var itensMenu = [
         ['inicio',         '/dashboard',       'Início',                    null,                       'inicio'],
         ['pacientes',      '/pacientes',       'Pacientes',                 'pacientes.gerenciar',      'pacientes'],
-        ['lotes',          '/lotes',           'Lotes de recebimento',      'lotes.gerenciar',          'lotes'],
-        ['hemocomponentes','/hemocomponentes', 'Cadastro de bolsas',        'bolsas.gerenciar',         'hemocomponentes'],
+        ['recebimento',   '/lotes',           'Recebimento de bolsas',     'recebimento',              'lotes'],
         ['estoque',        '/estoque',         'Bolsas (Estoque)',          'estoque.visualizar',       'estoque'],
         ['equipamentos',   '/equipamentos',    'Equipamentos',              'estoque.gerenciar',        'equipamentos'],
         ['solicitacoes',   '/solicitacoes',    'Solicitação transfusional', 'solicitacoes.gerenciar',   'solicitacoes'],
@@ -41,6 +40,9 @@
     ];
     // Mostra só os módulos que o usuário pode abrir
     itensMenu = itensMenu.filter(function (item) {
+        if (item[0] === 'recebimento') {
+            return !locals.pode || locals.pode('lotes.gerenciar') || locals.pode('bolsas.gerenciar');
+        }
         return !item[3] || !locals.pode || locals.pode(item[3]);
     });
     if (usuarioLogado && usuarioLogado.administrador) {
