@@ -49,14 +49,13 @@ const validarHemocomponente = [
         .if((value, { req }) => req.method === 'POST' && req.path === '/novo')
         .isISO8601({ strict: true, strictSeparator: true }).withMessage('A data de coleta informada é inválida.'),
 
-    // No cadastro novo, a validade é calculada no servidor a partir do tipo e da coleta.
-    // O campo exibido no navegador é apenas uma prévia (readonly) e não precisa ser enviado.
-    // Na edição, a validade informada continua sendo validada normalmente.
     body('data_validade')
-        .if((value, { req }) => !(req.method === 'POST' && req.path === '/novo'))
+        .notEmpty().withMessage('Informe a data de validade da bolsa.').bail()
         .isISO8601({ strict: true, strictSeparator: true }).withMessage('A data de validade informada é inválida.')
         .custom((value, { req }) => {
-            if (req.body.data_coleta && new Date(value) < new Date(req.body.data_coleta)) {
+            // Campos type="date" chegam como AAAA-MM-DD; comparar as strings ISO evita
+            // deslocamentos de fuso horário e mantém a comparação por dia de calendário.
+            if (req.body.data_coleta && value < req.body.data_coleta) {
                 throw new Error('A data de validade não pode ser anterior à data de coleta.');
             }
             return true;
