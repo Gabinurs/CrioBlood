@@ -65,6 +65,9 @@
                         </td>
                         <td class="acoes">
                             <a class="botao botao-claro botao-pequeno" href="/hemocomponentes?lote_id=<%= lote.id %>">Ver bolsas</a>
+                            <% if (lote.quantidade_bolsas > 0) { %>
+                                <a class="botao botao-claro botao-pequeno" href="/lotes/<%= lote.id %>/relatorio">Relatório PDF</a>
+                            <% } %>
                             <% if (lote.status === 'ABERTO') { %>
                                 <a class="botao botao-claro botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">+ Adicionar bolsa</a>
                                 <form action="/lotes/<%= lote.id %>/fechar" method="POST"
