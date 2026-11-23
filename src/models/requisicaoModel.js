@@ -274,28 +274,89 @@ class RequisicaoModel {
         return rows;
     }
 
-    static async listarBolsasDisponiveis(item) {
-        const { rows } = await db.query(`
-            SELECT h.id, h.codigo_original, h.codigo_interno, h.tipo, h.abo, h.fator_rh,
-                   h.volume_ml,
-                   to_char(h.data_validade, 'DD/MM/YYYY') AS data_validade_br,
-                   (h.data_validade - CURRENT_DATE) AS dias_restantes,
-                   l.codigo AS codigo_lote
-            FROM hemocomponentes h
-            JOIN lotes_recebimento l ON l.id = h.lote_id
-            WHERE h.tipo = $1
-              AND h.status = 'DISPONIVEL'
-              AND h.data_validade >= CURRENT_DATE
-              AND h.tipagem_confirmada = TRUE
-              AND h.abo IS NOT NULL AND h.fator_rh IS NOT NULL
-            ORDER BY h.data_validade ASC, h.id ASC
-        `, [item.tipo]);
-        return rows;
-    }
+    static async verificarBolsa(requisicaoId, solicitacaoId, codigoInformado) {
+        const codigo = String(codigoInformado || '').trim().toUpperCase();
+        if (!/^[A-Z0-9][A-Z0-9-]{2,29}$/.test(codigo)) {
+            throw new ErroValidacao('Digite ou leia um código original ou local válido da bolsa.');
+        }
 
+        const { rows } = await db.query(`
+            SELECT r.id AS requisicao_id, r.status AS status_requisicao,
+                   r.prazo_solicitacao, r.peso_receptor_kg,
+                   p.id AS paciente_id, p.sexo,
+                   date_part('year', age(p.data_nascimento))::int AS paciente_idade,
+                   a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
+                   a.status_imuno, a.pai, a.controle_rh, a.solicitacao_transfusao,
+                   (a.coletado_em <= CURRENT_TIMESTAMP
+                    AND a.coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS amostra_valida,
+                   s.id AS solicitacao_id, s.tipo AS tipo_solicitado,
+                   s.status AS status_solicitacao, s.hemocomponente_id,
+                   h.id AS bolsa_id, h.codigo_original, h.codigo_interno,
+                   h.tipo AS tipo_bolsa, h.abo AS bolsa_abo, h.fator_rh AS bolsa_rh,
+                   h.volume_ml, h.status AS status_bolsa, h.tipagem_confirmada,
+                   (h.data_validade >= CURRENT_DATE) AS bolsa_valida,
+                   to_char(h.data_validade, 'DD/MM/YYYY') AS validade_br
+            FROM requisicoes_transfusionais r
+            JOIN pacientes p ON p.id = r.paciente_id
+            JOIN amostras_receptor a ON a.id = r.amostra_id
+            JOIN solicitacoes_transfusionais s ON s.requisicao_id = r.id
+            JOIN hemocomponentes h
+              ON UPPER(h.codigo_original) = $3 OR UPPER(h.codigo_interno) = $3
+            WHERE r.id = $1 AND s.id = $2
+            LIMIT 1
+        `, [requisicaoId, solicitacaoId, codigo]);
+
+        const item = rows[0];
+        if (!item) throw new ErroNaoEncontrado('Código não localizado no estoque ou não vinculado a esta requisição.');
+        if (['CANCELADA', 'ATENDIDA'].includes(item.status_requisicao)) {
+            throw new ErroConflito('Esta requisição está encerrada e não aceita novas bolsas.');
+        }
+        if (item.status_solicitacao !== 'PENDENTE' || item.hemocomponente_id) {
+            throw new ErroConflito('Esta unidade já possui bolsa vinculada ou não está pendente.');
+        }
+        if (!item.amostra_valida || item.status_imuno !== 'CONCLUIDO' ||
+            item.pai !== 'NEGATIVO' || item.controle_rh !== 'NEGATIVO' ||
+            !item.solicitacao_transfusao || !item.paciente_abo || !item.paciente_rh) {
+            throw new ErroConflito('A amostra vinculada perdeu a validade ou não está liberada. Não é possível continuar com esta requisição.');
+        }
+        if (item.status_bolsa !== 'DISPONIVEL') {
+            throw new ErroConflito('A bolsa informada não está disponível no estoque.');
+        }
+        if (!item.bolsa_valida) throw new ErroConflito('A bolsa informada está vencida.');
+        if (!item.tipagem_confirmada || !item.bolsa_abo || !item.bolsa_rh) {
+            throw new ErroConflito('A tipagem ABO/Rh da bolsa não foi confirmada no cadastro.');
+        }
+        if (item.tipo_bolsa !== item.tipo_solicitado) {
+            throw new ErroConflito('O hemocomponente desta bolsa não corresponde ao item solicitado.');
+        }
+
+        const compatibilidade = CompatibilidadeTransfusional.avaliarComponente({
+            paciente: {
+                abo: item.paciente_abo, fator_rh: item.paciente_rh,
+                sexo: item.sexo, idade: item.paciente_idade
+            },
+            bolsa: { abo: item.bolsa_abo, fator_rh: item.bolsa_rh },
+            tipo: item.tipo_solicitado,
+            pesoReceptorKg: item.peso_receptor_kg
+        });
+        if (!compatibilidade.permitido && !compatibilidade.excecaoPossivel) {
+            throw new ErroConflito(compatibilidade.mensagem);
+        }
+
+        return {
+            bolsa: {
+                id: item.bolsa_id, codigoOriginal: item.codigo_original,
+                codigoInterno: item.codigo_interno, tipo: item.tipo_bolsa,
+                abo: item.bolsa_abo, fatorRh: item.bolsa_rh,
+                volumeMl: item.volume_ml, validade: item.validade_br
+            },
+            compatibilidade
+        };
+    }
     static async listarProvas(requisicaoId) {
         const { rows } = await db.query(`
             SELECT pc.id, pc.solicitacao_id, pc.resultado, pc.responsavel_nome,
+                   pc.tipo_verificacao, pc.excecao_rhd_protocolo, pc.autorizador_nome,
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS data_hora_br,
                    pc.codigo_original, pc.codigo_interno, pc.abo_bolsa, pc.fator_rh_bolsa,
                    pc.volume_ml, s.item_numero, s.tipo, s.status AS status_unidade
@@ -337,8 +398,11 @@ class RequisicaoModel {
 
             const requisicao = (await cliente.query(`
                 SELECT r.id, r.paciente_id, r.amostra_id, r.status,
+                       r.prazo_solicitacao, r.peso_receptor_kg,
+                       p.sexo, date_part('year', age(p.data_nascimento))::int AS idade,
                        a.abo AS amostra_abo, a.fator_rh AS amostra_rh
                 FROM requisicoes_transfusionais r
+                JOIN pacientes p ON p.id = r.paciente_id
                 JOIN amostras_receptor a ON a.id = r.amostra_id
                 WHERE r.id = $1
                 FOR UPDATE OF r
@@ -358,7 +422,7 @@ class RequisicaoModel {
                 WHERE id = $1 AND paciente_id = $2
                 FOR SHARE
             `, [requisicao.amostra_id, requisicao.paciente_id, dataHora.toISOString()])).rows[0];
-            if (!amostra || !amostra.valida || amostra.status_imuno !== 'CONCLUIDO' ||
+            if (!amostra || !amostra.abo || !amostra.fator_rh || !amostra.valida || amostra.status_imuno !== 'CONCLUIDO' ||
                 amostra.pai !== 'NEGATIVO' || amostra.controle_rh !== 'NEGATIVO' ||
                 !amostra.solicitacao_transfusao) {
                 throw new ErroConflito('A amostra vinculada à requisição não está mais válida ou liberada para transfusão.');
@@ -391,22 +455,56 @@ class RequisicaoModel {
             }
             if (bolsa.tipo !== item.tipo) throw new ErroConflito('O componente da bolsa não corresponde ao item da requisição.');
 
-            // O resultado da prova cruzada é informado pelo profissional executor.
-            // O sistema não realiza nem interpreta o exame: registra a declaração e
-            // só reserva a bolsa quando o resultado informado for COMPATÍVEL.
+            const compatibilidade = CompatibilidadeTransfusional.avaliarComponente({
+                paciente: {
+                    abo: amostra.abo, fator_rh: amostra.fator_rh,
+                    sexo: requisicao.sexo, idade: requisicao.idade
+                },
+                bolsa,
+                tipo: item.tipo,
+                pesoReceptorKg: requisicao.peso_receptor_kg
+            });
 
+            let excecaoRhd = null;
+            let autorizadorNome = null;
+            let justificativaExcecao = null;
+            let semHistoricoAntiD = false;
+            if (compatibilidade.excecaoPossivel) {
+                if (dados.excecao_rhd_confirmada !== 'on' || dados.sem_historico_anti_d !== 'on') {
+                    throw new ErroConflito('A exceção RhD exige autorização formal e confirmação de ausência de histórico de sensibilização anti-D.');
+                }
+                autorizadorNome = normalizarEspacos(dados.autorizador_nome || '');
+                if (!PADROES.nomePessoa.regex.test(autorizadorNome)) {
+                    throw new ErroValidacao('Informe o nome do médico/hemoterapeuta que autorizou a exceção RhD.');
+                }
+                justificativaExcecao = String(dados.justificativa_excecao || '').trim();
+                if (justificativaExcecao.length < 20 || justificativaExcecao.length > 600 || !textoLivreValido(justificativaExcecao)) {
+                    throw new ErroValidacao('Registre a justificativa formal da exceção RhD, com 20 a 600 caracteres.');
+                }
+                excecaoRhd = 'HOMEM_MAIS_60_O_NEGATIVO_RECEBE_O_POSITIVO';
+                semHistoricoAntiD = true;
+            } else if (!compatibilidade.permitido) {
+                throw new ErroConflito(compatibilidade.mensagem);
+            } else if (dados.excecao_rhd_confirmada === 'on' || dados.sem_historico_anti_d === 'on') {
+                throw new ErroValidacao('Os campos de exceção RhD foram preenchidos, mas esta bolsa não exige essa exceção.');
+            }
+
+            const tipoVerificacao = compatibilidade.tipoVerificacao ||
+                (item.tipo === 'CH' ? 'PROVA_CRUZADA' : 'CONFERENCIA_COMPATIBILIDADE');
             const { rows: provaRows } = await cliente.query(`
                 INSERT INTO provas_cruzadas
                     (requisicao_id, solicitacao_id, paciente_id, hemocomponente_id,
                      realizado_por, responsavel_nome, data_hora_prova, resultado,
                      tipagem_bolsa_confirmada, abo_bolsa, fator_rh_bolsa, volume_ml,
-                     codigo_original, codigo_interno)
-                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,TRUE,$9,$10,$11,$12,$13)
+                     codigo_original, codigo_interno, tipo_verificacao,
+                     excecao_rhd_protocolo, autorizador_nome, justificativa_excecao, sem_historico_anti_d)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,TRUE,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
                 RETURNING id
             `, [
                 requisicaoId, solicitacaoId, requisicao.paciente_id, bolsaId,
                 usuarioId, responsavel, dataHora.toISOString(), resultado,
-                bolsa.abo, bolsa.fator_rh, bolsa.volume_ml, bolsa.codigo_original, bolsa.codigo_interno
+                bolsa.abo, bolsa.fator_rh, bolsa.volume_ml, bolsa.codigo_original, bolsa.codigo_interno,
+                tipoVerificacao, excecaoRhd, autorizadorNome, justificativaExcecao, semHistoricoAntiD
             ]);
             const provaId = provaRows[0].id;
 
@@ -457,6 +555,7 @@ class RequisicaoModel {
     static async buscarEtiqueta(provaId) {
         const { rows } = await db.query(`
             SELECT pc.id, pc.resultado, pc.responsavel_nome, pc.codigo_original,
+                   pc.tipo_verificacao, pc.excecao_rhd_protocolo, pc.autorizador_nome,
                    pc.codigo_interno, pc.abo_bolsa, pc.fator_rh_bolsa, pc.volume_ml,
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY') AS data_prova_br,
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI') AS hora_prova_br,
