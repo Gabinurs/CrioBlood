@@ -564,6 +564,7 @@ class RequisicaoModel {
         const { rows } = await db.query(`
             SELECT pc.id, pc.resultado, pc.responsavel_nome, pc.codigo_original,
                    pc.tipo_verificacao, pc.excecao_rhd_protocolo, pc.autorizador_nome,
+                   pc.justificativa_excecao, pc.sem_historico_anti_d,
                    pc.codigo_interno, pc.abo_bolsa, pc.fator_rh_bolsa, pc.volume_ml,
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY') AS data_prova_br,
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI') AS hora_prova_br,
