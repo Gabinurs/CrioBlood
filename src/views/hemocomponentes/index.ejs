@@ -1,16 +1,30 @@
-<%- include('../partials/inicio', { titulo: 'Cadastro de bolsas', subtitulo: 'Hemocomponentes cadastrados no sistema', ativo: 'hemocomponentes' }) %>
+<%- include('../partials/inicio', { titulo: 'Bolsas do recebimento', subtitulo: lote ? 'Lote ' + lote.codigo : 'Consulta de bolsas registradas', ativo: 'recebimento' }) %>
 
-<section class="cabecalho-pagina">
+<section class="cabecalho-pagina bolsas-recebimento-cabecalho">
     <div>
-        <h3>Hemocomponentes</h3>
-        <p>Cadastre as bolsas recebidas em cada lote e acompanhe a conferência. A bolsa só fica disponível depois das três confirmações.</p>
+        <% if (lote) { %>
+            <span class="recebimento-etiqueta">LOTE DE RECEBIMENTO</span>
+            <h3><%= lote.codigo %></h3>
+            <p><%= lote.origem || 'Origem não informada' %> · <%= lote.data_br %> · <%= lote.status === 'ABERTO' ? 'Recebimento em andamento' : 'Recebimento finalizado' %></p>
+        <% } else { %>
+            <h3>Consulta de bolsas</h3>
+            <p>Visualize bolsas cadastradas. Para incluir novas bolsas, abra um lote no módulo Recebimento de bolsas.</p>
+        <% } %>
     </div>
-    <a class="botao" href="/hemocomponentes/novo">+ Novo registro</a>
+    <div class="acoes">
+        <a class="botao botao-claro" href="/lotes">Voltar ao recebimento</a>
+        <% if (lote && lote.status === 'ABERTO' && locals.pode && locals.pode('bolsas.gerenciar')) { %>
+            <a class="botao" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">＋ Adicionar outra bolsa</a>
+        <% } %>
+        <% if (lote && lote.status === 'FECHADO') { %>
+            <a class="botao botao-claro" href="/lotes/<%= lote.id %>/relatorio">Comprovante PDF</a>
+        <% } %>
+    </div>
 </section>
 
 <section class="painel" data-filtravel>
     <div class="filtros">
-        <input type="search" data-filtro-texto placeholder="Buscar por código ou lote..." aria-label="Buscar bolsa">
+        <input type="search" data-filtro-texto placeholder="Buscar por código original, código local ou lote..." aria-label="Buscar bolsa">
         <select data-filtro-campo="status" aria-label="Filtrar por status">
             <option value="">Todos os status</option>
             <% ['EM_CONFERENCIA', 'DISPONIVEL', 'RESERVADA', 'TRANSFUNDIDA', 'DESCARTADA', 'VENCIDA'].forEach(function (s) { %>
@@ -22,33 +36,34 @@
     <div class="tabela-container">
         <table>
             <thead>
-                <tr><th>ID</th><th>Código original</th><th>Código CrioBlood</th><th>Volume</th><th>Lote</th><th>Produto</th><th>ABO/Rh</th><th>Validade</th><th>Status</th><th>Ações</th></tr>
+                <tr><th>Código CrioBlood</th><th>Código original</th><th>Lote</th><th>Produto</th><th>ABO/Rh</th><th>Volume</th><th>Validade</th><th>Status</th><th>Ações</th></tr>
             </thead>
             <tbody>
                 <% if (!hemocomponentes || hemocomponentes.length === 0) { %>
-                    <tr><td colspan="10" class="vazio">Nenhum registro encontrado.</td></tr>
+                    <tr><td colspan="9" class="vazio">Nenhuma bolsa encontrada neste recebimento.</td></tr>
                 <% } else { hemocomponentes.forEach(function (item) { %>
-                    <tr data-busca="<%= ((item.codigo_original || '') + ' ' + (item.codigo_lote || '')).toLowerCase() %>" data-status="<%= item.status %>">
-                        <td><%= item.id %></td>
-                        <td><strong><%= item.codigo_original %></strong></td><td><strong><%= item.codigo_interno || "—" %></strong></td><td><%= item.volume_ml ? item.volume_ml + " mL" : "—" %></td>
+                    <tr data-busca="<%= ((item.codigo_interno || '') + ' ' + item.codigo_original + ' ' + (item.codigo_lote || '')).toLowerCase() %>" data-status="<%= item.status %>">
+                        <td><strong><%= item.codigo_interno || '—' %></strong></td>
+                        <td><strong><%= item.codigo_original %></strong></td>
                         <td><%= item.codigo_lote || item.lote_id %></td>
-                        <td><%= item.tipo %></td>
+                        <td><%= rot.tipo(item.tipo) %></td>
                         <td><%= rot.tipagem(item.abo, item.fator_rh) %></td>
+                        <td><%= item.volume_ml ? item.volume_ml + ' mL' : '—' %></td>
                         <td><%= item.data_validade_br %></td>
                         <td><%- rot.statusBolsa(item.status) %></td>
                         <td class="acoes">
                             <a class="botao botao-claro botao-pequeno" href="/hemocomponentes/editar/<%= item.id %>">Editar</a>
-                            <% if (usuario && usuario.administrador && item.status !== 'DESCARTADA' && item.status !== 'TRANSFUNDIDA' && item.status !== 'RESERVADA') { %>
+                            <% if (usuario && usuario.administrador && !['DESCARTADA','TRANSFUNDIDA','RESERVADA'].includes(item.status)) { %>
                                 <form action="/hemocomponentes/descartar/<%= item.id %>" method="POST"
                                       data-confirmar="ATENÇÃO: o descarte não pode ser desfeito. Confirmar?">
-<input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                                    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
                                     <button class="botao botao-perigo botao-pequeno" type="submit">Descartar</button>
                                 </form>
                             <% } %>
                         </td>
                     </tr>
                 <% }) %>
-                    <tr data-sem-resultado hidden><td colspan="10" class="vazio">Nenhum registro encontrado com esse filtro.</td></tr>
+                    <tr data-sem-resultado hidden><td colspan="9" class="vazio">Nenhuma bolsa encontrada com esse filtro.</td></tr>
                 <% } %>
             </tbody>
         </table>
