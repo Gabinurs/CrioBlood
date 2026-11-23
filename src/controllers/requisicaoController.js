@@ -128,7 +128,7 @@ class RequisicaoController {
             const prova = await RequisicaoModel.buscarEtiqueta(Number(req.params.provaId));
             if (!prova) return enviarErro(req, res, STATUS.NAO_ENCONTRADO, 'Etiqueta disponível somente para uma prova cruzada registrada como compatível.');
             return res.render('solicitacoes/etiqueta-prova', {
-                prova, usuario: req.session.usuario
+                prova, modal: req.query.modal === '1', usuario: req.session.usuario
             });
         } catch (erro) {
             tratar(req, res, erro, '/solicitacoes', 'Erro ao abrir a etiqueta da prova cruzada');
