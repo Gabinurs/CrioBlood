@@ -304,7 +304,9 @@ class RequisicaoModel {
 
             const amostra = (await cliente.query(`
                 SELECT id, abo, fator_rh, status_imuno, pai, controle_rh, solicitacao_transfusao,
-                       (coletado_em <= $3::timestamptz
+                       (coletado_em <= CURRENT_TIMESTAMP
+                        AND coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP
+                        AND coletado_em <= $3::timestamptz
                         AND coletado_em + INTERVAL '72 hours' > $3::timestamptz) AS valida
                 FROM amostras_receptor
                 WHERE id = $1 AND paciente_id = $2
@@ -377,13 +379,19 @@ class RequisicaoModel {
 
             const contagem = (await cliente.query(`
                 SELECT COUNT(*)::int AS total,
-                       COUNT(*) FILTER (WHERE status = 'RESERVADA')::int AS reservadas
+                       COUNT(*) FILTER (WHERE status = 'RESERVADA')::int AS reservadas,
+                       COUNT(*) FILTER (WHERE status = 'ATENDIDA')::int AS atendidas,
+                       COUNT(*) FILTER (WHERE status = 'CANCELADA')::int AS canceladas
                 FROM solicitacoes_transfusionais
                 WHERE requisicao_id = $1
             `, [requisicaoId])).rows[0];
-            const statusRequisicao = contagem.total > 0 && contagem.total === contagem.reservadas
-                ? 'RESERVADA'
-                : (contagem.reservadas > 0 ? 'PARCIAL' : 'PENDENTE');
+            const statusRequisicao = contagem.total > 0 && contagem.atendidas === contagem.total
+                ? 'ATENDIDA'
+                : (contagem.total > 0 && contagem.canceladas === contagem.total
+                    ? 'CANCELADA'
+                    : (contagem.reservadas === contagem.total
+                        ? 'RESERVADA'
+                        : (contagem.reservadas > 0 || contagem.atendidas > 0 || contagem.canceladas > 0 ? 'PARCIAL' : 'PENDENTE')));
             await cliente.query(`
                 UPDATE requisicoes_transfusionais
                 SET status = $1, atualizado_em = CURRENT_TIMESTAMP
