@@ -40,8 +40,8 @@
                         <td><%= s.bolsa_codigo || '—' %></td>
                         <td><%= s.criado_em_br %></td>
                         <td class="acoes">
-                            <% if (s.requisicao_id && ['PENDENTE','RESERVADA'].includes(s.status)) { %>
-                                <a class="botao botao-pequeno" href="/solicitacoes/<%= s.requisicao_id %>/bolsas">Bolsas / Transfusão</a>
+                            <% if (s.requisicao_id) { %>
+                                <a class="botao botao-pequeno" href="/solicitacoes/<%= s.requisicao_id %>/bolsas">Ver requisição</a>
                             <% } else if (s.status === 'PENDENTE') { %>
                                 <a class="botao botao-pequeno" href="/compatibilidade?solicitacao=<%= s.id %>">Buscar bolsa</a>
                             <% } %>
