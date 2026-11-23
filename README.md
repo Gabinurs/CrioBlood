@@ -25,13 +25,29 @@ Acesse `http://localhost:3001` e entre com o login `Supervisor` e a senha defini
 ### Sem Docker
 
 1. Crie um banco PostgreSQL chamado `crioblood`.
-2. Execute, **nesta ordem**, os scripts de `database/` (`01_...sql` até `09_...sql`).
+2. Execute, **nesta ordem**, os scripts de `database/` em ordem numérica. Para bancos já existentes, execute também a migração `11_fluxo_receptor_amostras.sql`.
 3. `cp .env.example .env` e preencha os valores.
 4. `npm install`
 5. `node src/scripts/criar-supervisor.js` (cria o administrador)
 6. `npm run dev` (ou `npm start`) e acesse `http://localhost:<PORT>`.
 
 Verificação de saúde: `GET /saude`.
+
+### Atualização do fluxo de amostras em banco já existente
+
+A migração `database/11_fluxo_receptor_amostras.sql` separa o cadastro da coleta dos resultados Imuno e deve ser aplicada uma vez em bancos que já possuam dados. Com Docker, no terminal Bash do Codespaces:
+
+```bash
+docker compose exec -T db psql -U postgres -d crioblood < database/11_fluxo_receptor_amostras.sql
+```
+
+No PowerShell do Windows:
+
+```powershell
+Get-Content .\\database\\11_fluxo_receptor_amostras.sql | docker compose exec -T db psql -U postgres -d crioblood
+```
+
+A migração é aditiva: preserva os cadastros existentes e marca amostras antigas que já possuem resultados Imuno como concluídas ou bloqueadas.
 
 ## Testes
 
