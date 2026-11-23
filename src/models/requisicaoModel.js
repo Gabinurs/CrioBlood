@@ -95,7 +95,8 @@ class RequisicaoModel {
                    a.coletado_em,
                    to_char(a.coletado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS coleta_br,
                    to_char((a.coletado_em + INTERVAL '72 hours') AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS validade_br,
-                   (a.coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS amostra_valida,
+                   (a.coletado_em <= CURRENT_TIMESTAMP
+                    AND a.coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS amostra_valida,
                    a.status_imuno, a.pai, a.controle_rh, a.solicitacao_transfusao,
                    p.ativo
             FROM pacientes p
