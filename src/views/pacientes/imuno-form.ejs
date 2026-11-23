@@ -8,6 +8,8 @@
     <% if (!amostra.valida) { %><div class="alerta alerta-erro">Esta amostra está fora da validade. Os resultados podem ser registrados para histórico, mas ela não poderá liberar uma solicitação transfusional.</div><% } %>
     <form method="POST" action="/pacientes/<%= paciente.id %>/amostras/<%= amostra.id %>/imuno" data-form-imuno>
         <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <input type="hidden" name="pai_justificativa" value="<%= amostra.pai_justificativa || '' %>">
+        <input type="hidden" name="controle_rh_justificativa" value="<%= amostra.controle_rh_justificativa || '' %>">
         <h3 class="titulo-secao-amostra">Tipagem sanguínea</h3>
         <div class="grade-form">
             <div class="campo"><label>ABO *</label><select name="abo" required><option value="">Selecione</option><% ['A','B','AB','O'].forEach(x=>{ %><option value="<%= x %>" <%= amostra.abo===x?'selected':'' %>><%= x %></option><% }) %></select></div>
@@ -31,45 +33,5 @@
         <div class="acoes-modal-justificativa"><button type="button" class="botao botao-claro" data-cancelar-justificativa>Cancelar</button><button type="button" class="botao" data-confirmar-justificativa>Confirmar</button></div>
     </form>
 </dialog>
-<script>
-(function(){
- const form=document.querySelector('[data-form-imuno]');
- const modal=document.querySelector('[data-modal-justificativa]');
- if(!form||!modal)return;
- let campoAtual=null,hiddenAtual=null;
- function pedirJustificativa(campo){
-  const tipo=campo.dataset.imunoResultado;
-  const nome=tipo==='pai'?'PAI':'Controle';
-  campoAtual=campo;
-  hiddenAtual=form.querySelector('[name="'+tipo+'_justificativa"]');
-  document.querySelector('[data-titulo-justificativa]').textContent='Justificativa — '+nome+' positivo';
-  document.querySelector('[data-texto-justificativa]').textContent='O resultado positivo exige justificativa e bloqueará a solicitação transfusional.';
-  document.querySelector('[data-campo-justificativa]').value=hiddenAtual.value||'';
-  modal.showModal();
- }
- form.querySelectorAll('[data-imuno-resultado]').forEach(campo=>{
-  campo.addEventListener('change',()=>{
-   if(campo.value==='POSITIVO') pedirJustificativa(campo);
-   else form.querySelector('[name="'+campo.dataset.imunoResultado+'_justificativa"]').value='';
-  });
- });
- document.querySelector('[data-confirmar-justificativa]').addEventListener('click',()=>{
-  const valor=document.querySelector('[data-campo-justificativa]').value.trim();
-  if(valor.length<5){document.querySelector('[data-campo-justificativa]').focus();return;}
-  hiddenAtual.value=valor;modal.close();
- });
- document.querySelector('[data-cancelar-justificativa]').addEventListener('click',()=>{
-  if(campoAtual)campoAtual.value='';
-  if(hiddenAtual)hiddenAtual.value='';
-  modal.close();
- });
- form.addEventListener('submit',e=>{
-  for(const tipo of ['pai','controle_rh']){
-   const campo=form.querySelector('[name="'+tipo+'"]');
-   const justificativa=form.querySelector('[name="'+tipo+'_justificativa"]');
-   if(campo.value==='POSITIVO'&&justificativa.value.trim().length<5){e.preventDefault();campo.focus();pedirJustificativa(campo);return;}
-  }
- });
-})();
-</script>
+
 <%- include('../partials/fim') %>
