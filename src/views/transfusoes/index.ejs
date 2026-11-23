@@ -11,7 +11,7 @@
             </thead>
             <tbody>
                 <% if (prontas.length === 0) { %>
-                    <tr><td colspan="10" class="vazio">Nenhuma bolsa reservada no momento.<br>Reserve uma bolsa em <a href="/compatibilidade">Compatibilidade</a>.</td></tr>
+                    <tr><td colspan="10" class="vazio">Nenhuma bolsa reservada no momento.<br>Registre a prova cruzada na etapa <a href="/solicitacoes">Bolsas / Transfusão</a> da requisição.</td></tr>
                 <% } else { prontas.forEach(function (s) { %>
                     <tr>
                         <td><strong><%= s.paciente_nome %></strong><br><small><%= s.prontuario %></small></td>
