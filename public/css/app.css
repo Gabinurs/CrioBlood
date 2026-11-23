@@ -627,3 +627,47 @@ td.vazio, .vazio {
 .opcao-paciente-solicitacao strong{font-size:13px}
 .opcao-paciente-solicitacao small,.sem-paciente-solicitacao{color:var(--cinza);font-size:11px}
 .sem-paciente-solicitacao{padding:12px}
+
+
+/* Fluxo clínico em etapas: amostra, imuno e etiqueta */
+.amostra-cabecalho{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:22px}
+.amostra-cabecalho>div:first-child>span,.rotulo-dossie{display:block;color:#008c8c;font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:6px}
+.amostra-cabecalho h3,.dossie-receptor .cabecalho-pagina h3{margin:0 0 6px;color:#17334d;font-size:20px}
+.amostra-cabecalho p,.dossie-receptor .cabecalho-pagina p{color:#738196;font-size:12px}
+.amostra-validade,.tipagem-dossie{display:flex;flex-direction:column;gap:4px;padding:12px 16px;border:1px solid #d8e8e7;border-radius:10px;background:#f1f8f7;text-align:center}
+.amostra-validade strong,.tipagem-dossie strong{color:#087d78;font-size:19px}
+.amostra-validade small,.tipagem-dossie small{color:#647b80;font-size:10px}
+.titulo-secao-amostra{margin:8px 0 17px;color:#17334d;font-size:16px}
+.marca-transfusao{display:flex;align-items:flex-start;gap:12px;padding:15px;border:1px solid #cfe5e3;border-radius:10px;background:#f4faf9}
+.marca-transfusao input{width:18px;height:18px;margin-top:2px}
+.marca-transfusao span{display:flex;flex-direction:column;gap:4px}
+.marca-transfusao strong{color:#176b68;font-size:13px}
+.marca-transfusao small{color:#6e8290;font-size:11px}
+.dossie-receptor .cabecalho-pagina{align-items:center}
+.tipagem-dossie{min-width:130px}
+.alerta-amostra-vigente{margin:18px 0}
+.acoes-dossie{margin:22px 0 28px}
+.tabela-amostras{white-space:normal}
+.tabela-amostras th,.tabela-amostras td{padding:11px 9px;font-size:11px;vertical-align:middle}
+.tabela-amostras .acoes{min-width:150px}
+.modal-justificativa-imuno{width:min(520px,calc(100% - 30px));padding:24px;border:1px solid #dce5ee;border-radius:14px;box-shadow:0 20px 60px rgba(16,36,62,.25)}
+.modal-justificativa-imuno::backdrop{background:rgba(8,22,42,.62);backdrop-filter:blur(3px)}
+.modal-justificativa-imuno h3{margin:0 0 8px;color:#17334d;font-size:18px}
+.modal-justificativa-imuno p{margin-bottom:14px;color:#6e7f91;font-size:12px}
+.modal-justificativa-imuno textarea{width:100%;padding:12px;border:1px solid #d8e1ec;border-radius:8px;font:inherit;resize:vertical}
+.acoes-modal-justificativa{display:flex;justify-content:flex-end;gap:9px;margin-top:16px}
+.etiqueta-amostra{width:100%;min-height:100vh;display:grid;place-items:center;background:#f4f6f9;padding:20px}
+.etiqueta-tubo{width:100%;max-width:520px;padding:18px;border:2px solid #203650;border-radius:8px;background:#fff;color:#172b43;font-family:Arial,sans-serif}
+.etiqueta-tubo h1{margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid #e51e43;font-size:16px;letter-spacing:.04em}
+.etiqueta-tubo p{margin:7px 0;font-size:12px;line-height:1.35}
+.etiqueta-tubo strong{font-size:12px}
+.etiqueta-acoes{display:flex;justify-content:center;gap:10px;margin-top:14px}
+@media print{
+ body:has(.etiqueta-amostra){background:#fff!important}
+ body:has(.etiqueta-amostra) .etiqueta-amostra{min-height:0;padding:0;background:#fff}
+ body:has(.etiqueta-amostra) .etiqueta-tubo{max-width:none;width:90mm;min-height:45mm;padding:4mm;border:1px solid #000;border-radius:0}
+ body:has(.etiqueta-amostra) .etiqueta-tubo h1{font-size:10pt}
+ body:has(.etiqueta-amostra) .etiqueta-tubo p,body:has(.etiqueta-amostra) .etiqueta-tubo strong{font-size:8pt}
+ body:has(.etiqueta-amostra) .etiqueta-acoes{display:none}
+}
+@media(max-width:700px){.amostra-cabecalho{flex-direction:column}.tabela-amostras{min-width:900px}.acoes-modal-justificativa{flex-direction:column}.acoes-modal-justificativa .botao{width:100%}}
