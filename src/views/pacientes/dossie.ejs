@@ -47,4 +47,14 @@
         </table>
     </div>
 </section>
+
+<dialog class="modal-amostra-dialog" data-amostra-modal aria-labelledby="titulo-modal-amostra">
+    <header class="modal-amostra-topo">
+        <div><span class="modal-amostra-marca">CRIOBLOOD</span><h3 id="titulo-modal-amostra" data-amostra-modal-titulo>Detalhes da amostra</h3></div>
+        <button type="button" class="modal-amostra-fechar" data-amostra-modal-fechar aria-label="Fechar janela">×</button>
+    </header>
+    <iframe class="modal-amostra-frame" data-amostra-modal-frame title="Conteúdo da amostra" loading="eager"></iframe>
+</dialog>
+<script src="/js/amostras-modal.js" defer></script>
+
 <%- include('../partials/fim') %>
