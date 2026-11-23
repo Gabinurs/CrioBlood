@@ -28,12 +28,24 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
+// O Codespaces e a produção recebem tráfego através de proxy reverso.
+// Confie somente no número configurado de saltos (nunca use trust proxy = true).
+const trustProxyConfig = String(process.env.TRUST_PROXY_HOPS || '').trim();
+let trustProxyHops = false;
+if (trustProxyConfig) {
+    const parsedHops = Number(trustProxyConfig);
+    if (!Number.isInteger(parsedHops) || parsedHops < 0 || parsedHops > 10) {
+        throw new Error('TRUST_PROXY_HOPS deve ser um número inteiro entre 0 e 10.');
+    }
+    trustProxyHops = parsedHops;
+} else if (isProduction || process.env.CODESPACES === 'true') {
+    trustProxyHops = 1;
+}
+
 // Configurações gerais
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-if (isProduction) {
-    app.set('trust proxy', 1);
-}
+app.set('trust proxy', trustProxyHops);
 
 // Proteções e leitura das requisições
 app.use(helmet());
