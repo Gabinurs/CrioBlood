@@ -202,9 +202,9 @@ class RequisicaoController {
                     : 'Conferência registrada como incompatível.') +
                     ' A bolsa não foi reservada nem vinculada ao receptor.');
             }
-            return res.redirect(STATUS.VER_OUTRO, '/solicitacoes/' + req.params.id + '/bolsas');
+            return res.redirect(STATUS.VER_OUTRO, '/solicitacoes/' + req.params.id + '/bolsas?compatibilidade=1');
         } catch (erro) {
-            tratar(req, res, erro, '/solicitacoes/' + req.params.id + '/bolsas', 'Erro ao registrar a prova ou conferência da bolsa');
+            tratar(req, res, erro, '/solicitacoes/' + req.params.id + '/bolsas?compatibilidade=1', 'Erro ao registrar a prova ou conferência da bolsa');
         }
     }
 
