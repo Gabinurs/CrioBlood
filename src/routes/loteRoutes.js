@@ -25,6 +25,9 @@ router.get('/lotes', loteController.listar);
 // Abre um novo lote de recebimento.
 router.post('/lotes', loteController.abrir);
 
+// Consulta e imprime/salva em PDF o comprovante das bolsas recebidas no lote.
+router.get('/lotes/:id/relatorio', loteController.relatorio);
+
 // Fecha um lote de recebimento.
 router.post('/lotes/:id/fechar', loteController.fechar);
 
