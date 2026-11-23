@@ -99,12 +99,12 @@ class SolicitacaoModel {
                 throw new ErroConflito('Só é possível cancelar solicitações pendentes ou com bolsa reservada.');
             }
 
-            if (s.status === 'RESERVADA') {
+            if (s.hemocomponente_id) {
                 await cliente.query(
                     `UPDATE hemocomponentes
                      SET status = CASE WHEN data_validade < CURRENT_DATE THEN 'VENCIDA' ELSE 'DISPONIVEL' END,
                          atualizado_em = CURRENT_TIMESTAMP
-                     WHERE id = $1 AND status = 'RESERVADA'`,
+                     WHERE id = $1 AND status IN ('RESERVADA', 'EM_CONFERENCIA')`,
                     [s.hemocomponente_id]);
             }
 
