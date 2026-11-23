@@ -65,7 +65,7 @@ class LoteController {
                 req.session.usuario.id, 'FECHAMENTO_LOTE', 'lotes_recebimento', id, codigo);
 
             avisar(req, 'ok', `Lote ${codigo} fechado com sucesso.`);
-            return res.redirect(STATUS.VER_OUTRO, '/lotes');
+            return res.redirect(STATUS.VER_OUTRO, `/lotes/${id}/relatorio`);
         } catch (erro) {
             return tratar(req, res, erro, '/lotes', 'Erro ao fechar lote');
         }
