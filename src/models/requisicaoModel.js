@@ -251,7 +251,7 @@ class RequisicaoModel {
             SELECT pc.id, pc.solicitacao_id, pc.resultado, pc.responsavel_nome,
                    to_char(pc.data_hora_prova AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS data_hora_br,
                    pc.codigo_original, pc.codigo_interno, pc.abo_bolsa, pc.fator_rh_bolsa,
-                   pc.volume_ml, s.item_numero, s.tipo
+                   pc.volume_ml, s.item_numero, s.tipo, s.status AS status_unidade
             FROM provas_cruzadas pc
             JOIN solicitacoes_transfusionais s ON s.id = pc.solicitacao_id
             WHERE pc.requisicao_id = $1
