@@ -901,3 +901,127 @@ html[data-tema="dark"] .campo input[type="datetime-local"] {
 html:not([data-tema="dark"]) .campo input[type="datetime-local"] {
     color-scheme: light;
 }
+
+
+/* ---------- Seletor próprio de data e hora CrioBlood ---------- */
+.campo-data-hora { position:relative; min-width:0; }
+.controle-data-hora { display:flex; align-items:stretch; gap:8px; }
+.campo .entrada-data-hora {
+    flex:1;
+    min-width:0;
+    min-height:44px;
+    padding:12px 14px;
+    border:1px solid var(--borda-forte);
+    border-radius:var(--raio-menor);
+    background:var(--superficie);
+    color:var(--texto);
+    font-family:inherit;
+    font-size:14px;
+    font-variant-numeric:tabular-nums;
+    cursor:pointer;
+}
+.campo .entrada-data-hora::placeholder { color:var(--cinza); opacity:.8; }
+.campo .entrada-data-hora:focus { outline:none; border-color:var(--rosa); box-shadow:0 0 0 4px var(--anel); }
+.botao-abrir-calendario {
+    display:grid;
+    place-items:center;
+    width:46px;
+    flex:0 0 46px;
+    border:1px solid var(--borda-forte);
+    border-radius:var(--raio-menor);
+    background:var(--superficie-2);
+    color:var(--rosa);
+    cursor:pointer;
+    transition:background .2s,border-color .2s,transform .2s;
+}
+.botao-abrir-calendario svg { width:20px; height:20px; }
+.botao-abrir-calendario:hover { background:var(--brilho); border-color:var(--rosa); transform:translateY(-1px); }
+.popup-datahora {
+    position:absolute;
+    z-index:80;
+    top:calc(100% + 9px);
+    left:0;
+    width:min(350px,calc(100vw - 44px));
+    padding:15px;
+    border:1px solid var(--borda-forte);
+    border-radius:16px;
+    background:var(--superficie);
+    color:var(--texto);
+    box-shadow:var(--sombra-3);
+    animation:subir .16s var(--curva) both;
+}
+.popup-datahora[hidden] { display:none !important; }
+.cabecalho-calendario { display:grid; grid-template-columns:38px 1fr 38px; align-items:center; gap:8px; margin-bottom:13px; }
+.cabecalho-calendario strong { text-align:center; text-transform:capitalize; font-size:14px; font-weight:700; }
+.navegar-mes {
+    display:grid;
+    place-items:center;
+    width:36px;
+    height:36px;
+    border:1px solid var(--borda);
+    border-radius:10px;
+    background:var(--superficie-2);
+    color:var(--texto);
+    font-size:25px;
+    line-height:1;
+    cursor:pointer;
+}
+.navegar-mes:hover { border-color:var(--rosa); color:var(--rosa); background:var(--brilho); }
+.grade-semana,.grade-dias { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+.grade-semana { margin-bottom:6px; }
+.grade-semana span { padding:5px 0; color:var(--cinza); text-align:center; font-size:10px; font-weight:700; text-transform:uppercase; }
+.dia-calendario {
+    display:grid;
+    place-items:center;
+    min-width:0;
+    aspect-ratio:1;
+    border:1px solid transparent;
+    border-radius:9px;
+    background:transparent;
+    color:var(--texto);
+    font:inherit;
+    font-size:12px;
+    cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;
+}
+.dia-calendario:hover { border-color:var(--rosa); background:var(--brilho); color:var(--rosa); }
+.dia-calendario.dia-outro-mes { color:var(--cinza); opacity:.48; }
+.dia-calendario.dia-hoje:not(.dia-selecionado) { border-color:var(--borda-forte); font-weight:800; }
+.dia-calendario.dia-selecionado { border-color:var(--rosa); background:linear-gradient(135deg,var(--rosa),var(--rosa-escuro)); color:#fff; font-weight:800; box-shadow:0 5px 12px -6px var(--rosa); }
+.area-horario { display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:15px; padding:12px 0; border-top:1px solid var(--borda); border-bottom:1px solid var(--borda); }
+.rotulo-horario { display:block; font-size:12px; font-weight:700; }
+.area-horario small { display:block; margin-top:2px; color:var(--cinza); font-size:10px; }
+.controles-horario { display:flex; align-items:center; gap:5px; }
+.controles-horario select {
+    width:58px;
+    min-height:38px;
+    padding:6px 8px;
+    border:1px solid var(--borda-forte);
+    border-radius:9px;
+    background:var(--superficie-2);
+    color:var(--texto);
+    font:inherit;
+    font-size:14px;
+    font-variant-numeric:tabular-nums;
+}
+.controles-horario select:focus { outline:none; border-color:var(--rosa); box-shadow:0 0 0 3px var(--anel); }
+.controles-horario > span { color:var(--rosa); font-weight:800; }
+.rodape-datahora { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:12px; }
+.rodape-datahora > div { display:flex; gap:7px; }
+.atalho-agora,.botao-cancelar-datahora,.botao-confirmar-datahora {
+    min-height:34px;
+    padding:7px 11px;
+    border-radius:9px;
+    font-family:inherit;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+}
+.atalho-agora { border:1px solid var(--turquesa); background:color-mix(in srgb,var(--turquesa) 10%,var(--superficie)); color:var(--turquesa); }
+.botao-cancelar-datahora { border:1px solid var(--borda-forte); background:var(--superficie-2); color:var(--texto); }
+.botao-confirmar-datahora { border:1px solid var(--rosa); background:var(--rosa); color:#fff; }
+.atalho-agora:hover,.botao-cancelar-datahora:hover,.botao-confirmar-datahora:hover { filter:brightness(1.08); }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+@media(max-width:600px) {
+    .popup-datahora { left:auto; right:0; }
+}
