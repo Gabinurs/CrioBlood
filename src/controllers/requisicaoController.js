@@ -92,17 +92,28 @@ class RequisicaoController {
             if (modoCompatibilidade) {
                 for (const item of itens) {
                     if (item.status === 'PENDENTE' && item.hemocomponente_id) {
-                        item.compatibilidade = CompatibilidadeTransfusional.avaliarComponente({
-                            paciente: {
-                                abo: requisicao.paciente_abo,
-                                fator_rh: requisicao.paciente_rh,
-                                sexo: requisicao.sexo,
-                                idade: requisicao.idade
-                            },
-                            bolsa: { abo: item.bolsa_abo, fator_rh: item.bolsa_rh },
-                            tipo: item.tipo,
-                            pesoReceptorKg: requisicao.peso_receptor_kg
-                        });
+                        const amostraLiberada = requisicao.amostra_liberada &&
+                            requisicao.status_imuno === 'CONCLUIDO' &&
+                            requisicao.pai === 'NEGATIVO' &&
+                            requisicao.controle_rh === 'NEGATIVO' &&
+                            requisicao.solicitacao_transfusao;
+                        item.compatibilidade = amostraLiberada
+                            ? CompatibilidadeTransfusional.avaliarComponente({
+                                paciente: {
+                                    abo: requisicao.paciente_abo,
+                                    fator_rh: requisicao.paciente_rh,
+                                    sexo: requisicao.sexo,
+                                    idade: requisicao.idade
+                                },
+                                bolsa: { abo: item.bolsa_abo, fator_rh: item.bolsa_rh },
+                                tipo: item.tipo,
+                                pesoReceptorKg: requisicao.peso_receptor_kg
+                            })
+                            : {
+                                permitido: false,
+                                excecaoPossivel: false,
+                                mensagem: 'A amostra vinculada venceu ou não está liberada. Atualize a coleta e conclua os testes Imuno antes da prova/conferência.'
+                            };
                     }
                 }
             }
