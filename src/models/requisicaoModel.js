@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const AmostraModel = require('./amostraModel');
+const CompatibilidadeTransfusional = require('../services/compatibilidadeTransfusionalService');
 const {
     PADROES,
     LIMITE_TEXTO_LIVRE,
@@ -84,7 +85,8 @@ class RequisicaoModel {
 
     static async buscarContextoPaciente(pacienteId) {
         const { rows } = await db.query(`
-            SELECT p.id, p.nome, p.nome_mae, p.prontuario, p.data_nascimento,
+            SELECT p.id, p.nome, p.nome_mae, p.prontuario, p.data_nascimento, p.sexo,
+                   date_part('year', age(p.data_nascimento))::int AS idade,
                    to_char(p.data_nascimento, 'DD/MM/YYYY') AS nascimento_br,
                    p.abo, p.fator_rh,
                    a.abo AS amostra_abo, a.fator_rh AS amostra_rh,
@@ -154,6 +156,14 @@ class RequisicaoModel {
         }
 
         const itens = normalizarItens(dados.itens_json);
+        const pesoTexto = String(dados.peso_receptor_kg || '').trim().replace(',', '.');
+        const pesoReceptorKg = pesoTexto ? Number(pesoTexto) : null;
+        if (pesoTexto && (!Number.isFinite(pesoReceptorKg) || pesoReceptorKg < 0.1 || pesoReceptorKg > 500)) {
+            throw new ErroValidacao('Informe o peso atual do receptor entre 0,1 e 500 kg.');
+        }
+        if (itens.some(item => item.tipo === 'CRIO') && pesoReceptorKg === null) {
+            throw new ErroValidacao('Informe o peso atual do receptor para aplicar a regra de compatibilidade do crioprecipitado.');
+        }
         const liberacao = await AmostraModel.podeSolicitar(pacienteId);
         if (!liberacao.permitido) throw new ErroConflito(liberacao.motivo);
 
@@ -186,12 +196,13 @@ class RequisicaoModel {
                 INSERT INTO requisicoes_transfusionais
                     (paciente_id, amostra_id, data_hora_requisicao, solicitado_por,
                      medico_solicitante, hemoglobina, consentimento_confirmado,
-                     requisicao_conforme, setor_solicitante, diagnostico, prazo_solicitacao)
-                VALUES ($1,$2,$3,$4,$5,$6,TRUE,TRUE,$7,$8,$9)
+                     requisicao_conforme, setor_solicitante, diagnostico, prazo_solicitacao,
+                     peso_receptor_kg)
+                VALUES ($1,$2,$3,$4,$5,$6,TRUE,TRUE,$7,$8,$9,$10)
                 RETURNING id
             `, [
                 pacienteId, amostra.id, dataHora.toISOString(), usuarioId, medico,
-                hemoglobina, setor, diagnostico, dados.prazo_solicitacao
+                hemoglobina, setor, diagnostico, dados.prazo_solicitacao, pesoReceptorKg
             ]);
             const requisicaoId = requisicao[0].id;
             const urgencia = urgenciaDoPrazo(dados.prazo_solicitacao);
@@ -225,7 +236,9 @@ class RequisicaoModel {
     static async buscarPorId(id) {
         const { rows } = await db.query(`
             SELECT r.*, p.nome AS paciente_nome, p.prontuario,
-                   p.nome_mae, a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
+                   p.nome_mae, p.sexo,
+                   date_part('year', age(p.data_nascimento))::int AS idade,
+                   a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
                    to_char(p.data_nascimento, 'DD/MM/YYYY') AS nascimento_br,
                    to_char(r.data_hora_requisicao AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS requisicao_br,
                    to_char(a.coletado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS coleta_br,
@@ -251,6 +264,7 @@ class RequisicaoModel {
                    to_char(h.data_validade, 'DD/MM/YYYY') AS bolsa_validade_br,
                    (SELECT pc.id FROM provas_cruzadas pc
                     WHERE pc.solicitacao_id = s.id AND pc.resultado = 'COMPATIVEL'
+                      AND s.status IN ('RESERVADA', 'ATENDIDA')
                     ORDER BY pc.criado_em DESC LIMIT 1) AS prova_compativel_id
             FROM solicitacoes_transfusionais s
             LEFT JOIN hemocomponentes h ON h.id = s.hemocomponente_id
