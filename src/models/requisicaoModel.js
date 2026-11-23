@@ -303,11 +303,12 @@ class RequisicaoModel {
 
             const amostra = (await cliente.query(`
                 SELECT id, status_imuno, pai, controle_rh, solicitacao_transfusao,
-                       (coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS valida
+                       (coletado_em <= $3::timestamptz
+                        AND coletado_em + INTERVAL '72 hours' > $3::timestamptz) AS valida
                 FROM amostras_receptor
                 WHERE id = $1 AND paciente_id = $2
                 FOR SHARE
-            `, [requisicao.amostra_id, requisicao.paciente_id])).rows[0];
+            `, [requisicao.amostra_id, requisicao.paciente_id, dataHora.toISOString()])).rows[0];
             if (!amostra || !amostra.valida || amostra.status_imuno !== 'CONCLUIDO' ||
                 amostra.pai !== 'NEGATIVO' || amostra.controle_rh !== 'NEGATIVO' ||
                 !amostra.solicitacao_transfusao) {
