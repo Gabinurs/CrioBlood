@@ -344,7 +344,8 @@ class RequisicaoModel {
     static async listarAguardandoCompatibilidade() {
         const { rows } = await db.query(`
             SELECT r.id AS requisicao_id, s.id AS solicitacao_id, s.item_numero, s.tipo,
-                   s.urgencia, p.nome AS paciente_nome, p.prontuario, p.sexo,
+                   s.urgencia, p.nome AS paciente_nome, p.prontuario,
+                   p.sexo AS paciente_sexo,
                    date_part('year', age(p.data_nascimento))::int AS paciente_idade,
                    r.peso_receptor_kg, a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
                    h.id AS bolsa_id, h.codigo_original, h.codigo_interno,
