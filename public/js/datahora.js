@@ -104,12 +104,14 @@
             desenharCalendario();
             popup.hidden = false;
             toggle.setAttribute('aria-expanded', 'true');
+            display.setAttribute('aria-expanded', 'true');
         }
         function fechar(restaurar) {
             if (restaurar) selecionada = new Date(copiaAntesDeAbrir.getTime());
             sincronizar();
             popup.hidden = true;
             toggle.setAttribute('aria-expanded', 'false');
+            display.setAttribute('aria-expanded', 'false');
         }
 
         root.querySelector('[data-mes-anterior]').addEventListener('click', function () {
