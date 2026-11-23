@@ -2,6 +2,7 @@ const SolicitacaoService=require('../services/solicitacaoService');
 const PacienteService=require('../services/pacienteService');
 const Setores=require('../services/setorSolicitacaoService');
 const AuditoriaService=require('../services/auditoriaService');
+const AmostraReceptorService=require('../services/amostraReceptorService');
 const {ErroNegocio,avisar,tratar}=require('../utils/erros');
 async function formulario(req,res,valores={},edicao=false,erro=null){
  const [pacientes,setores]=await Promise.all([PacienteService.listarAtivos(),Setores.listarAtivos()]);
@@ -19,7 +20,7 @@ function horarioLocal(v){
 }
 class SolicitacaoController{
  static async listar(req,res){try{res.render('solicitacoes/index',{solicitacoes:await SolicitacaoService.listar(),usuario:req.session.usuario});}catch(e){tratar(req,res,e,'/dashboard','Erro ao listar solicitações');}}
- static async formNova(req,res){try{await formulario(req,res,{paciente_id:req.query.paciente_id||'',urgencia:req.query.urgencia||'ROTINA_24H'});}catch(e){tratar(req,res,e,'/solicitacoes','Erro ao abrir solicitação');}}
+ static async formNova(req,res){try{const pacienteId=req.query.paciente_id;if(pacienteId){const liberacao=await AmostraReceptorService.podeSolicitar(pacienteId);if(!liberacao.permitido){avisar(req,'aviso',liberacao.motivo);return res.redirect('/pacientes/'+pacienteId+'/dossie');}}await formulario(req,res,{paciente_id:pacienteId||'',urgencia:req.query.urgencia||'ROTINA_24H'});}catch(e){tratar(req,res,e,'/solicitacoes','Erro ao abrir solicitação');}}
  static async criar(req,res){
   try{
    const ids=await SolicitacaoService.criar(req.body,req.session.usuario.id);
