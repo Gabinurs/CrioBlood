@@ -2,6 +2,7 @@ const db = require('../config/database');
 const { PADROES, LIMITE_TEXTO_LIVRE, textoLivreValido, normalizarEspacos } = require('../utils/padroes');
 const { sqlLimite } = require('../utils/paginacao');
 const { ErroConflito, ErroNaoEncontrado, ErroValidacao } = require('../utils/erros');
+const AmostraModel = require('./amostraModel');
 
 const TIPOS = ['CH', 'PLASMA', 'PLAQUETAS', 'CRIO'];
 const URGENCIAS = ['ROTINA', 'URGENTE', 'EMERGENCIA'];
@@ -66,6 +67,11 @@ class SolicitacaoModel {
             'SELECT id, ativo FROM pacientes WHERE id = $1', [pacienteId])).rows[0];
         if (!paciente) throw new ErroNaoEncontrado('Paciente não encontrado.');
         if (!paciente.ativo) throw new ErroConflito('Esse paciente está inativo.');
+
+        // A solicitação só pode ser registrada após amostra válida, marcada para transfusão/reserva
+        // e com os testes Imuno concluídos sem PAI ou Controle positivos.
+        const liberacao = await AmostraModel.podeSolicitar(pacienteId);
+        if (!liberacao.permitido) throw new ErroConflito(liberacao.motivo);
 
         const { rows } = await db.query(
             `INSERT INTO solicitacoes_transfusionais
