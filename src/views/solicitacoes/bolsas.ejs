@@ -57,7 +57,7 @@
                 <% if (item.status === 'RESERVADA' || item.status === 'ATENDIDA') { %>
                     <div class="bolsa-vinculada">
                         <div><span class="cartao-microtitulo">BOLSA VINCULADA</span><strong><%= item.bolsa_codigo %></strong><small><%= item.bolsa_codigo_interno || 'Código local não informado' %> · <%= rot.tipagem(item.bolsa_abo,item.bolsa_rh) %> · <%= item.volume_ml || '—' %> mL · Validade <%= item.bolsa_validade_br || '—' %></small></div>
-                        <% if (item.prova_compativel_id) { %><a class="botao botao-claro botao-pequeno" href="/solicitacoes/provas-cruzadas/<%= item.prova_compativel_id %>/etiqueta" target="_blank" rel="noopener">Imprimir etiqueta</a><% } %>
+                        <% if (item.prova_compativel_id) { %><button type="button" class="botao botao-claro botao-pequeno" data-abrir-etiqueta="/solicitacoes/provas-cruzadas/<%= item.prova_compativel_id %>/etiqueta?modal=1">Imprimir etiqueta</button><% } %>
                     </div>
                 <% } else { %>
                     <div class="selecionar-bolsa-requisicao">
@@ -72,9 +72,9 @@
                                         data-tipagem="<%= rot.tipagem(b.abo,b.fator_rh) %>"
                                         data-volume="<%= b.volume_ml || '' %>"
                                         data-validade="<%= b.data_validade_br %>"
-                                        data-triagem="<%= b.nivel_triagem || '' %>">
+                                        data-tipo="<%= b.tipo %>">
                                         <%= b.codigo_original %> · <%= b.codigo_interno || 'Sem código local' %> · <%= rot.tipagem(b.abo,b.fator_rh) %> · <%= b.volume_ml || '—' %> mL · Val. <%= b.data_validade_br %>
-                                        <%= b.nivel_triagem ? ' · Triagem ABO/Rh sugerida' : ' · Atenção à triagem ABO/Rh' %>
+
                                     </option>
                                 <% }) %>
                             </select>
@@ -102,7 +102,7 @@
                             <td><%= p.data_hora_br %></td>
                             <td><%= p.responsavel_nome %></td>
                             <td><% if (p.resultado === 'COMPATIVEL') { %><span class="status s-verde">Compatível</span><% } else { %><span class="status s-vermelho">Incompatível</span><% } %></td>
-                            <td><% if (p.resultado === 'COMPATIVEL') { %><a class="botao botao-claro botao-pequeno" href="/solicitacoes/provas-cruzadas/<%= p.id %>/etiqueta" target="_blank" rel="noopener">Imprimir</a><% } else { %><span class="texto-secundario">Não emitida</span><% } %></td>
+                            <td><% if (p.resultado === 'COMPATIVEL') { %><button type="button" class="botao botao-claro botao-pequeno" data-abrir-etiqueta="/solicitacoes/provas-cruzadas/<%= p.id %>/etiqueta?modal=1">Imprimir</button><% } else { %><span class="texto-secundario">Não emitida</span><% } %></td>
                         </tr>
                     <% }) } %>
                 </tbody>
@@ -127,7 +127,7 @@
                 <span class="cartao-microtitulo">BOLSA SELECIONADA</span>
                 <strong data-prova-codigo>—</strong>
                 <small data-prova-detalhes>—</small>
-                <span class="aviso-triagem" data-prova-triagem></span>
+                <span class="aviso-triagem">O sistema não realiza a prova cruzada nem conclui compatibilidade. Registre o resultado efetivamente obtido pelo profissional executor.</span>
             </div>
             <div class="campo">
                 <label>Paciente / receptor</label>
@@ -168,6 +168,15 @@
             <button type="submit" class="botao">Inserir resultado</button>
         </footer>
     </form>
+</dialog>
+
+
+<dialog class="modal-amostra-dialog" data-etiqueta-prova-modal aria-labelledby="titulo-modal-etiqueta-prova">
+    <header class="modal-amostra-topo">
+        <div><span class="modal-amostra-marca">CRIOBLOOD</span><h3 id="titulo-modal-etiqueta-prova">Etiqueta da prova cruzada</h3></div>
+        <button type="button" class="modal-amostra-fechar" data-fechar-etiqueta aria-label="Fechar">×</button>
+    </header>
+    <iframe class="modal-amostra-frame" data-etiqueta-prova-frame title="Etiqueta da prova cruzada" loading="eager"></iframe>
 </dialog>
 
 <script src="/js/datahora.js" defer></script>
