@@ -239,6 +239,9 @@ class RequisicaoModel {
                    p.nome_mae, p.sexo,
                    date_part('year', age(p.data_nascimento))::int AS idade,
                    a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
+                   a.status_imuno, a.pai, a.controle_rh, a.solicitacao_transfusao,
+                   (a.coletado_em <= CURRENT_TIMESTAMP
+                    AND a.coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS amostra_liberada,
                    to_char(p.data_nascimento, 'DD/MM/YYYY') AS nascimento_br,
                    to_char(r.data_hora_requisicao AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS requisicao_br,
                    to_char(a.coletado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS coleta_br,
@@ -348,6 +351,9 @@ class RequisicaoModel {
                    p.sexo AS paciente_sexo,
                    date_part('year', age(p.data_nascimento))::int AS paciente_idade,
                    r.peso_receptor_kg, a.abo AS paciente_abo, a.fator_rh AS paciente_rh,
+                   a.status_imuno, a.pai, a.controle_rh, a.solicitacao_transfusao,
+                   (a.coletado_em <= CURRENT_TIMESTAMP
+                    AND a.coletado_em + INTERVAL '72 hours' > CURRENT_TIMESTAMP) AS amostra_liberada,
                    h.id AS bolsa_id, h.codigo_original, h.codigo_interno,
                    h.abo AS bolsa_abo, h.fator_rh AS bolsa_rh, h.volume_ml, h.status AS bolsa_status,
                    to_char(h.data_validade, 'DD/MM/YYYY') AS validade_br, r.prazo_solicitacao
