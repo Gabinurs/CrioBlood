@@ -57,6 +57,36 @@ class LoteModel {
         return codigo;
     }
 
+    // Recupera os dados do lote e todas as bolsas para o comprovante de recebimento.
+    static async buscarRelatorio(id) {
+        const lote = (await db.query(
+            `SELECT l.id, l.codigo, l.origem, l.status,
+                    to_char(l.data_recebimento AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI:SS') AS recebido_em_br,
+                    to_char(l.criado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI:SS') AS aberto_em_br,
+                    u.nome AS responsavel_abertura
+             FROM lotes_recebimento l
+             INNER JOIN usuarios u ON u.id = l.aberto_por
+             WHERE l.id = $1`,
+            [id]
+        )).rows[0];
+
+        if (!lote) return null;
+
+        const { rows: bolsas } = await db.query(
+            `SELECT h.id, h.codigo_original, h.codigo_interno, h.tipo, h.abo, h.fator_rh,
+                    h.volume_ml, h.status,
+                    to_char(h.criado_em AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI:SS') AS cadastrado_em_br,
+                    u.nome AS responsavel_cadastro
+             FROM hemocomponentes h
+             INNER JOIN usuarios u ON u.id = h.cadastrado_por
+             WHERE h.lote_id = $1
+             ORDER BY h.criado_em ASC, h.id ASC`,
+            [id]
+        );
+
+        return { lote, bolsas };
+    }
+
     // Fechar um lote.
     // Regras: o lote precisa estar aberto, ter ao menos uma bolsa e nenhuma
     // bolsa pode continuar "em conferência". Depois de fechado, não recebe novas bolsas.
