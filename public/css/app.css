@@ -1090,3 +1090,30 @@ body.modal-frame-body { min-height:100vh; margin:0; padding:18px; background:var
     .modal-frame-body .etiqueta-painel { margin:0 !important; padding:0 !important; }
     .modal-frame-body .etiqueta-acoes { display:none !important; }
 }
+
+
+/* ---------- Módulo integrado de recebimento de bolsas ---------- */
+.recebimento-cabecalho { align-items:center; gap:24px; }
+.recebimento-cabecalho > div { max-width:760px; }
+.recebimento-etiqueta { display:inline-flex; align-items:center; margin-bottom:8px; color:var(--turquesa); font-size:10px; font-weight:800; letter-spacing:.13em; }
+.recebimento-etapas { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:0 0 22px; }
+.recebimento-etapa { display:flex; align-items:center; gap:11px; min-width:0; padding:13px; border:1px solid var(--borda); border-radius:12px; background:var(--superficie); }
+.recebimento-etapa > span { display:grid; place-items:center; width:30px; height:30px; flex:0 0 30px; border-radius:50%; background:var(--brilho); color:var(--rosa); font-weight:800; font-size:12px; }
+.recebimento-etapa strong,.recebimento-etapa small { display:block; }
+.recebimento-etapa strong { font-size:12px; }
+.recebimento-etapa small { margin-top:3px; color:var(--cinza); font-size:10px; }
+.recebimento-historico { margin-top:20px; }
+.recebimento-lista-titulo { margin-bottom:12px; }
+.recebimento-lista-titulo h3 { margin:0 0 4px; }
+.codigo-lote { display:block; white-space:nowrap; }
+.recebimento-responsavel { display:block; margin-top:4px; color:var(--cinza); font-size:10px; }
+.acoes-recebimento { min-width:220px; flex-wrap:wrap; }
+.acoes-recebimento form { display:inline-flex; }
+@media(max-width:900px) {
+    .recebimento-etapas { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:560px) {
+    .recebimento-etapas { grid-template-columns:1fr; }
+    .recebimento-cabecalho { align-items:flex-start; flex-direction:column; }
+    .acoes-recebimento { min-width:0; }
+}
