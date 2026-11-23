@@ -1,0 +1,49 @@
+<%- include('../partials/inicio',{titulo:'Imuno-hematologia',subtitulo:'Registro dos testes realizados na amostra',ativo:'pacientes'}) %>
+<section class="painel formulario amostra-form">
+    <div class="amostra-cabecalho">
+        <div><span>RECEPTOR</span><h3><%= paciente.nome %></h3><p>Amostra <strong><%= amostra.codigo %></strong> · Coleta: <%= amostra.coleta_br %></p></div>
+        <div class="amostra-validade"><strong>72 horas</strong><small>Validade até <%= amostra.validade_br %></small></div>
+    </div>
+    <% if (locals.erro) { %><div class="alerta alerta-erro"><%= erro %></div><% } %>
+    <% if (!amostra.valida) { %><div class="alerta alerta-erro">Esta amostra está fora da validade. Ela não poderá liberar uma solicitação transfusional.</div><% } %>
+    <% if (somenteLeitura) { %>
+        <div class="alerta <%= amostra.status_imuno === 'BLOQUEADO' ? 'alerta-erro' : 'alerta-info' %>">
+            <strong><%= amostra.status_imuno === 'BLOQUEADO' ? 'Amostra bloqueada:' : 'Exames registrados:' %></strong>
+            <%= amostra.status_imuno === 'BLOQUEADO' ? 'PAI ou Controle positivo. O bloqueio transfusional permanece ativo.' : 'Os resultados desta amostra estão em modo de consulta e não podem ser sobrescritos.' %>
+        </div>
+    <% } %>
+    <form method="POST" action="/pacientes/<%= paciente.id %>/amostras/<%= amostra.id %>/imuno" data-form-imuno>
+        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+        <input type="hidden" name="pai_justificativa" data-justificativa-value="pai" value="<%= valores.pai_justificativa || amostra.pai_justificativa || '' %>">
+        <input type="hidden" name="controle_rh_justificativa" data-justificativa-value="controle" value="<%= valores.controle_rh_justificativa || amostra.controle_rh_justificativa || '' %>">
+        <h3 class="titulo-secao-amostra">Tipagem sanguínea</h3>
+        <div class="grade-form">
+            <div class="campo"><label>ABO *</label><select name="abo" required <%= somenteLeitura ? 'disabled' : '' %>><option value="">Selecione</option><% ['A','B','AB','O'].forEach(function(x){ %><option value="<%= x %>" <%= (valores.abo || amostra.abo)===x?'selected':'' %>><%= x %></option><% }) %></select></div>
+            <div class="campo"><label>Fator Rh *</label><select name="fator_rh" required <%= somenteLeitura ? 'disabled' : '' %>><option value="">Selecione</option><option value="+" <%= (valores.fator_rh || amostra.fator_rh)==='+'?'selected':'' %>>Positivo (+)</option><option value="-" <%= (valores.fator_rh || amostra.fator_rh)==='-'?'selected':'' %>>Negativo (-)</option></select></div>
+        </div>
+        <hr class="separador-amostra">
+        <h3 class="titulo-secao-amostra">Testes imuno-hematológicos</h3>
+        <div class="grade-form">
+            <div class="campo"><label>Controle *</label><select name="controle_rh" data-imuno-resultado="controle" required <%= somenteLeitura ? 'disabled' : '' %>><option value="">Selecione</option><option value="NEGATIVO" <%= (valores.controle_rh || amostra.controle_rh)==='NEGATIVO'?'selected':'' %>>Negativo</option><option value="POSITIVO" <%= (valores.controle_rh || amostra.controle_rh)==='POSITIVO'?'selected':'' %>>Positivo</option></select></div>
+            <div class="campo"><label>PAI *</label><select name="pai" data-imuno-resultado="pai" required <%= somenteLeitura ? 'disabled' : '' %>><option value="">Selecione</option><option value="NEGATIVO" <%= (valores.pai || amostra.pai)==='NEGATIVO'?'selected':'' %>>Negativo</option><option value="POSITIVO" <%= (valores.pai || amostra.pai)==='POSITIVO'?'selected':'' %>>Positivo</option></select></div>
+        </div>
+        <div class="alerta alerta-aviso">Resultado positivo exige justificativa e mantém bloqueada a criação de solicitação transfusional para esta amostra, conforme regra definida para o sistema.</div>
+        <div class="rodape-form">
+            <% if (!somenteLeitura) { %><button class="botao" type="submit">Salvar resultados Imuno</button><% } %>
+            <a class="botao botao-claro" href="/pacientes/<%= paciente.id %>/dossie">Voltar ao dossiê</a>
+        </div>
+    </form>
+</section>
+<dialog class="modal-justificativa-imuno" data-modal-justificativa>
+    <form method="dialog">
+        <h3 data-titulo-justificativa>Justificativa obrigatória</h3>
+        <p data-texto-justificativa>Informe a justificativa do resultado positivo.</p>
+        <textarea data-campo-justificativa rows="4" minlength="5" placeholder="Descreva a justificativa..." required></textarea>
+        <div class="acoes-modal-justificativa">
+            <button type="button" class="botao botao-claro" data-cancelar-justificativa>Cancelar</button>
+            <button type="button" class="botao" data-confirmar-justificativa>Confirmar</button>
+        </div>
+    </form>
+</dialog>
+<script src="/js/imuno.js" defer></script>
+<%- include('../partials/fim') %>
