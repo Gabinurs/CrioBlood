@@ -1,10 +1,26 @@
+<% if (locals.modal) { %>
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Etiqueta de prova cruzada | CrioBlood</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="modal-frame-body">
+<% } else { %>
 <%- include('../partials/inicio', { titulo: 'Etiqueta de prova cruzada', subtitulo: 'Identificação da bolsa vinculada ao receptor', ativo: 'solicitacoes' }) %>
+<% } %>
 
 <section class="painel pagina-etiqueta-prova">
+    <% if (!locals.modal) { %>
     <div class="acoes-etiqueta-prova">
         <a class="botao botao-claro" href="/solicitacoes/<%= prova.requisicao_id %>/bolsas">Voltar à requisição</a>
         <button type="button" class="botao" data-imprimir>Imprimir etiqueta</button>
     </div>
+    <% } else { %>
+    <div class="acoes-etiqueta-prova"><button type="button" class="botao" data-imprimir>Imprimir etiqueta</button></div>
+    <% } %>
 
     <article class="etiqueta-prova-cruzada">
         <header class="etiqueta-prova-topo">
@@ -45,4 +61,9 @@
     </article>
 </section>
 
+<% if (locals.modal) { %>
+<script src="/js/modal-frame.js" defer></script>
+</body></html>
+<% } else { %>
 <%- include('../partials/fim') %>
+<% } %>
