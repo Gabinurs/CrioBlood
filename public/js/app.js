@@ -74,7 +74,7 @@
             selecionado.querySelector('[data-selecionado-nascimento]').textContent = opcao.getAttribute('data-nascimento');
             selecionado.querySelector('[data-selecionado-prontuario]').textContent = opcao.getAttribute('data-prontuario');
             selecionado.querySelector('[data-acao-dossie]').href = opcao.getAttribute('data-dossie');
-            selecionado.querySelector('[data-acao-imuno]').href = opcao.getAttribute('data-dossie') + '#imuno';
+            selecionado.querySelector('[data-acao-imuno]').href = opcao.getAttribute('data-imuno') || (opcao.getAttribute('data-dossie') + '#imuno');
             selecionado.querySelector('[data-selecionado-tipagem]').textContent = opcao.getAttribute('data-tipagem') || 'Tipagem pendente';
             selecionado.querySelector('[data-acao-amostra]').href = opcao.getAttribute('data-amostra');
             selecionado.querySelector('[data-acao-edicao]').href = opcao.getAttribute('data-edicao');
