@@ -536,7 +536,7 @@ td.vazio, .vazio {
    Isso padroniza CNS, CPF, RG, telefone, convênio e plano. */
 .campo input:not([type]),
 .campo input[type="text"], .campo input[type="number"], .campo input[type="date"], .campo input[type="password"],
-.campo input[type="tel"], .campo input[type="email"], .campo select, .campo textarea {
+.campo input[type="tel"], .campo input[type="email"], .campo input[type="datetime-local"], .campo select, .campo textarea {
     width: 100%;
     min-height: 44px;
     padding: 12px 14px;
@@ -875,4 +875,29 @@ body.modal-aberto { overflow:hidden; }
     .receptor-cabecalho-acoes > .botao {
         width:100%;
     }
+}
+
+
+/* Data e hora: integra o controle nativo ao tema atual do CrioBlood.
+   O popup do calendário é desenhado pelo navegador/SO; color-scheme solicita
+   a paleta correspondente ao tema e o campo recebe os mesmos tokens visuais. */
+.campo input[type="datetime-local"] {
+    color-scheme: inherit;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .01em;
+}
+.campo input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: .9;
+    border-radius: 5px;
+    padding: 3px;
+}
+.campo input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+    background: color-mix(in srgb, var(--rosa) 16%, transparent);
+}
+html[data-tema="dark"] .campo input[type="datetime-local"] {
+    color-scheme: dark;
+}
+html:not([data-tema="dark"]) .campo input[type="datetime-local"] {
+    color-scheme: light;
 }
