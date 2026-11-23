@@ -107,13 +107,15 @@ class TransfusaoService {
                 const resumo = (await cliente.query(
                     `SELECT COUNT(*)::int AS total,
                             COUNT(*) FILTER (WHERE status = 'ATENDIDA')::int AS atendidas,
-                            COUNT(*) FILTER (WHERE status = 'RESERVADA')::int AS reservadas
+                            COUNT(*) FILTER (WHERE status = 'RESERVADA')::int AS reservadas,
+                            COUNT(*) FILTER (WHERE status = 'CANCELADA')::int AS canceladas
                      FROM solicitacoes_transfusionais WHERE requisicao_id = $1`,
                     [s.requisicao_id]
                 )).rows[0];
-                const statusRequisicao = resumo.total > 0 && resumo.total === resumo.atendidas
+                const statusRequisicao = resumo.total > 0 && resumo.atendidas === resumo.total
                     ? 'ATENDIDA'
-                    : (resumo.reservadas > 0 ? 'PARCIAL' : 'PENDENTE');
+                    : (resumo.reservadas === resumo.total ? 'RESERVADA'
+                        : (resumo.atendidas > 0 || resumo.reservadas > 0 || resumo.canceladas > 0 ? 'PARCIAL' : 'PENDENTE'));
                 await cliente.query(
                     'UPDATE requisicoes_transfusionais SET status = $1, atualizado_em = CURRENT_TIMESTAMP WHERE id = $2',
                     [statusRequisicao, s.requisicao_id]
