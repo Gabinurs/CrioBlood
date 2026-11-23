@@ -33,6 +33,10 @@ router.param('provaId', (req, res, next, valor) => {
     if (!/^\d+$/.test(valor)) return enviarErro(req, res, STATUS.REQUISICAO_INVALIDA, 'ID de prova cruzada inválido.');
     next();
 });
+router.param('solicitacaoId', (req, res, next, valor) => {
+    if (!/^\d+$/.test(valor)) return enviarErro(req, res, STATUS.REQUISICAO_INVALIDA, 'ID de unidade solicitado inválido.');
+    next();
+});
 
 
 // Pacientes
@@ -71,6 +75,7 @@ router.get('/solicitacoes/pacientes/:id/contexto', solicitacoes, Requisicao.cont
 router.get('/solicitacoes/nova', solicitacoes, Requisicao.formNova);
 router.post('/solicitacoes/nova', solicitacoes, Requisicao.criar);
 router.get('/solicitacoes/provas-cruzadas/:provaId/etiqueta', solicitacoes, Requisicao.etiqueta);
+router.get('/solicitacoes/:id/itens/:solicitacaoId/verificar-bolsa', solicitacoes, Requisicao.verificarBolsa);
 router.get('/solicitacoes/:id/bolsas', solicitacoes, Requisicao.bolsas);
 router.post('/solicitacoes/:id/provas-cruzadas', solicitacoes, Requisicao.registrarProva);
 router.post('/solicitacoes/:id/cancelar', solicitacoes, Solicitacao.cancelar);
