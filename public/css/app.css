@@ -717,3 +717,63 @@ body.erro-publico main { padding: 0; }
 .erro-campo { color: var(--vermelho); font-size: 11.5px; line-height: 1.45; animation: deslizar 0.25s var(--curva) both; }
 .contador-texto { align-self: flex-end; color: var(--cinza); font-size: 11.5px; font-variant-numeric: tabular-nums; }
 .contador-texto.no-limite { color: var(--vermelho); font-weight: 700; }
+
+/* ---------- Amostras e Imuno-hematologia ---------- */
+.amostra-cabecalho { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:22px; padding-bottom:18px; border-bottom:1px solid var(--borda); }
+.amostra-cabecalho > div:first-child > span { display:block; margin-bottom:5px; color:var(--rosa); font-size:10px; font-weight:800; letter-spacing:.1em; }
+.amostra-cabecalho h3 { margin-bottom:5px; font-size:19px; }
+.amostra-cabecalho p { color:var(--cinza); font-size:12px; }
+.amostra-validade { min-width:130px; padding:12px; border:1px solid var(--amarelo-borda); border-radius:11px; background:var(--amarelo-fundo); text-align:center; }
+.amostra-validade strong, .amostra-validade small { display:block; }
+.amostra-validade strong { color:var(--amarelo); font-size:18px; }
+.amostra-validade small { margin-top:3px; color:var(--amarelo); font-size:10px; }
+.titulo-secao-amostra { margin:10px 0 15px; font-size:15px; }
+.separador-amostra { height:1px; margin:22px 0; border:0; background:var(--borda); }
+.marca-transfusao { margin-top:20px; align-items:flex-start; }
+.marca-transfusao span, .marca-transfusao small { display:block; }
+.marca-transfusao small { margin-top:3px; color:var(--cinza); font-size:11px; font-weight:400; }
+.modal-justificativa-imuno { width:min(520px,calc(100% - 28px)); margin:auto; padding:22px; border:1px solid var(--borda); border-radius:16px; background:var(--superficie); color:var(--texto); box-shadow:var(--sombra-3); }
+.modal-justificativa-imuno::backdrop { background:rgba(5,10,20,.72); backdrop-filter:blur(3px); }
+.modal-justificativa-imuno h3 { margin-bottom:8px; font-size:17px; }
+.modal-justificativa-imuno p { margin-bottom:12px; color:var(--cinza); font-size:12.5px; }
+.modal-justificativa-imuno textarea { width:100%; padding:12px; border:1px solid var(--borda-forte); border-radius:10px; background:var(--superficie); color:var(--texto); font:inherit; }
+.acoes-modal-justificativa { display:flex; justify-content:flex-end; gap:9px; margin-top:14px; }
+@media(max-width:700px) { .amostra-cabecalho { align-items:flex-start; flex-direction:column; } }
+
+/* ---------- Relatório de recebimento e impressão ---------- */
+.relatorio-recebimento { max-width:1200px; }
+.acoes-relatorio { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-bottom:24px; }
+.relatorio-topo { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; padding-bottom:22px; border-bottom:2px solid var(--borda); }
+.relatorio-marca { color:var(--rosa); font-size:11px; font-weight:800; letter-spacing:.12em; margin-bottom:8px; }
+.relatorio-topo h1 { font-size:24px; margin-bottom:7px; }
+.relatorio-selo { min-width:190px; padding:15px; border:1px solid var(--borda); border-radius:12px; background:var(--superficie-2); text-align:center; }
+.relatorio-selo strong, .relatorio-selo span { display:block; }
+.relatorio-selo strong { font-size:16px; }
+.relatorio-selo span { margin-top:5px; color:var(--cinza); font-size:11px; }
+.relatorio-dados { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:22px 0; }
+.relatorio-dados div, .relatorio-resumo div { padding:13px; border:1px solid var(--borda); border-radius:10px; }
+.relatorio-dados span, .relatorio-dados strong, .relatorio-resumo span, .relatorio-resumo strong { display:block; }
+.relatorio-dados span, .relatorio-resumo span { color:var(--cinza); font-size:11px; margin-bottom:6px; }
+.relatorio-dados strong { font-size:13px; }
+.relatorio-resumo { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-bottom:26px; }
+.relatorio-resumo strong { font-size:22px; margin-bottom:3px; }
+.relatorio-subtitulo { font-size:16px; margin-bottom:10px; }
+.tabela-relatorio { white-space:normal; }
+.tabela-relatorio th, .tabela-relatorio td { padding:11px 10px; font-size:11px; }
+.relatorio-rodape { margin-top:24px; padding-top:16px; border-top:1px solid var(--borda); color:var(--cinza); font-size:11px; line-height:1.6; }
+.relatorio-rodape p { margin-top:8px; }
+@media(max-width:800px) { .relatorio-dados { grid-template-columns:repeat(2,minmax(0,1fr)); } .relatorio-resumo { grid-template-columns:repeat(2,minmax(0,1fr)); } .relatorio-topo { flex-direction:column; } }
+@page { size:A4 landscape; margin:12mm; }
+@media print {
+    .acoes-relatorio, .etiqueta-acoes, footer:not(.relatorio-rodape) { display:none !important; }
+    .relatorio-recebimento { max-width:none; margin:0; padding:0; border:0; box-shadow:none; }
+    .relatorio-topo h1 { font-size:19px; }
+    .relatorio-dados { grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .relatorio-resumo { grid-template-columns:repeat(5,minmax(0,1fr)); }
+    .tabela-container { overflow:visible; border:0; }
+    .tabela-relatorio { white-space:normal; }
+    .tabela-relatorio th, .tabela-relatorio td { padding:7px 6px; font-size:9px; }
+    .relatorio-rodape { break-inside:avoid; }
+    .etiqueta-painel { margin:0; padding:0; border:0; box-shadow:none; }
+    .etiqueta-tubo { width:100%; margin:0; border:1px solid #111; border-radius:0; break-inside:avoid; }
+}
