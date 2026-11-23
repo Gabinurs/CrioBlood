@@ -92,7 +92,7 @@ class SolicitacaoModel {
             await cliente.query('BEGIN');
 
             const s = (await cliente.query(
-                'SELECT id, status, hemocomponente_id FROM solicitacoes_transfusionais WHERE id = $1 FOR UPDATE',
+                'SELECT id, status, hemocomponente_id, requisicao_id FROM solicitacoes_transfusionais WHERE id = $1 FOR UPDATE',
                 [id])).rows[0];
             if (!s) throw new ErroNaoEncontrado('Solicitação não encontrada.');
             if (!['PENDENTE', 'RESERVADA'].includes(s.status)) {
@@ -112,6 +112,29 @@ class SolicitacaoModel {
                 `UPDATE solicitacoes_transfusionais
                  SET status = 'CANCELADA', hemocomponente_id = NULL, atualizado_em = CURRENT_TIMESTAMP
                  WHERE id = $1`, [id]);
+
+            if (s.requisicao_id) {
+                const resumo = (await cliente.query(
+                    `SELECT COUNT(*)::int AS total,
+                            COUNT(*) FILTER (WHERE status = 'CANCELADA')::int AS canceladas,
+                            COUNT(*) FILTER (WHERE status = 'ATENDIDA')::int AS atendidas,
+                            COUNT(*) FILTER (WHERE status = 'RESERVADA')::int AS reservadas,
+                            COUNT(*) FILTER (WHERE status = 'PENDENTE')::int AS pendentes
+                     FROM solicitacoes_transfusionais WHERE requisicao_id = $1`,
+                    [s.requisicao_id]
+                )).rows[0];
+
+                let statusRequisicao = 'PENDENTE';
+                if (resumo.total > 0 && resumo.canceladas === resumo.total) statusRequisicao = 'CANCELADA';
+                else if (resumo.total > 0 && resumo.atendidas === resumo.total) statusRequisicao = 'ATENDIDA';
+                else if (resumo.total > 0 && resumo.reservadas === resumo.total) statusRequisicao = 'RESERVADA';
+                else if (resumo.atendidas > 0 || resumo.reservadas > 0 || resumo.canceladas > 0) statusRequisicao = 'PARCIAL';
+
+                await cliente.query(
+                    'UPDATE requisicoes_transfusionais SET status = $1, atualizado_em = CURRENT_TIMESTAMP WHERE id = $2',
+                    [statusRequisicao, s.requisicao_id]
+                );
+            }
 
             await cliente.query('COMMIT');
         } catch (erro) {
