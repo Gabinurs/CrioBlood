@@ -20,7 +20,7 @@
                     <button type="button" class="sugestao-receptor" data-opcao-receptor
                         data-id="<%= p.id %>" data-nome="<%= p.nome %>"
                         data-nascimento="<%= p.data_nascimento_br %>"
-                        data-prontuario="<%= p.prontuario || '—' %>" data-tipagem="<%= p.abo ? p.abo + p.fator_rh : 'Tipagem pendente' %>"
+                        data-prontuario="<%= p.prontuario || '—' %>" data-tipagem="<%= p.abo ? p.abo + p.fator_rh : 'Tipagem pendente' %>" data-imuno="<%= p.ultima_amostra_id ? '/pacientes/' + p.id + '/amostras/' + p.ultima_amostra_id + '/imuno' : '/pacientes/' + p.id + '/dossie#imuno' %>"
                         data-dossie="/pacientes/<%= p.id %>/dossie"
                         data-amostra="/pacientes/<%= p.id %>/amostras/nova"
                         data-edicao="/pacientes/<%= p.id %>/editar"
