@@ -36,6 +36,10 @@
                 <div><span>Data de nascimento</span><strong><%= prova.nascimento_br %></strong></div>
                 <div><span>Nome da mãe</span><strong><%= prova.nome_mae || 'Não informado' %></strong></div>
             </div>
+            <div class="etiqueta-prova-grade etiqueta-prova-dados-adicionais">
+                <div><span>Tipagem do receptor</span><strong><%= prova.paciente_abo && prova.paciente_rh ? prova.paciente_abo + prova.paciente_rh : 'Não informada' %></strong></div>
+                <div><span>Identificação</span><strong>Requisição #<%= prova.requisicao_id %></strong></div>
+            </div>
         </section>
 
         <section class="etiqueta-prova-bloco etiqueta-prova-resultado">
