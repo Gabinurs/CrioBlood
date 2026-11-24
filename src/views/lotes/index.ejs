@@ -79,7 +79,7 @@
                                     <a class="botao botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">＋ Adicionar bolsa</a>
                                 <% } %>
                             <% } %>
-                            <% if (lote.quantidade_bolsas > 0) { %>
+                            <% if (lote.quantidade_bolsas > 0 && locals.pode && locals.pode('lotes.relatorio')) { %>
                                 <a class="botao botao-claro botao-pequeno" href="/lotes/<%= lote.id %>/relatorio">Comprovante PDF</a>
                             <% } %>
                             <% if (lote.status === 'ABERTO' && locals.pode && locals.pode('lotes.fechar')) { %>
