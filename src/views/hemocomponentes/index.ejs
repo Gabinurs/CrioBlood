@@ -50,15 +50,32 @@
                         <td><%= rot.tipagem(item.abo, item.fator_rh) %></td>
                         <td><%= item.volume_ml ? item.volume_ml + ' mL' : '—' %></td>
                         <td><%= item.data_validade_br %></td>
-                        <td><%- rot.statusBolsa(item.status) %></td>
+                        <td>
+                            <%- rot.statusBolsa(item.status) %>
+                            <% if (item.status === 'DESCARTADA') { %>
+                                <details>
+                                    <summary>Dados do descarte</summary>
+                                    <small>
+                                        <strong>Motivo:</strong> <%= item.descarte_motivo || 'Não informado (registro anterior à atualização)' %><br>
+                                        <strong>Data/hora:</strong> <%= item.descartado_em ? new Date(item.descartado_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : 'Não registrada' %><br>
+                                        <strong>ID do responsável:</strong> <%= item.descartado_por || 'Não registrado' %>
+                                    </small>
+                                </details>
+                            <% } %>
+                        </td>
                         <td class="acoes">
-                            <a class="botao botao-claro botao-pequeno" href="/hemocomponentes/editar/<%= item.id %>">Editar</a>
                             <% if (usuario && usuario.administrador && !['DESCARTADA','TRANSFUNDIDA','RESERVADA'].includes(item.status)) { %>
-                                <form action="/hemocomponentes/descartar/<%= item.id %>" method="POST"
-                                      data-confirmar="ATENÇÃO: o descarte não pode ser desfeito. Confirmar?">
-                                    <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
-                                    <button class="botao botao-perigo botao-pequeno" type="submit">Descartar</button>
-                                </form>
+                                <details>
+                                    <summary class="botao botao-perigo botao-pequeno">Descartar</summary>
+                                    <form action="/hemocomponentes/descartar/<%= item.id %>" method="POST">
+                                        <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+                                        <label for="motivo-descarte-<%= item.id %>">Justificativa obrigatória</label>
+                                        <textarea id="motivo-descarte-<%= item.id %>" name="motivo_descarte"
+                                                  minlength="10" maxlength="500" rows="3" required
+                                                  placeholder="Descreva o motivo do descarte (mínimo 10 caracteres)"></textarea>
+                                        <button class="botao botao-perigo botao-pequeno" type="submit">Confirmar descarte</button>
+                                    </form>
+                                </details>
                             <% } %>
                         </td>
                     </tr>
