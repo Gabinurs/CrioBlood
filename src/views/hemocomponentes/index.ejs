@@ -13,7 +13,7 @@
     </div>
     <div class="acoes">
         <a class="botao botao-claro" href="/lotes">Voltar ao recebimento</a>
-        <% if (lote && lote.status === 'ABERTO' && locals.pode && locals.pode('bolsas.gerenciar')) { %>
+        <% if (lote && lote.status === 'ABERTO' && locals.pode && locals.pode('bolsas.cadastrar')) { %>
             <a class="botao" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">＋ Adicionar outra bolsa</a>
         <% } %>
         <% if (lote && lote.status === 'FECHADO') { %>
