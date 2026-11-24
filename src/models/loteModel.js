@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const db = require('../config/database');
 const { sqlLimite } = require('../utils/paginacao');
-const { ErroConflito, ErroNaoEncontrado } = require('../utils/erros');
+const { ErroConflito, ErroNaoEncontrado, ErroValidacao } = require('../utils/erros');
 
 // Lotes de recebimento de bolsas
 class LoteModel {
@@ -45,13 +45,18 @@ class LoteModel {
         return `LOT-${ano}${mes}${dia}-${identificador}`;
     }
 
-    static async abrir(usuarioId) {
+    static async abrir(origemInformada, usuarioId) {
+        const origem = typeof origemInformada === 'string' ? origemInformada.trim().replace(/\\s+/g, ' ') : '';
+        if (!origem || origem.length > 100 || /[\\u0000-\\u001F\\u007F]/.test(origem)) {
+            throw new ErroValidacao('Informe a origem do recebimento (de 1 a 100 caracteres).');
+        }
+
         const codigo = LoteModel.gerarCodigo();
 
         await db.query(
             `INSERT INTO lotes_recebimento (codigo, origem, aberto_por)
              VALUES ($1, $2, $3)`,
-            [codigo, 'Taubaté', usuarioId]
+            [codigo, origem, usuarioId]
         );
 
         return codigo;
