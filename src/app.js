@@ -128,7 +128,7 @@ app.use(protegerCsrf);
 app.post(
     '/solicitacoes/:id/itens/:solicitacaoId/associar-bolsa',
     exigirAutenticacao,
-    exigirPermissao('solicitacoes.gerenciar'),
+    exigirPermissao('solicitacoes.editar'),
     (req, res, next) => {
         if (!/^\d+$/.test(req.params.id) || !/^\d+$/.test(req.params.solicitacaoId)) {
             return res.status(400).send('Identificador da requisição ou da unidade inválido.');
