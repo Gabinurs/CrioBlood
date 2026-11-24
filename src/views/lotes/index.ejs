@@ -73,7 +73,7 @@
                         <td><%= lote.em_conferencia %></td>
                         <td><span class="status <%= lote.status === 'ABERTO' ? 'aberto' : 'fechado' %>"><%= lote.status === 'ABERTO' ? 'Em andamento' : 'Finalizado' %></span></td>
                         <td class="acoes acoes-recebimento">
-                            <% if (locals.pode && locals.pode('bolsas.visualizar') || locals.pode('bolsas.cadastrar')) { %>
+                            <% if (locals.pode && (locals.pode('bolsas.visualizar') || locals.pode('bolsas.cadastrar'))) { %>
                                 <a class="botao botao-claro botao-pequeno" href="/hemocomponentes?lote_id=<%= lote.id %>">Conferir bolsas</a>
                                 <% if (lote.status === 'ABERTO') { %>
                                     <a class="botao botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">＋ Adicionar bolsa</a>
