@@ -6,7 +6,7 @@
         <h3>Recebimento de bolsas</h3>
         <p>Abra um lote, adicione todas as bolsas recebidas, confira os registros e finalize o recebimento com o comprovante em PDF.</p>
     </div>
-    <% if (locals.pode && locals.pode('lotes.gerenciar')) { %>
+    <% if (locals.pode && locals.pode('lotes.abrir')) { %>
         <form action="/lotes" method="POST" class="form-abrir-lote">
             <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
             <label for="origem-lote">Origem do recebimento</label>
@@ -73,7 +73,7 @@
                         <td><%= lote.em_conferencia %></td>
                         <td><span class="status <%= lote.status === 'ABERTO' ? 'aberto' : 'fechado' %>"><%= lote.status === 'ABERTO' ? 'Em andamento' : 'Finalizado' %></span></td>
                         <td class="acoes acoes-recebimento">
-                            <% if (locals.pode && locals.pode('bolsas.gerenciar')) { %>
+                            <% if (locals.pode && locals.pode('bolsas.visualizar') || locals.pode('bolsas.cadastrar')) { %>
                                 <a class="botao botao-claro botao-pequeno" href="/hemocomponentes?lote_id=<%= lote.id %>">Conferir bolsas</a>
                                 <% if (lote.status === 'ABERTO') { %>
                                     <a class="botao botao-pequeno" href="/hemocomponentes/novo?lote_id=<%= lote.id %>">＋ Adicionar bolsa</a>
@@ -82,7 +82,7 @@
                             <% if (lote.quantidade_bolsas > 0) { %>
                                 <a class="botao botao-claro botao-pequeno" href="/lotes/<%= lote.id %>/relatorio">Comprovante PDF</a>
                             <% } %>
-                            <% if (lote.status === 'ABERTO' && locals.pode && locals.pode('lotes.gerenciar')) { %>
+                            <% if (lote.status === 'ABERTO' && locals.pode && locals.pode('lotes.fechar')) { %>
                                 <% if (Number(lote.quantidade_bolsas) > 0 && Number(lote.em_conferencia) === 0) { %>
                                     <form action="/lotes/<%= lote.id %>/fechar" method="POST"
                                           data-confirmar="Finalizar o lote <%= lote.codigo %>? Depois de finalizado, ele não aceitará novas bolsas.">
