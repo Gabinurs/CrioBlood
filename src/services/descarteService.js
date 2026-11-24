@@ -1,5 +1,5 @@
 const db = require('../config/database');
-const { ErroValidacao, ErroConflito } = require('../utils/erros');
+const { ErroValidacao, ErroConflito, ErroNaoEncontrado } = require('../utils/erros');
 
 const MOTIVO_MINIMO = 10;
 const MOTIVO_MAXIMO = 500;
@@ -28,7 +28,7 @@ class DescarteService {
 
             const bolsa = consulta.rows[0];
             if (!bolsa) {
-                throw new ErroValidacao('Bolsa não encontrada.');
+                throw new ErroNaoEncontrado('Bolsa não encontrada.');
             }
 
             if (['RESERVADA', 'TRANSFUNDIDA', 'DESCARTADA'].includes(bolsa.status)) {
