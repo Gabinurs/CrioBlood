@@ -7,8 +7,11 @@
         <p>Abra um lote, adicione todas as bolsas recebidas, confira os registros e finalize o recebimento com o comprovante em PDF.</p>
     </div>
     <% if (locals.pode && locals.pode('lotes.gerenciar')) { %>
-        <form action="/lotes" method="POST" data-confirmar="Abrir um novo lote de recebimento?">
+        <form action="/lotes" method="POST" class="form-abrir-lote">
             <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+            <label for="origem-lote">Origem do recebimento</label>
+            <input id="origem-lote" name="origem" type="text" maxlength="100" required
+                   placeholder="Ex.: Hemocentro Regional de Taubaté">
             <button class="botao" type="submit">＋ Abrir novo lote</button>
         </form>
     <% } %>
