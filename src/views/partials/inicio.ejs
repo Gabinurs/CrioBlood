@@ -26,23 +26,19 @@
         return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONES[nome] + '</svg>';
     }
 
-    // [chave, endereço, rótulo, permissão exigida, ícone]
+    // O menu acompanha as permissões granulares; a autorização real também é validada nas rotas.
     var itensMenu = [
-        ['inicio',         '/dashboard',       'Início',                    null,                       'inicio'],
-        ['pacientes',      '/pacientes',       'Pacientes',                 'pacientes.gerenciar',      'pacientes'],
-        ['recebimento',   '/lotes',           'Recebimento de bolsas',     'recebimento',              'lotes'],
-        ['estoque',        '/estoque',         'Bolsas (Estoque)',          'estoque.visualizar',       'estoque'],
-        ['equipamentos',   '/equipamentos',    'Equipamentos',              'estoque.gerenciar',        'equipamentos'],
-        ['solicitacoes',   '/solicitacoes',    'Solicitação transfusional', 'solicitacoes.gerenciar',   'solicitacoes'],
-        ['compatibilidade','/compatibilidade', 'Compatibilidade',           'compatibilidade.reservar', 'compatibilidade'],
-        ['transfusoes',    '/transfusoes',     'Transfusão',                'transfusoes.registrar',    'transfusoes'],
-        ['relatorios',     '/relatorios',      'Relatórios',                'relatorios.visualizar',    'relatorios']
+        ['inicio', '/dashboard', 'Início', null, 'inicio'],
+        ['pacientes', '/pacientes', 'Pacientes', 'pacientes.visualizar', 'pacientes'],
+        ['recebimento', '/lotes', 'Recebimento de bolsas', 'lotes.visualizar', 'lotes'],
+        ['estoque', '/estoque', 'Bolsas (Estoque)', 'estoque.visualizar', 'estoque'],
+        ['equipamentos', '/equipamentos', 'Equipamentos', 'equipamentos.visualizar', 'equipamentos'],
+        ['solicitacoes', '/solicitacoes', 'Solicitação transfusional', 'solicitacoes.visualizar', 'solicitacoes'],
+        ['compatibilidade', '/compatibilidade', 'Compatibilidade', 'compatibilidade.visualizar', 'compatibilidade'],
+        ['transfusoes', '/transfusoes', 'Transfusão', 'transfusoes.visualizar', 'transfusoes'],
+        ['relatorios', '/relatorios', 'Relatórios', 'relatorios.visualizar', 'relatorios']
     ];
-    // Mostra só os módulos que o usuário pode abrir
     itensMenu = itensMenu.filter(function (item) {
-        if (item[0] === 'recebimento') {
-            return !locals.pode || locals.pode('lotes.gerenciar') || locals.pode('bolsas.gerenciar');
-        }
         return !item[3] || !locals.pode || locals.pode(item[3]);
     });
     if (usuarioLogado && usuarioLogado.administrador) {
