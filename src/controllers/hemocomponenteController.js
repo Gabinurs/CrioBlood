@@ -1,5 +1,6 @@
 const HemocomponenteModel = require('../models/hemocomponenteModel');
 const AuditoriaModel = require('../models/auditoriaModel');
+const DescarteService = require('../services/descarteService');
 const { paginar } = require('../utils/paginacao');
 const { ErroNegocio, enviarErro } = require('../utils/erros');
 const STATUS = require('../utils/status');
@@ -127,16 +128,12 @@ class HemocomponenteController {
         }
     }
 
-    // Descarte lógico
+    // Descarte lógico com justificativa, responsável, data/hora e auditoria transacional
     static async descartar(req, res) {
         try {
             const { id } = req.params;
-            const encontrada = await HemocomponenteModel.deletar(id);
-            if (!encontrada) return enviarErro(req, res, STATUS.NAO_ENCONTRADO, 'Hemocomponente não encontrado.');
-
-            await AuditoriaModel.registrarLog(
-                req.session.usuario.id, 'DESCARTE_BOLSA', 'hemocomponentes', Number(id), '');
-            res.redirect(STATUS.VER_OUTRO, '/lotes');
+            const bolsa = await DescarteService.descartar(id, req.session.usuario.id, req.body.motivo_descarte);
+            res.redirect(STATUS.VER_OUTRO, `/hemocomponentes?lote_id=${bolsa.lote_id}`);
         } catch (erro) {
             responderErro(req, res, erro, 'Erro ao descartar o item.');
         }
