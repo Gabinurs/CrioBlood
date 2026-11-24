@@ -78,25 +78,27 @@ paginação, códigos de status/erros, as expressões regulares dos campos, a va
 
 ## Perfis e permissões
 
-- **Supervisor / administrador**: acesso total, cadastra usuários, redefine senhas, define permissões
-  e é o único que pode **descartar** bolsas.
-- **Demais usuários**: só enxergam e acessam os módulos para os quais receberam permissão
-  (`Usuários → Permissões`). O menu mostra apenas o que a pessoa pode usar.
-- As permissões e a situação da conta (ativa/desativada) são conferidas **a cada requisição**:
-  desativar alguém ou tirar uma permissão vale imediatamente.
+- **Supervisor / administrador**: acesso administrativo completo, cadastra e gerencia usuários e define permissões. O descarte de bolsas permanece restrito ao perfil autorizado de supervisão.
+- **Demais usuários**: recebem permissões individualmente em **Usuários → Permissões**. O menu lateral apresenta os módulos liberados para a conta.
+- As rotas verificam autenticação e autorização no servidor; ocultar um item do menu não substitui a proteção da rota.
+- As permissões granulares são cadastradas por `database/14_permissoes_granulares.sql`. Em bancos existentes, execute a migração e depois atribua as permissões aos usuários no painel. Cadastrar os códigos no banco não concede automaticamente acesso a todos.
 
-| Permissão | Libera |
+### Catálogo de permissões granulares
+
+| Módulo | Permissões |
 |---|---|
-| `pacientes.gerenciar` | Consultar, cadastrar e editar pacientes |
-| `lotes.gerenciar` | Abrir e fechar lotes de recebimento |
-| `bolsas.gerenciar` | Cadastrar e editar bolsas |
-| `estoque.visualizar` | Consultar bolsas em estoque |
-| `estoque.gerenciar` | Definir local das bolsas e gerenciar equipamentos |
-| `solicitacoes.gerenciar` | Criar e cancelar solicitações transfusionais |
-| `compatibilidade.reservar` | Buscar bolsas compatíveis e reservar |
-| `transfusoes.registrar` | Registrar a transfusão |
-| `relatorios.visualizar` | Relatórios e exportação CSV |
-| `usuarios.*` | (reservadas; a gestão de usuários é exclusiva de administradores) |
+| Lotes | `lotes.visualizar`, `lotes.abrir`, `lotes.fechar`, `lotes.relatorio` |
+| Bolsas | `bolsas.visualizar`, `bolsas.cadastrar`, `bolsas.editar`, `bolsas.descartar` |
+| Estoque | `estoque.visualizar`, `estoque.localizacao.visualizar`, `estoque.localizacao.editar` |
+| Equipamentos | `equipamentos.visualizar`, `equipamentos.cadastrar`, `equipamentos.editar` |
+| Pacientes/receptores | `pacientes.visualizar`, `pacientes.cadastrar`, `pacientes.editar` |
+| Amostras | `amostras.visualizar`, `amostras.cadastrar`, `amostras.editar` |
+| Solicitações | `solicitacoes.visualizar`, `solicitacoes.cadastrar`, `solicitacoes.editar` |
+| Compatibilidade | `compatibilidade.visualizar`, `compatibilidade.reservar` |
+| Transfusões | `transfusoes.visualizar`, `transfusoes.registrar` |
+| Relatórios | `relatorios.visualizar`, `relatorios.exportar` |
+
+As permissões administrativas de usuários (`usuarios.*`) são controladas separadamente e permanecem restritas à administração.
 
 ## Segurança
 
@@ -226,7 +228,7 @@ As regras aplicadas são distintas:
 
 A regra institucional solicitada para homem O RhD negativo com mais de 60 anos e bolsa O RhD positiva é tratada como **exceção sujeita a autorização formal**: o sistema exige nome do autorizador, justificativa e confirmação documentada de ausência de sensibilização prévia anti-D. Não há liberação automática.
 
-Para bancos existentes, execute a migração 14 após a migração 13:
+Para bancos existentes, execute a migração `14_peso_e_excecao_rhd.sql` após `13_requisicao_prova_cruzada.sql`. Atenção: há scripts diferentes com o mesmo prefixo numérico; use sempre o nome completo do arquivo, não apenas o número:
 
 ```bash
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < database/14_peso_e_excecao_rhd.sql
@@ -250,6 +252,28 @@ docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < dat
 ```
 
 A sequência de códigos futuros é reposicionada após os identificadores retroativos para evitar colisões. A tela Bolsas (Estoque) exibe lado a lado o código CrioBlood e o código original, e a busca aceita ambos.
+
+## Descarte auditável de bolsas
+
+O descarte de uma bolsa registra o motivo informado, o usuário responsável e a data/hora da operação. A ação é protegida por autorização específica e permanece disponível apenas ao perfil de supervisão definido pelo sistema. A migração correspondente é `database/13_descarte_auditavel.sql`.
+
+Em banco já existente, aplique-a uma vez:
+
+```bash
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < database/13_descarte_auditavel.sql
+```
+
+## Permissões granulares
+
+Em banco já existente, cadastre o catálogo de permissões com:
+
+```bash
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U postgres -d crioblood < database/14_permissoes_granulares.sql
+```
+
+Depois, entre como administrador e atribua as permissões necessárias a cada conta. A migração é idempotente para os códigos já cadastrados, mas não substitui a atribuição individual das permissões.
+
+> **Importante sobre os nomes das migrações:** o diretório contém dois arquivos iniciados por `13_` e dois iniciados por `14_`. São scripts distintos. Para o fluxo de requisição/prova cruzada use `13_requisicao_prova_cruzada.sql`; para o descarte use `13_descarte_auditavel.sql`. Para regras de peso/exceção RhD use `14_peso_e_excecao_rhd.sql`; para permissões granulares use `14_permissoes_granulares.sql`. Em bancos existentes, aplique cada migração pendente individualmente e respeite a dependência entre requisição/prova cruzada e peso/exceção RhD.
 
 ## Limitações conhecidas / próximos passos
 
