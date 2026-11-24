@@ -24,7 +24,7 @@
     <%- cartao('/hemocomponentes?status=EM_CONFERENCIA', 'bolsas.visualizar', 'destaque-amarelo', resumo.em_conferencia, 'Em conferência') %>
     <%- cartao('/estoque', 'estoque.visualizar', 'destaque-vermelho', resumo.vencendo, 'Vencem em 7 dias') %>
     <%- cartao('/solicitacoes', 'solicitacoes.visualizar', '', contagens.pendentes, 'Solicitações pendentes') %>
-    <%- cartao('/transfusoes', 'transfusoes.registrar', '', contagens.aguardando, 'Aguardando transfusão') %>
+    <%- cartao('/transfusoes', 'transfusoes.visualizar', '', contagens.aguardando, 'Aguardando transfusão') %>
     <%- cartao('/lotes', 'lotes.visualizar', '', contagens.lotes_abertos, 'Lotes abertos') %>
     <%- cartao('/relatorios', 'relatorios.visualizar', '', contagens.transfusoes_mes, 'Transfusões no mês') %>
 </section>
@@ -112,7 +112,7 @@
 <% } %>
 </section>
 
-<% if (['lotes.visualizar','bolsas.visualizar','pacientes.gerenciar','solicitacoes.visualizar','transfusoes.registrar','relatorios.visualizar'].some(pode)) { %>
+<% if (['lotes.visualizar','bolsas.visualizar','pacientes.visualizar','solicitacoes.visualizar','transfusoes.visualizar','relatorios.visualizar'].some(pode)) { %>
 <section class="painel">
     <h3>Ações rápidas</h3>
     <div class="atalhos">
@@ -120,7 +120,7 @@
             <a class="botao botao-claro" href="/lotes">Recebimento de bolsas</a>
         <% } %>
         <% if (pode('pacientes.cadastrar')) { %><a class="botao botao-claro" href="/pacientes/novo">+ Novo paciente</a><% } %>
-        <% if (pode('solicitacoes.visualizar')) { %><a class="botao botao-claro" href="/solicitacoes/nova">+ Nova solicitação</a><% } %>
+        <% if (pode('solicitacoes.cadastrar')) { %><a class="botao botao-claro" href="/solicitacoes/nova">+ Nova solicitação</a><% } %>
         <% if (pode('transfusoes.registrar')) { %><a class="botao botao-claro" href="/transfusoes">Registrar transfusão</a><% } %>
         <% if (pode('relatorios.visualizar')) { %><a class="botao botao-claro" href="/relatorios">Ver relatórios</a><% } %>
     </div>
