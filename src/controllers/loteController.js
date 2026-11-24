@@ -25,7 +25,7 @@ class LoteController {
     // Abrir um novo lote
     static async abrir(req, res) {
         try {
-            const codigo = await LoteModel.abrir(req.session.usuario.id);
+            const codigo = await LoteModel.abrir(req.body.origem, req.session.usuario.id);
 
             avisar(req, 'ok', `Lote ${codigo} aberto. Já é possível cadastrar as bolsas recebidas.`);
             return res.redirect(STATUS.VER_OUTRO, '/lotes');
