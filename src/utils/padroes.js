@@ -83,7 +83,7 @@ const PADROES = {
     },
     // RG varia conforme o estado; valida estrutura sem impor uma máscara nacional.
     rg: {
-        fonte: '[\\p{L}\\p{N}][\\p{L}\\p{N} .\\/-]{3,19}',
+        fonte: '[\\p{L}\\p{N}][\\p{L}\\p{N} ./\\-]{3,19}',
         max: 20,
         mascara: null,
         mensagem: 'Use de 4 a 20 caracteres: letras, números, ponto, barra, espaço ou hífen.'
