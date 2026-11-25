@@ -5,7 +5,14 @@ const PacienteModel = require('./pacienteModel');
 const EquipamentoModel = require('./equipamentoModel');
 const { ErroValidacao } = require('../utils/erros');
 
-const pacienteOk = { nome: 'Maria da Silva', prontuario: '2024/123', data_nascimento: '1980-05-05', abo: 'A', fator_rh: '+' };
+const pacienteOk = {
+    nome: 'Maria da Silva',
+    nome_mae: 'Ana Maria da Silva',
+    prontuario: '2024/123',
+    data_nascimento: '1980-05-05',
+    abo: 'A',
+    fator_rh: '+'
+};
 
 test('paciente válido é normalizado (espaços e prontuário em maiúsculas)', () => {
     const r = PacienteModel.validar({ ...pacienteOk, nome: '  Maria   da  Silva ', prontuario: ' ab-12 ' });
