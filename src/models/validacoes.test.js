@@ -26,8 +26,9 @@ test('paciente: nome fora do padrão é recusado com ErroValidacao (422)', () =>
     }
 });
 
-test('paciente: prontuário fora do padrão é recusado', () => {
-    for (const prontuario of ['', 'AB 12', '-1', 'x'.repeat(31), 'a;b']) {
+test('paciente: prontuário vazio é opcional e formatos inválidos são recusados', () => {
+    assert.equal(PacienteModel.validar({ ...pacienteOk, prontuario: '' }).prontuario, null);
+    for (const prontuario of ['AB 12', '-1', 'x'.repeat(31), 'a;b']) {
         assert.throws(() => PacienteModel.validar({ ...pacienteOk, prontuario }), ErroValidacao, prontuario);
     }
 });
