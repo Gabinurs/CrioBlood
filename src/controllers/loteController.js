@@ -30,7 +30,7 @@ class LoteController {
             avisar(req, 'ok', `Lote ${codigo} aberto. Já é possível cadastrar as bolsas recebidas.`);
             return res.redirect(STATUS.VER_OUTRO, '/lotes');
         } catch (erro) {
-            console.error('Erro ao abrir lote:', erro.message);
+            console.error('Erro ao abrir lote:', erro);
             return enviarErro(req, res, STATUS.ERRO_INTERNO, 'Não foi possível abrir o lote de recebimento.');
         }
     }
