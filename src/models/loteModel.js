@@ -46,8 +46,8 @@ class LoteModel {
     }
 
     static async abrir(origemInformada, usuarioId) {
-        const origem = typeof origemInformada === 'string' ? origemInformada.trim().replace(/\\s+/g, ' ') : '';
-        if (!origem || origem.length > 100 || /[\\u0000-\\u001F\\u007F]/.test(origem)) {
+        const origem = typeof origemInformada === 'string' ? origemInformada.trim().replace(/\s+/g, ' ') : '';
+        if (!origem || origem.length > 100 || /[\u0000-\u001F\u007F]/.test(origem)) {
             throw new ErroValidacao('Informe a origem do recebimento (de 1 a 100 caracteres).');
         }
 
